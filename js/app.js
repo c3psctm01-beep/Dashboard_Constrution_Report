@@ -194,6 +194,47 @@
         document.getElementById('detailModal').classList.remove('active');
       });
     }
+
+    // Station list modal close
+    const btnCloseStationList = document.getElementById('btnCloseStationListModal');
+    if (btnCloseStationList) {
+      btnCloseStationList.addEventListener('click', () => {
+        document.getElementById('stationListModal').classList.remove('active');
+      });
+    }
+
+    // View all 30 stations button
+    const btnViewAllSub = document.getElementById('btnViewAllSubstations');
+    if (btnViewAllSub) {
+      btnViewAllSub.addEventListener('click', () => {
+        window.openStationModal('all', 'all');
+      });
+    }
+
+    // Station modal live search
+    const stationSearch = document.getElementById('stationModalSearch');
+    if (stationSearch) {
+      stationSearch.addEventListener('input', (e) => {
+        stationModalFilter.search = e.target.value;
+        renderStationModal();
+      });
+    }
+
+    // Click outside modal to close
+    window.addEventListener('click', (e) => {
+      const stationModal = document.getElementById('stationListModal');
+      if (stationModal && e.target === stationModal) {
+        stationModal.classList.remove('active');
+      }
+      const detailModal = document.getElementById('detailModal');
+      if (detailModal && e.target === detailModal) {
+        detailModal.classList.remove('active');
+      }
+      const valModal = document.getElementById('validationModal');
+      if (valModal && e.target === valModal) {
+        valModal.classList.remove('active');
+      }
+    });
   }
 
   function processUploadedFile(file) {
@@ -601,23 +642,110 @@
     });
   }
 
+  let stationModalFilter = {
+    projectName: 'all',
+    status: 'all',
+    search: ''
+  };
+
+  function ensureSubstationsEnriched(d) {
+    if (!d || !d.substationsSummary || !d.substationsSummary.programs) return;
+    const defaultPrograms = window.DEFAULT_DASHBOARD_DATA && window.DEFAULT_DASHBOARD_DATA.substationsSummary
+      ? window.DEFAULT_DASHBOARD_DATA.substationsSummary.programs
+      : null;
+
+    if (!defaultPrograms) return;
+
+    d.substationsSummary.programs.forEach(prog => {
+      if (!prog.stations || prog.stations.length === 0) {
+        const matched = defaultPrograms.find(dp => dp.name === prog.name);
+        if (matched && matched.stations) {
+          prog.stations = JSON.parse(JSON.stringify(matched.stations));
+        }
+      }
+    });
+  }
+
   // Tab 3: Substations
   function renderSubstationsTab() {
     const d = appState.data;
+    if (!d) return;
+
+    ensureSubstationsEnriched(d);
 
     // Macro Summary Table
     const sumTableBody = document.getElementById('subSummaryTableBody');
+    const sumTableFoot = document.getElementById('subSummaryTableFoot');
     if (sumTableBody && d.substationsSummary && d.substationsSummary.programs) {
-      sumTableBody.innerHTML = d.substationsSummary.programs.map(p => `
-        <tr>
-          <td class="cell-bold">${p.name}</td>
-          <td class="cell-num">${p.target}</td>
-          <td class="cell-num" style="color:var(--color-success); font-weight:600;">${p.completed}</td>
-          <td class="cell-num" style="color:var(--color-warning); font-weight:600;">${p.inProgress}</td>
-          <td class="cell-num" style="color:var(--text-muted);">${p.procuring}</td>
-          <td class="cell-multiline" style="font-size:0.82rem; color:var(--text-secondary);">${p.notes || '-'}</td>
-        </tr>
-      `).join('');
+      let totTarget = 0, totCompleted = 0, totInProgress = 0, totProcuring = 0;
+
+      sumTableBody.innerHTML = d.substationsSummary.programs.map(p => {
+        totTarget += p.target || 0;
+        totCompleted += p.completed || 0;
+        totInProgress += p.inProgress || 0;
+        totProcuring += p.procuring || 0;
+
+        const targetBtn = `<button type="button" class="btn-stat-count target" onclick="window.openStationModal('${p.name}', 'all')" title="คลิกดูรายชื่อสถานีทั้งหมดในโครงการ ${p.name} (${p.target} สถานี)">${p.target} <i data-lucide="chevron-right" style="width:13px;height:13px;"></i></button>`;
+
+        const completedBtn = p.completed > 0
+          ? `<button type="button" class="btn-stat-count completed" onclick="window.openStationModal('${p.name}', 'completed')" title="คลิกดูสถานีที่ก่อสร้างแล้วเสร็จในโครงการ ${p.name} (${p.completed} สถานี)">${p.completed} <i data-lucide="check-circle-2" style="width:13px;height:13px;"></i></button>`
+          : `<span class="stat-count-zero">-</span>`;
+
+        const inProgressBtn = p.inProgress > 0
+          ? `<button type="button" class="btn-stat-count in-progress" onclick="window.openStationModal('${p.name}', 'inProgress')" title="คลิกดูสถานีที่อยู่ระหว่างดำเนินการในโครงการ ${p.name} (${p.inProgress} สถานี)">${p.inProgress} <i data-lucide="clock" style="width:13px;height:13px;"></i></button>`
+          : `<span class="stat-count-zero">-</span>`;
+
+        const procuringBtn = p.procuring > 0
+          ? `<button type="button" class="btn-stat-count procuring" onclick="window.openStationModal('${p.name}', 'procuring')" title="คลิกดูสถานีที่รอจัดจ้างในโครงการ ${p.name} (${p.procuring} สถานี)">${p.procuring} <i data-lucide="hourglass" style="width:13px;height:13px;"></i></button>`
+          : `<span class="stat-count-zero">-</span>`;
+
+        return `
+          <tr>
+            <td class="cell-bold">${p.name}</td>
+            <td class="cell-num">${targetBtn}</td>
+            <td class="cell-num">${completedBtn}</td>
+            <td class="cell-num">${inProgressBtn}</td>
+            <td class="cell-num">${procuringBtn}</td>
+            <td class="cell-multiline" style="font-size:0.82rem; color:var(--text-secondary);">${p.notes || '-'}</td>
+          </tr>
+        `;
+      }).join('');
+
+      if (sumTableFoot) {
+        sumTableFoot.innerHTML = `
+          <tr class="sub-summary-footer">
+            <td class="cell-bold">ยอดรวมทั้งหมด</td>
+            <td class="cell-num">
+              <button type="button" class="btn-stat-count target font-bold" onclick="window.openStationModal('all', 'all')" title="คลิกดูรายชื่อสถานีทั้งหมด 30 สถานี">
+                ${totTarget} แห่ง <i data-lucide="layout-list" style="width:13px;height:13px;"></i>
+              </button>
+            </td>
+            <td class="cell-num">
+              <button type="button" class="btn-stat-count completed font-bold" onclick="window.openStationModal('all', 'completed')" title="คลิกดูสถานีที่แล้วเสร็จทั้งหมด (${totCompleted} แห่ง)">
+                ${totCompleted} แห่ง <i data-lucide="check-circle-2" style="width:13px;height:13px;"></i>
+              </button>
+            </td>
+            <td class="cell-num">
+              ${totInProgress > 0 ? `
+                <button type="button" class="btn-stat-count in-progress font-bold" onclick="window.openStationModal('all', 'inProgress')" title="คลิกดูสถานีที่อยู่ระหว่างดำเนินการทั้งหมด (${totInProgress} แห่ง)">
+                  ${totInProgress} แห่ง <i data-lucide="clock" style="width:13px;height:13px;"></i>
+                </button>
+              ` : '<span class="stat-count-zero">-</span>'}
+            </td>
+            <td class="cell-num">
+              ${totProcuring > 0 ? `
+                <button type="button" class="btn-stat-count procuring font-bold" onclick="window.openStationModal('all', 'procuring')" title="คลิกดูสถานีที่รอจัดจ้างทั้งหมด (${totProcuring} แห่ง)">
+                  ${totProcuring} แห่ง <i data-lucide="hourglass" style="width:13px;height:13px;"></i>
+                </button>
+              ` : '<span class="stat-count-zero">-</span>'}
+            </td>
+            <td style="font-size:0.82rem; color:var(--text-secondary); font-weight:normal;">รวมทั้งสิ้น 30 สถานีในพื้นที่ กฟก.3</td>
+          </tr>
+        `;
+      }
+
+      lucide.createIcons({ root: sumTableBody });
+      if (sumTableFoot) lucide.createIcons({ root: sumTableFoot });
     }
 
     // Active Substations Detail Table
@@ -665,6 +793,225 @@
       filterSubTable();
     }
   }
+
+  window.openStationModal = function (projectName = 'all', statusFilter = 'all') {
+    const d = appState.data;
+    if (!d || !d.substationsSummary) return;
+
+    ensureSubstationsEnriched(d);
+
+    stationModalFilter.projectName = projectName;
+    stationModalFilter.status = statusFilter;
+    stationModalFilter.search = '';
+
+    const searchInput = document.getElementById('stationModalSearch');
+    if (searchInput) searchInput.value = '';
+
+    renderStationModal();
+
+    const modal = document.getElementById('stationListModal');
+    if (modal) modal.classList.add('active');
+  };
+
+  function renderStationModal() {
+    const d = appState.data;
+    if (!d || !d.substationsSummary || !d.substationsSummary.programs) return;
+
+    const modalTitle = document.getElementById('stationListModalTitle');
+    const modalSubtitle = document.getElementById('stationListModalSubtitle');
+    const pillsContainer = document.getElementById('stationModalPills');
+    const cardsContainer = document.getElementById('stationCardsContainer');
+
+    // 1. Gather all stations matching project filter
+    let allRelevantStations = [];
+    d.substationsSummary.programs.forEach(prog => {
+      if (stationModalFilter.projectName === 'all' || prog.name === stationModalFilter.projectName) {
+        (prog.stations || []).forEach(st => {
+          allRelevantStations.push({
+            ...st,
+            projectName: prog.name
+          });
+        });
+      }
+    });
+
+    // Counts for pills
+    const countAll = allRelevantStations.filter(s => s.status !== 'cancelled').length;
+    const countCompleted = allRelevantStations.filter(s => s.status === 'completed').length;
+    const countInProgress = allRelevantStations.filter(s => s.status === 'inProgress').length;
+    const countProcuring = allRelevantStations.filter(s => s.status === 'procuring').length;
+    const countCancelled = allRelevantStations.filter(s => s.status === 'cancelled').length;
+
+    // Set Title and Subtitle
+    const projLabel = stationModalFilter.projectName === 'all' ? 'ภาพรวมทุกโครงการ (รวม 30 สถานี)' : `โครงการ ${stationModalFilter.projectName}`;
+    let statusLabel = '';
+    if (stationModalFilter.status === 'completed') statusLabel = ' - ก่อสร้างแล้วเสร็จ';
+    else if (stationModalFilter.status === 'inProgress') statusLabel = ' - อยู่ระหว่างดำเนินการ';
+    else if (stationModalFilter.status === 'procuring') statusLabel = ' - รอจัดจ้าง / ดำเนินการ';
+    else if (stationModalFilter.status === 'cancelled') statusLabel = ' - ยกเลิกโครงการ';
+
+    if (modalTitle) {
+      modalTitle.innerHTML = `<i data-lucide="building-2" style="width: 20px; height: 20px; color: var(--pea-purple);"></i> รายชื่อสถานีไฟฟ้า ${projLabel}${statusLabel}`;
+    }
+    if (modalSubtitle) {
+      modalSubtitle.textContent = `แสดงสถานีไฟฟ้าตามเงื่อนไขที่เลือก (คลิกเลือกสถานะเพื่อกรอง หรือค้นหาชื่อสถานีไฟฟ้าได้)`;
+    }
+
+    // Render Filter Pills
+    if (pillsContainer) {
+      const pills = [
+        { id: 'all', label: `ทั้งหมด (${countAll})` },
+        { id: 'completed', label: `ก่อสร้างแล้วเสร็จ (${countCompleted})` },
+        { id: 'inProgress', label: `อยู่ระหว่างดำเนินการ (${countInProgress})` },
+        { id: 'procuring', label: `รอจัดจ้าง (${countProcuring})` }
+      ];
+      if (countCancelled > 0) {
+        pills.push({ id: 'cancelled', label: `ยกเลิก (${countCancelled})` });
+      }
+
+      pillsContainer.innerHTML = pills.map(p => `
+        <button type="button" class="modal-filter-pill ${stationModalFilter.status === p.id ? 'active' : ''}" data-status="${p.id}">
+          ${p.label}
+        </button>
+      `).join('');
+
+      pillsContainer.querySelectorAll('.modal-filter-pill').forEach(btn => {
+        btn.addEventListener('click', () => {
+          stationModalFilter.status = btn.getAttribute('data-status');
+          renderStationModal();
+        });
+      });
+    }
+
+    // Filter by status and search
+    const searchVal = stationModalFilter.search.toLowerCase().trim();
+    const filteredStations = allRelevantStations.filter(st => {
+      let matchStatus = true;
+      if (stationModalFilter.status !== 'all') {
+        matchStatus = st.status === stationModalFilter.status;
+      } else {
+        matchStatus = st.status !== 'cancelled';
+      }
+
+      let matchSearch = true;
+      if (searchVal) {
+        matchSearch = st.name.toLowerCase().includes(searchVal) ||
+                      (st.category && st.category.toLowerCase().includes(searchVal)) ||
+                      (st.projectName && st.projectName.toLowerCase().includes(searchVal)) ||
+                      (st.notes && st.notes.toLowerCase().includes(searchVal));
+      }
+
+      return matchStatus && matchSearch;
+    });
+
+    // Render Cards
+    if (cardsContainer) {
+      if (filteredStations.length === 0) {
+        cardsContainer.innerHTML = `
+          <div style="grid-column: 1 / -1; text-align: center; padding: 2.5rem; color: var(--text-muted);">
+            <i data-lucide="inbox" style="width: 32px; height: 32px; margin-bottom: 0.5rem; opacity: 0.6;"></i>
+            <p>ไม่พบสถานีไฟฟ้าที่ตรงตามเงื่อนไข</p>
+          </div>
+        `;
+      } else {
+        cardsContainer.innerHTML = filteredStations.map(st => {
+          let badgeClass = 'wbs-rel';
+          let badgeIcon = 'info';
+          if (st.status === 'completed') {
+            badgeClass = 'approved';
+            badgeIcon = 'check-circle-2';
+          } else if (st.status === 'inProgress') {
+            badgeClass = 'pending';
+            badgeIcon = 'clock';
+          } else if (st.status === 'procuring') {
+            badgeClass = 'wbs-crtd';
+            badgeIcon = 'hourglass';
+          } else if (st.status === 'cancelled') {
+            badgeClass = 'revising';
+            badgeIcon = 'alert-triangle';
+          }
+
+          const hasDetail = typeof st.detailIndex === 'number' && d.substationsDetail && d.substationsDetail[st.detailIndex];
+          const detailLinkHtml = hasDetail
+            ? `<button type="button" class="station-card-link" onclick="window.viewSubstationDetailModal(${st.detailIndex})"><i data-lucide="external-link" style="width: 13px; height: 13px;"></i> ดูรายละเอียดสัญญา / ผู้รับจ้าง / การทดสอบ</button>`
+            : '';
+
+          return `
+            <div class="station-card">
+              <div class="station-card-top">
+                <div class="station-card-title">
+                  <i data-lucide="zap" style="width: 16px; height: 16px; color: var(--pea-purple); flex-shrink: 0;"></i>
+                  <span>${st.name}</span>
+                </div>
+                <span class="badge-status ${badgeClass}" style="font-size: 0.72rem; padding: 0.2rem 0.55rem;">
+                  <i data-lucide="${badgeIcon}" style="width: 12px; height: 12px;"></i>
+                  ${st.statusLabel}
+                </span>
+              </div>
+              <div style="display: flex; gap: 0.4rem; flex-wrap: wrap;">
+                <span class="station-card-category">${st.projectName}</span>
+                <span class="station-card-category" style="background: rgba(142,36,170,0.06); border-color: rgba(142,36,170,0.2); color: var(--pea-purple);">${st.category}</span>
+              </div>
+              <div class="station-card-notes">
+                ${st.notes || '-'}
+              </div>
+              ${detailLinkHtml}
+            </div>
+          `;
+        }).join('');
+      }
+
+      lucide.createIcons({ root: cardsContainer });
+    }
+
+    if (modalTitle) lucide.createIcons({ root: modalTitle });
+  }
+
+  // Hook for opening detailed construction modal from station card
+  window.viewSubstationDetailModal = function(idx) {
+    const d = appState.data;
+    if (!d || !d.substationsDetail || !d.substationsDetail[idx]) return;
+
+    const item = d.substationsDetail[idx];
+    const modal = document.getElementById('detailModal');
+    const title = document.getElementById('detailModalTitle');
+    const body = document.getElementById('detailModalBody');
+
+    if (title) {
+      title.innerHTML = `<i data-lucide="building-2" style="width: 20px; height: 20px; color: var(--pea-purple);"></i> รายละเอียด ${item.name}`;
+    }
+
+    if (body) {
+      body.innerHTML = `
+        <div style="display: flex; flex-direction: column; gap: 1rem; font-size: 0.9rem;">
+          <div style="display: grid; grid-template-columns: 140px 1fr; gap: 0.5rem; padding: 0.75rem; background: var(--bg-secondary); border-radius: var(--radius-md);">
+            <strong>โครงการ:</strong> <span>${item.project}</span>
+            <strong>รหัส WBS:</strong> <span style="font-family:monospace; font-weight:600;">${item.wbs}</span>
+            <strong>ผู้รับจ้าง:</strong> <span>${item.contractor}</span>
+            <strong>สัญญา:</strong> <span>${item.contract} (${item.duration ? item.duration + ' วัน' : '-'})</span>
+            <strong>ความก้าวหน้า:</strong> <span style="color:var(--color-success); font-weight:700;">${item.progress}%</span>
+          </div>
+          <div>
+            <strong style="color:var(--pea-purple);">ผู้ควบคุมงาน:</strong>
+            <p style="margin-top: 0.25rem; white-space: pre-line; color: var(--text-secondary);">${item.supervisor || '-'}</p>
+          </div>
+          ${item.committee ? `
+            <div>
+              <strong style="color:var(--pea-purple);">คณะกรรมการตรวจรับพัสดุ:</strong>
+              <p style="margin-top: 0.25rem; white-space: pre-line; color: var(--text-secondary);">${item.committee}</p>
+            </div>
+          ` : ''}
+          <div>
+            <strong style="color:var(--pea-purple);">สถานะงานก่อสร้าง / การทดสอบ:</strong>
+            <p style="margin-top: 0.25rem; white-space: pre-line; color: var(--text-secondary); background: rgba(142,36,170,0.05); padding: 0.75rem; border-radius: var(--radius-sm);">${item.statusText || '-'}</p>
+          </div>
+        </div>
+      `;
+    }
+
+    if (modal) modal.classList.add('active');
+    lucide.createIcons();
+  };
 
   // Tab 4: Disbursement & WBS
   function renderDisbursementTab() {

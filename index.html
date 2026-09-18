@@ -233,6 +233,12 @@
             <i data-lucide="layout-grid" style="width: 20px; height: 20px; color: var(--pea-purple);"></i>
             <h2>สรุปภาพรวมสถานีไฟฟ้าตามแผนงานโครงการ (รวม 30 สถานี)</h2>
           </div>
+          <div class="card-actions-group">
+            <button type="button" class="btn-secondary btn-sm" id="btnViewAllSubstations" title="ดูรายชื่อสถานีไฟฟ้าทั้งหมด 30 สถานี">
+              <i data-lucide="layout-list" style="width: 15px; height: 15px;"></i>
+              ดูรายชื่อสถานีทั้งหมด (30 สถานี)
+            </button>
+          </div>
         </div>
         <div class="table-responsive">
           <table class="modern-table">
@@ -249,6 +255,9 @@
             <tbody id="subSummaryTableBody">
               <!-- Dynamically populated -->
             </tbody>
+            <tfoot id="subSummaryTableFoot">
+              <!-- Dynamically populated totals -->
+            </tfoot>
           </table>
         </div>
       </div>
@@ -550,6 +559,41 @@
       </div>
       <div class="modal-body" id="detailModalBody">
         <!-- Dynamically populated -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Station List Popup Modal (30 Substations Breakdown) -->
+  <div class="modal-overlay" id="stationListModal">
+    <div class="modal-dialog modal-dialog-lg">
+      <div class="modal-header">
+        <div class="modal-title-wrap">
+          <h3 id="stationListModalTitle">
+            <i data-lucide="building-2" style="width: 20px; height: 20px; color: var(--pea-purple);"></i>
+            รายชื่อสถานีไฟฟ้าตามแผนงานโครงการ
+          </h3>
+          <span id="stationListModalSubtitle" class="modal-subtitle"></span>
+        </div>
+        <button type="button" class="modal-close-btn" id="btnCloseStationListModal" title="ปิดหน้าต่าง">
+          <i data-lucide="x" style="width: 18px; height: 18px;"></i>
+        </button>
+      </div>
+      <div class="modal-body">
+        <!-- Controls: Search & Filter Pills -->
+        <div class="station-modal-toolbar">
+          <div class="search-input-wrapper" style="flex: 1; max-width: 340px;">
+            <i data-lucide="search" style="width: 15px; height: 15px;"></i>
+            <input type="text" class="search-input" id="stationModalSearch" placeholder="ค้นหาชื่อสถานี, แผนงาน, หมายเหตุ...">
+          </div>
+          <div class="station-modal-pills" id="stationModalPills">
+            <!-- Filter pills generated dynamically -->
+          </div>
+        </div>
+
+        <!-- Station Cards Container -->
+        <div class="station-cards-grid" id="stationCardsContainer">
+          <!-- Populated dynamically -->
+        </div>
       </div>
     </div>
   </div>

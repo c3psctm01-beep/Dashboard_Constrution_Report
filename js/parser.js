@@ -111,26 +111,89 @@ window.ExcelParser = (function () {
   }
 
   function parseSubstationsSummary(sheet) {
-    if (!sheet) {
-      return {
-        totalSubstations: 30,
-        completed: 24,
-        inProgress: 2,
-        procuring: 4,
-        programs: []
-      };
-    }
+    const basePrograms = (window.DEFAULT_DASHBOARD_DATA && window.DEFAULT_DASHBOARD_DATA.substationsSummary)
+      ? JSON.parse(JSON.stringify(window.DEFAULT_DASHBOARD_DATA.substationsSummary.programs))
+      : [
+          {
+            name: 'คพจ.1',
+            target: 10,
+            completed: 9,
+            inProgress: 0,
+            procuring: 1,
+            notes: 'สมุทรสาคร 13 (คาดได้ผู้รับจ้างไตรมาส 3-4 ปี 2569)',
+            stations: [
+              { name: 'กาญจนบุรี 3', category: 'แผนงานที่ 1 (สถานีใหม่)', status: 'completed', statusLabel: 'ก่อสร้างแล้วเสร็จ', notes: 'ก่อสร้างแล้วเสร็จ' },
+              { name: 'เลาขวัญ', category: 'แผนงานที่ 1 (สถานีใหม่)', status: 'completed', statusLabel: 'ก่อสร้างแล้วเสร็จ', notes: 'ก่อสร้างแล้วเสร็จ' },
+              { name: 'สามชุก', category: 'แผนงานที่ 1 (สถานีใหม่)', status: 'completed', statusLabel: 'ก่อสร้างแล้วเสร็จ', notes: 'ก่อสร้างแล้วเสร็จ' },
+              { name: 'สุพรรณบุรี 2', category: 'แผนงานที่ 1 (สถานีใหม่)', status: 'completed', statusLabel: 'ก่อสร้างแล้วเสร็จ', notes: 'ก่อสร้างแล้วเสร็จ' },
+              { name: 'บ้านแพ้ว 2', category: 'แผนงานที่ 1 (สถานีใหม่)', status: 'completed', statusLabel: 'ก่อสร้างแล้วเสร็จ', notes: 'ก่อสร้างแล้วเสร็จ' },
+              { name: 'สมุทรสาคร 15', category: 'แผนงานที่ 1 (สถานีใหม่)', status: 'completed', statusLabel: 'ก่อสร้างแล้วเสร็จ', notes: 'ก่อสร้างแล้วเสร็จ' },
+              { name: 'ดอนเจดีย์ (50 MVA)', category: 'แผนงานที่ 1 (เพิ่มหม้อแปลง)', status: 'completed', statusLabel: 'ก่อสร้างแล้วเสร็จ', notes: 'เพิ่มหม้อแปลง 50 MVA แล้วเสร็จ' },
+              { name: 'บ่อพลอย (50 MVA)', category: 'แผนงานที่ 1 (เพิ่มหม้อแปลง)', status: 'completed', statusLabel: 'ก่อสร้างแล้วเสร็จ', notes: 'เพิ่มหม้อแปลง 50 MVA แล้วเสร็จ' },
+              { name: 'สมุทรสาคร 3', category: 'แผนงานที่ 2 (Renovate)', status: 'completed', statusLabel: 'ก่อสร้างแล้วเสร็จ', notes: 'งาน Renovate แล้วเสร็จ' },
+              { name: 'สมุทรสาคร 13', category: 'แผนงานที่ 1 (สถานีใหม่)', status: 'procuring', statusLabel: 'รอจัดจ้าง / ดำเนินการ', notes: 'อยู่ระหว่างจัดหาที่ดิน/ออกแบบ หาผู้รับจ้าง (คาดได้ผู้รับจ้างไตรมาส 3-4 ปี 2569)' },
+              { name: 'นครปฐม 4', category: 'สถานียกเลิก', status: 'cancelled', statusLabel: 'ยกเลิกโครงการ', notes: 'ยกเลิกโครงการ (ไม่นับรวมในเป้าหมาย 10 สถานี)' },
+              { name: 'สมุทรสาคร 14', category: 'สถานียกเลิก', status: 'cancelled', statusLabel: 'ยกเลิกโครงการ', notes: 'ยกเลิกโครงการ (ไม่นับรวมในเป้าหมาย 10 สถานี)' }
+            ]
+          },
+          {
+            name: 'คพจ.2',
+            target: 16,
+            completed: 13,
+            inProgress: 0,
+            procuring: 3,
+            notes: 'กระทุ่มแบน 7, อ้อมน้อย 1 (Renovate), สมุทรสาคร 13',
+            stations: [
+              { name: 'สมุทรสาคร 10', category: 'แผนงานที่ 1 (สถานีใหม่)', status: 'completed', statusLabel: 'ก่อสร้างแล้วเสร็จ', notes: 'ก่อสร้างแล้วเสร็จ' },
+              { name: 'สมุทรสาคร 11', category: 'แผนงานที่ 1 (สถานีใหม่)', status: 'completed', statusLabel: 'ก่อสร้างแล้วเสร็จ', notes: 'ก่อสร้างแล้วเสร็จ' },
+              { name: 'บ้านโป่ง 3', category: 'แผนงานที่ 1 (สถานีใหม่)', status: 'completed', statusLabel: 'ก่อสร้างแล้วเสร็จ', notes: 'ก่อสร้างแล้วเสร็จ' },
+              { name: 'อ้อมน้อย 5', category: 'แผนงานที่ 1 (สถานีใหม่)', status: 'completed', statusLabel: 'ก่อสร้างแล้วเสร็จ', notes: 'ก่อสร้างแล้วเสร็จ' },
+              { name: 'ท่ามะกา 2', category: 'แผนงานที่ 1 (สถานีใหม่)', status: 'completed', statusLabel: 'ก่อสร้างแล้วเสร็จ', notes: 'ก่อสร้างแล้วเสร็จ' },
+              { name: 'ท่าม่วง 2', category: 'แผนงานที่ 1 (สถานีใหม่)', status: 'completed', statusLabel: 'ก่อสร้างแล้วเสร็จ', notes: 'ก่อสร้างแล้วเสร็จ' },
+              { name: 'กระทุ่มแบน 6', category: 'แผนงานที่ 1 (สถานีใหม่)', status: 'completed', statusLabel: 'ก่อสร้างแล้วเสร็จ', notes: 'ก่อสร้างแล้วเสร็จ' },
+              { name: 'สมุทรสาคร 16', category: 'แผนงานที่ 1 (สถานีใหม่)', status: 'completed', statusLabel: 'ก่อสร้างแล้วเสร็จ', notes: 'ก่อสร้างแล้วเสร็จ' },
+              { name: 'พุทธมณฑล 3', category: 'แผนงานที่ 1 (สถานีใหม่)', status: 'completed', statusLabel: 'ก่อสร้างแล้วเสร็จ', notes: 'ก่อสร้างแล้วเสร็จ' },
+              { name: 'สมุทรสาคร 1', category: 'แผนงานที่ 2 (Renovate)', status: 'completed', statusLabel: 'ก่อสร้างแล้วเสร็จ', notes: 'งาน Renovate แล้วเสร็จ' },
+              { name: 'ท่าทราย 1 Renovate', category: 'แผนงานที่ 2 (Renovate)', status: 'completed', statusLabel: 'ก่อสร้างแล้วเสร็จ', notes: 'งานก่อสร้างแล้วเสร็จ AC Withstand Voltage Test วันที่ 2 - 3 พฤษภาคม 2569', detailIndex: 0 },
+              { name: 'สมุทรสาคร 16 (ชั่วคราว)', category: 'สถานีไฟฟ้าชั่วคราว', status: 'completed', statusLabel: 'ก่อสร้างแล้วเสร็จ', notes: 'สถานีไฟฟ้าชั่วคราวก่อสร้างแล้วเสร็จ (รื้อถอนอุปกรณ์ไปติดตั้ง สฟ.สมุทรสาคร 18)' },
+              { name: 'อ้อมน้อย 1 (ชั่วคราว)', category: 'สถานีไฟฟ้าชั่วคราว', status: 'completed', statusLabel: 'ก่อสร้างแล้วเสร็จ', notes: 'สถานีไฟฟ้าชั่วคราวก่อสร้างแล้วเสร็จ' },
+              { name: 'กระทุ่มแบน 7', category: 'แผนงานที่ 1 (สถานีใหม่)', status: 'procuring', statusLabel: 'รอจัดจ้าง / ดำเนินการ', notes: 'อยู่ระหว่างจัดหาที่ดิน (รอซื้อที่ดินจาก กฟผ.)' },
+              { name: 'สมุทรสาคร 13', category: 'แผนงานที่ 1 (เพิ่มหม้อแปลง)', status: 'procuring', statusLabel: 'รอจัดจ้าง / ดำเนินการ', notes: 'เพิ่มหม้อแปลง พร้อมโครงการ คพจ.1' },
+              { name: 'อ้อมน้อย 1 (Renovate)', category: 'แผนงานที่ 2 (Renovate)', status: 'procuring', statusLabel: 'รอจัดจ้าง / ดำเนินการ', notes: 'งานปรับปรุงสถานีไฟฟ้า (คาดได้ผู้รับจ้างไตรมาส 3 ปี 2569)' }
+            ]
+          },
+          {
+            name: 'งบลงทุนประจำปี 2568 (ชั่วคราว)',
+            target: 2,
+            completed: 2,
+            inProgress: 0,
+            procuring: 0,
+            notes: 'สมุทรสาคร 17 (ช), สมุทรสาคร 14 (ช)',
+            stations: [
+              { name: 'สมุทรสาคร 17 (ชั่วคราว)', category: 'สถานีไฟฟ้าชั่วคราว', status: 'completed', statusLabel: 'ก่อสร้างแล้วเสร็จ', notes: 'งานก่อสร้างแล้วเสร็จ AC Withstand วันที่ 20 ก.พ. 2569 จ่ายไฟวันที่ 22 ก.พ. 2569', detailIndex: 2 },
+              { name: 'สมุทรสาคร 14 (ชั่วคราว)', category: 'สถานีไฟฟ้าชั่วคราว', status: 'completed', statusLabel: 'ก่อสร้างแล้วเสร็จ', notes: 'งานก่อสร้างแล้วเสร็จ AC Withstand วันที่ 28 - 29 มิ.ย. 2569 จ่ายไฟวันที่ 1 ก.ค. 2569', detailIndex: 1 }
+            ]
+          },
+          {
+            name: 'งบลงทุนเร่งด่วนประจำปี 2569 (ชั่วคราว)',
+            target: 2,
+            completed: 0,
+            inProgress: 2,
+            procuring: 0,
+            notes: 'สมุทรสาคร 18 (ช), กาญจนบุรี 5 (ช)',
+            stations: [
+              { name: 'สมุทรสาคร 18 (ชั่วคราว)', category: 'สถานีไฟฟ้าชั่วคราว', status: 'inProgress', statusLabel: 'อยู่ระหว่างดำเนินการ', notes: 'ความก้าวหน้า 17.0% รื้อถอนอุปกรณ์ป้องกัน 22,115 kV จาก สฟ.สมุทรสาคร 16 (ช) ปรับปรุงที่ดินและเรียงฐานราก 70%', detailIndex: 3 },
+              { name: 'กาญจนบุรี 5 (ชั่วคราว)', category: 'สถานีไฟฟ้าชั่วคราว', status: 'inProgress', statusLabel: 'อยู่ระหว่างดำเนินการ', notes: 'ความก้าวหน้า 9.0% รื้อย้ายอุปกรณ์จาก สฟ.สมุทรสาคร 10 (ช) อยู่ระหว่างปรับปรุงที่ดิน (ถมดินตามระดับ)', detailIndex: 4 }
+            ]
+          }
+        ];
+
     return {
       totalSubstations: 30,
       completed: 24,
       inProgress: 2,
       procuring: 4,
-      programs: [
-        { name: 'คพจ.1', target: 10, completed: 9, inProgress: 0, procuring: 1, notes: 'สมุทรสาคร 13 (คาดได้ผู้รับจ้าง Q4/69)' },
-        { name: 'คพจ.2', target: 16, completed: 13, inProgress: 0, procuring: 3, notes: 'กระทุ่มแบน 7, อ้อมน้อย 1 (Renovate), สมุทรสาคร 13' },
-        { name: 'งบลงทุนประจำปี 2568 (ชั่วคราว)', target: 2, completed: 2, inProgress: 0, procuring: 0, notes: 'สมุทรสาคร 17 (ช), สมุทรสาคร 14 (ช)' },
-        { name: 'งบลงทุนเร่งด่วนประจำปี 2569 (ชั่วคราว)', target: 2, completed: 0, inProgress: 2, procuring: 0, notes: 'สมุทรสาคร 18 (ช), กาญจนบุรี 5 (ช)' }
-      ]
+      programs: basePrograms
     };
   }
 
