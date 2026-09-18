@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html lang="th" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PEA Construction & Disbursement Dashboard | ติดตามงานก่อสร้างสายส่ง-สถานีไฟฟ้าและการเบิกจ่าย</title>
+  <meta name="description" content="ระบบแดชบอร์ดติดตามสถานะงานก่อสร้างสายส่ง 115 kV สถานีไฟฟ้า รายละเอียดการเบิกจ่าย WBS และสถานะการขออนุญาต สำหรับ กฟภ. (PEA)">
+  
+  <!-- Stylesheets -->
+  <link rel="stylesheet" href="css/style.css">
+  
+  <!-- Vendor Scripts -->
+  <script src="js/vendor/xlsx.full.min.js"></script>
+  <script src="js/vendor/chart.umd.min.js"></script>
+  <script src="js/vendor/lucide.min.js"></script>
+</head>
+<body>
+  <div class="app-container">
+    
+    <!-- Top Header -->
+    <header class="app-header">
+      <div class="header-brand">
+        <div class="brand-icon-wrapper">
+          <i data-lucide="zap" style="width: 28px; height: 28px;"></i>
+        </div>
+        <div class="brand-titles">
+          <h1>
+            PEA Construction & Disbursement Dashboard
+            <span class="badge-pea">กฟก.3</span>
+          </h1>
+          <p>ระบบติดตามสถานะงานก่อสร้างสายส่ง 115 kV, สถานีไฟฟ้า, การเบิกจ่ายงบประมาณ WBS และการขออนุญาต</p>
+        </div>
+      </div>
+
+      <div class="header-actions">
+        <div class="file-info-badge" id="fileInfoBadge">
+          <i data-lucide="file-spreadsheet" style="width: 16px; height: 16px;"></i>
+          <span id="activeFileName">กำลังโหลดข้อมูล...</span>
+        </div>
+
+        <input type="file" id="excelFileInput" class="file-input-hidden" accept=".xlsx, .xls">
+        <button type="button" class="btn-primary" id="btnUploadExcel" title="อัปโหลดไฟล์ Excel">
+          <i data-lucide="upload-cloud" style="width: 15px; height: 15px;"></i>
+          อัปโหลด Excel
+        </button>
+
+        <button type="button" class="btn-secondary" id="btnResetDefault" title="รีเซ็ตกลับเป็นข้อมูลตัวอย่างต้นฉบับ">
+          <i data-lucide="rotate-ccw" style="width: 15px; height: 15px;"></i>
+          โหลดข้อมูลเริ่มต้น
+        </button>
+
+        <button type="button" class="btn-secondary" id="btnPrintReport" title="พิมพ์รายงานหรือบันทึกเป็น PDF">
+          <i data-lucide="printer" style="width: 15px; height: 15px;"></i>
+          พิมพ์รายงาน
+        </button>
+
+        <button type="button" class="theme-toggle-btn" id="btnThemeToggle" title="สลับโหมด มืด / สว่าง">
+          <i data-lucide="moon" id="themeIcon" style="width: 16px; height: 16px;"></i>
+        </button>
+      </div>
+    </header>
+
+    <!-- KPI Summary Grid -->
+    <section class="kpi-grid">
+      <!-- KPI 1: Transmission Lines -->
+      <div class="kpi-card purple">
+        <div class="kpi-info">
+          <span class="kpi-title">งานก่อสร้างสายส่ง 115 kV</span>
+          <span class="kpi-value" id="kpiTransCount">0 งาน</span>
+          <span class="kpi-subtext" id="kpiTransProgress">ความก้าวหน้าเฉลี่ย 0%</span>
+        </div>
+        <div class="kpi-icon-box">
+          <i data-lucide="activity" style="width: 22px; height: 22px;"></i>
+        </div>
+      </div>
+
+      <!-- KPI 2: Substations Active -->
+      <div class="kpi-card blue">
+        <div class="kpi-info">
+          <span class="kpi-title">สถานีไฟฟ้ากำลังก่อสร้าง</span>
+          <span class="kpi-value" id="kpiSubCount">0 แห่ง</span>
+          <span class="kpi-subtext" id="kpiSubStatus">เสร็จแล้ว 0 แห่ง / ระหว่างทำ 0 แห่ง</span>
+        </div>
+        <div class="kpi-icon-box">
+          <i data-lucide="building-2" style="width: 22px; height: 22px;"></i>
+        </div>
+      </div>
+
+      <!-- KPI 3: Permits Status -->
+      <div class="kpi-card amber">
+        <div class="kpi-info">
+          <span class="kpi-title">สถานะการขออนุญาตพื้นที่</span>
+          <span class="kpi-value" id="kpiPermitApproved">0 / 0 งาน</span>
+          <span class="kpi-subtext" id="kpiPermitPending">ได้รับอนุญาตแล้ว (รอพิจารณา 0)</span>
+        </div>
+        <div class="kpi-icon-box">
+          <i data-lucide="file-check-2" style="width: 22px; height: 22px;"></i>
+        </div>
+      </div>
+    </section>
+
+    <!-- Navigation Tabs -->
+    <nav class="dashboard-nav-tabs" role="tablist">
+      <button type="button" class="nav-tab active" data-tab="tab-overview" role="tab">
+        <i data-lucide="layout-dashboard" style="width: 16px; height: 16px;"></i>
+        ภาพรวมโครงการ (Overview)
+      </button>
+      <button type="button" class="nav-tab" data-tab="tab-transmission" role="tab">
+        <i data-lucide="git-branch" style="width: 16px; height: 16px;"></i>
+        สถานะงานสายส่ง 115 kV
+        <span class="tab-badge" id="badgeTransCount">0</span>
+      </button>
+      <button type="button" class="nav-tab" data-tab="tab-substations" role="tab">
+        <i data-lucide="boxes" style="width: 16px; height: 16px;"></i>
+        สถานะงานสถานีไฟฟ้า
+        <span class="tab-badge" id="badgeSubCount">0</span>
+      </button>
+      <button type="button" class="nav-tab" data-tab="tab-disbursement" role="tab">
+        <i data-lucide="pie-chart" style="width: 16px; height: 16px;"></i>
+        รายละเอียดการเบิกจ่าย (WBS)
+      </button>
+      <button type="button" class="nav-tab" data-tab="tab-permits" role="tab">
+        <i data-lucide="clipboard-check" style="width: 16px; height: 16px;"></i>
+        สถานะการขออนุญาต
+        <span class="tab-badge" id="badgePermitCount">0</span>
+      </button>
+      <button type="button" class="nav-tab" data-tab="tab-gantt" role="tab">
+        <i data-lucide="calendar-range" style="width: 16px; height: 16px;"></i>
+        แผนงานและผลงาน (Gantt)
+      </button>
+    </nav>
+
+    <!-- Tab 1: Executive Overview -->
+    <section class="tab-content-panel active" id="tab-overview">
+      <!-- Chart 1: Progress comparison -->
+      <div class="chart-card" style="margin-bottom: 1.5rem;">
+        <div class="chart-title">
+          <i data-lucide="bar-chart-3" style="width: 18px; height: 18px; color: var(--pea-purple);"></i>
+          เปรียบเทียบผลงานความก้าวหน้าโครงการ (%)
+        </div>
+        <div class="chart-canvas-wrapper" style="min-height: 480px;">
+          <canvas id="overviewProgressChart"></canvas>
+        </div>
+      </div>
+
+      <!-- Overview Priority Highlights -->
+      <div class="dashboard-card">
+        <div class="card-header-row">
+          <div class="card-title-group">
+            <i data-lucide="bell-ring" style="width: 20px; height: 20px; color: var(--color-warning);"></i>
+            <h2>งานที่อยู่ระหว่างดำเนินการก่อสร้างในปัจจุบัน (Active Works)</h2>
+          </div>
+        </div>
+        <div class="table-responsive">
+          <table class="modern-table">
+            <thead>
+              <tr>
+                <th>ประเภทงาน</th>
+                <th>ชื่องาน / โครงการ</th>
+                <th>ผู้ดำเนินการ / ผู้รับจ้าง</th>
+                <th>ความก้าวหน้า</th>
+                <th>สถานะ / การทดสอบ / ข้อสังเกตหน้างาน</th>
+              </tr>
+            </thead>
+            <tbody id="overviewActiveTableBody">
+              <!-- Dynamically populated -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- Tab 2: Transmission Lines -->
+    <section class="tab-content-panel" id="tab-transmission">
+      <div class="dashboard-card">
+        <div class="card-header-row">
+          <div class="card-title-group">
+            <i data-lucide="git-branch" style="width: 20px; height: 20px; color: var(--pea-purple);"></i>
+            <h2>รายงานสถานะการก่อสร้างสายส่ง 115 เควี ที่อยู่ระหว่างก่อสร้าง</h2>
+          </div>
+          <div class="card-actions-group">
+            <div class="search-input-wrapper">
+              <i data-lucide="search" style="width: 15px; height: 15px;"></i>
+              <input type="text" class="search-input" id="searchTransInput" placeholder="ค้นหาสายส่ง, โครงการ...">
+            </div>
+            <select class="filter-select" id="filterTransProject">
+              <option value="all">ทุกโครงการ</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="table-responsive">
+          <table class="modern-table">
+            <thead>
+              <tr>
+                <th>ที่</th>
+                <th>โครงการ</th>
+                <th>ชื่องานก่อสร้าง สายส่ง 115 kV</th>
+                <th class="cell-num">วงจร-กม.</th>
+                <th>ผู้ก่อสร้าง</th>
+                <th class="cell-num">สะสมปี 68 (%)</th>
+                <th class="cell-num">ผลงานปี 69 รายเดือน</th>
+                <th>ผลงานสะสมปัจจุบัน</th>
+                <th>หมายเหตุ / รายละเอียดหน้างาน</th>
+              </tr>
+            </thead>
+            <tbody id="transTableBody">
+              <!-- Dynamically populated -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Transmission Monthly Progress Trend Chart -->
+      <div class="chart-card">
+        <div class="chart-title">
+          <i data-lucide="line-chart" style="width: 18px; height: 18px; color: var(--pea-purple);"></i>
+          แนวโน้มผลงานสายส่งรายเดือน ประจำปี 2569 (ม.ค. - ธ.ค.)
+        </div>
+        <div class="chart-canvas-wrapper" style="min-height: 280px;">
+          <canvas id="transMonthlyChart"></canvas>
+        </div>
+      </div>
+    </section>
+
+    <!-- Tab 3: Substations -->
+    <section class="tab-content-panel" id="tab-substations">
+      <!-- Macro Substation Overview Summary -->
+      <div class="dashboard-card">
+        <div class="card-header-row">
+          <div class="card-title-group">
+            <i data-lucide="layout-grid" style="width: 20px; height: 20px; color: var(--pea-purple);"></i>
+            <h2>สรุปภาพรวมสถานีไฟฟ้าตามแผนงานโครงการ (รวม 30 สถานี)</h2>
+          </div>
+        </div>
+        <div class="table-responsive">
+          <table class="modern-table">
+            <thead>
+              <tr>
+                <th>แผนงานโครงการ</th>
+                <th class="cell-num">เป้าหมาย (แห่ง)</th>
+                <th class="cell-num">ก่อสร้างแล้วเสร็จ</th>
+                <th class="cell-num">อยู่ระหว่างดำเนินการ</th>
+                <th class="cell-num">รอจัดจ้าง / ดำเนินการ</th>
+                <th>หมายเหตุ / สถานะสำคัญ</th>
+              </tr>
+            </thead>
+            <tbody id="subSummaryTableBody">
+              <!-- Dynamically populated -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Active Substations Detail Table -->
+      <div class="dashboard-card">
+        <div class="card-header-row">
+          <div class="card-title-group">
+            <i data-lucide="boxes" style="width: 20px; height: 20px; color: var(--color-info);"></i>
+            <h2>รายละเอียดสถานะงานก่อสร้างสถานีไฟฟ้าที่อยู่ระหว่างดำเนินการ</h2>
+          </div>
+          <div class="card-actions-group">
+            <div class="search-input-wrapper">
+              <i data-lucide="search" style="width: 15px; height: 15px;"></i>
+              <input type="text" class="search-input" id="searchSubInput" placeholder="ค้นหาสถานีไฟฟ้า, WBS...">
+            </div>
+          </div>
+        </div>
+
+        <div class="table-responsive">
+          <table class="modern-table">
+            <thead>
+              <tr>
+                <th>ที่</th>
+                <th>โครงการ</th>
+                <th>สถานีไฟฟ้า</th>
+                <th>รหัส WBS</th>
+                <th>ผู้รับจ้าง / ดำเนินการ</th>
+                <th>สัญญา / ระยะเวลา</th>
+                <th>ความก้าวหน้า</th>
+                <th>ผู้ควบคุมงาน</th>
+                <th>สถานะงานก่อสร้าง / การทดสอบระบบ</th>
+              </tr>
+            </thead>
+            <tbody id="subDetailTableBody">
+              <!-- Dynamically populated -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- Tab 4: Disbursement & WBS -->
+    <section class="tab-content-panel" id="tab-disbursement">
+      <!-- Project Selector & Budget KPI Row -->
+      <div class="dashboard-card">
+        <div class="card-header-row">
+          <div class="card-title-group">
+            <i data-lucide="wallet" style="width: 20px; height: 20px; color: var(--color-success);"></i>
+            <h2>รายละเอียดการเบิกจ่ายงบประมาณ (WBS Budget & Actuals)</h2>
+          </div>
+          <div class="card-actions-group">
+            <label for="selectDisbProject" style="font-weight: 500; font-size: 0.85rem; color: var(--text-secondary);">เลือกโครงการ:</label>
+            <select class="filter-select" id="selectDisbProject">
+              <!-- Options dynamically populated -->
+            </select>
+          </div>
+        </div>
+
+        <!-- Project specific mini KPI -->
+        <div class="kpi-grid" style="margin-bottom: 0;">
+          <div class="kpi-card purple">
+            <div class="kpi-info">
+              <span class="kpi-title">งบประมาณปัจจุบัน</span>
+              <span class="kpi-value" id="disbCurrentBudget">0.00 บาท</span>
+              <span class="kpi-subtext" id="disbOrigBudget">งบต้นแบบ: 0.00 บาท</span>
+            </div>
+          </div>
+          <div class="kpi-card green">
+            <div class="kpi-info">
+              <span class="kpi-title">เบิกจ่ายจริงสะสม (Act.)</span>
+              <span class="kpi-value" id="disbActualTotal">0.00 บาท</span>
+              <span class="kpi-subtext" id="disbActualPct">สัดส่วนเบิกจ่าย 0%</span>
+            </div>
+          </div>
+          <div class="kpi-card blue">
+            <div class="kpi-info">
+              <span class="kpi-title">ภาระผูกพัน (PR/PO)</span>
+              <span class="kpi-value" id="disbPrPo">0.00 บาท</span>
+              <span class="kpi-subtext" id="disbCommitPct">รวมผูกพัน 0%</span>
+            </div>
+          </div>
+          <div class="kpi-card amber">
+            <div class="kpi-info">
+              <span class="kpi-title">งบประมาณคงเหลือ</span>
+              <span class="kpi-value" id="disbRemaining">0.00 บาท</span>
+              <span class="kpi-subtext">คงเหลือที่ยังไม่เบิกจ่าย</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Substation Disbursement Summary Table -->
+      <div class="dashboard-card">
+        <div class="card-header-row">
+          <div class="card-title-group">
+            <i data-lucide="table-2" style="width: 20px; height: 20px; color: var(--pea-purple);"></i>
+            <h2>ตารางสรุปการเบิกจ่ายงบประมาณแยกตามสถานีไฟฟ้า</h2>
+          </div>
+        </div>
+        <div class="table-responsive">
+          <table class="modern-table">
+            <thead>
+              <tr>
+                <th>สถานีไฟฟ้า / โครงการ</th>
+                <th>ชีตอ้างอิง WBS</th>
+                <th class="cell-num">งบประมาณปัจจุบัน (บาท)</th>
+                <th class="cell-num">เบิกจ่ายจริง (Act.)</th>
+                <th class="cell-num">ภาระผูกพัน (PR/PO)</th>
+                <th class="cell-num">งบประมาณคงเหลือ</th>
+                <th class="cell-num">สัดส่วนเบิกจ่าย</th>
+                <th>ความก้าวหน้าการเบิกจ่าย</th>
+                <th>การเลือกดู</th>
+              </tr>
+            </thead>
+            <tbody id="disbStationsSummaryTableBody">
+              <!-- Dynamically populated -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Budget Comparison Chart -->
+      <div class="chart-card">
+        <div class="chart-title">
+          <i data-lucide="bar-chart-2" style="width: 18px; height: 18px; color: var(--color-success);"></i>
+          เปรียบเทียบงบประมาณ, เบิกจ่ายจริง และภาระผูกพัน รายหมวดหมู่ WBS
+        </div>
+        <div class="chart-canvas-wrapper" style="min-height: 280px;">
+          <canvas id="disbDetailChart"></canvas>
+        </div>
+      </div>
+
+      <!-- Detailed WBS Items Table -->
+      <div class="dashboard-card">
+        <div class="card-header-row">
+          <div class="card-title-group">
+            <i data-lucide="list" style="width: 20px; height: 20px; color: var(--pea-purple);"></i>
+            <h2>ตารางรายละเอียดรายการ WBS และค่าใช้จ่ายจริง</h2>
+          </div>
+          <div class="card-actions-group">
+            <div class="search-input-wrapper">
+              <i data-lucide="search" style="width: 15px; height: 15px;"></i>
+              <input type="text" class="search-input" id="searchWbsInput" placeholder="ค้นหา WBS, รายการ...">
+            </div>
+          </div>
+        </div>
+
+        <div class="table-responsive">
+          <table class="modern-table">
+            <thead>
+              <tr>
+                <th>รหัส WBS</th>
+                <th>คำอธิบายรายการ</th>
+                <th>Status</th>
+                <th class="cell-num">งบประมาณปัจจุบัน</th>
+                <th class="cell-num">เบิกจ่ายจริง (Act. รวม)</th>
+                <th class="cell-num">PR/PO</th>
+                <th class="cell-num">งบประมาณคงเหลือ</th>
+                <th>สัดส่วนเบิกจ่าย</th>
+              </tr>
+            </thead>
+            <tbody id="wbsTableBody">
+              <!-- Dynamically populated -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- Tab 5: Permits Tracking -->
+    <section class="tab-content-panel" id="tab-permits">
+      <div class="dashboard-card">
+        <div class="card-header-row">
+          <div class="card-title-group">
+            <i data-lucide="clipboard-check" style="width: 20px; height: 20px; color: var(--color-warning);"></i>
+            <h2>สถานะงานขออนุญาตก่อสร้างสายส่ง และสถานีไฟฟ้า</h2>
+          </div>
+          <div class="card-actions-group">
+            <div class="search-input-wrapper">
+              <i data-lucide="search" style="width: 15px; height: 15px;"></i>
+              <input type="text" class="search-input" id="searchPermitInput" placeholder="ค้นหารายชื่องาน, หน่วยงาน...">
+            </div>
+          </div>
+        </div>
+
+        <!-- Filter pills -->
+        <div class="filter-pills" id="permitFilterPills">
+          <button type="button" class="filter-pill active" data-filter="all">ทั้งหมด (<span id="countPillAll">0</span>)</button>
+          <button type="button" class="filter-pill" data-filter="substation">สถานีไฟฟ้า (<span id="countPillSub">0</span>)</button>
+          <button type="button" class="filter-pill" data-filter="transmission">สายส่ง 115 kV (<span id="countPillTrans">0</span>)</button>
+          <button type="button" class="filter-pill" data-filter="approved">ได้รับอนุญาตแล้ว (<span id="countPillApproved">0</span>)</button>
+          <button type="button" class="filter-pill" data-filter="pending">อยู่ระหว่างพิจารณา (<span id="countPillPending">0</span>)</button>
+          <button type="button" class="filter-pill" data-filter="revising">แก้ไขปรับแบบ (<span id="countPillRevising">0</span>)</button>
+        </div>
+
+        <div class="table-responsive">
+          <table class="modern-table">
+            <thead>
+              <tr>
+                <th>ที่</th>
+                <th>ประเภทงาน</th>
+                <th>รายชื่องานก่อสร้าง</th>
+                <th>รายละเอียดงานที่ขออนุญาต</th>
+                <th>หน่วยงานเจ้าของพื้นที่</th>
+                <th>สถานะการขออนุญาต</th>
+              </tr>
+            </thead>
+            <tbody id="permitsTableBody">
+              <!-- Dynamically populated -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- Tab 6: Gantt Schedule -->
+    <section class="tab-content-panel" id="tab-gantt">
+      <div class="dashboard-card">
+        <div class="card-header-row">
+          <div class="card-title-group">
+            <i data-lucide="calendar-range" style="width: 20px; height: 20px; color: var(--pea-purple);"></i>
+            <h2>แผนงานและผลงานการดำเนินงาน (Gantt Schedule)</h2>
+          </div>
+          <div class="card-actions-group">
+            <label for="selectGanttProject" style="font-weight: 500; font-size: 0.85rem; color: var(--text-secondary);">เลือกโครงการ:</label>
+            <select class="filter-select" id="selectGanttProject">
+              <!-- Options dynamically populated -->
+            </select>
+          </div>
+        </div>
+
+        <div class="table-responsive">
+          <table class="modern-table">
+            <thead>
+              <tr>
+                <th>ที่</th>
+                <th>รายการงาน</th>
+                <th>ประเภท</th>
+                <th class="cell-num">ผลงานสะสม (%)</th>
+                <th class="cell-num">น้ำหนักงาน</th>
+                <th class="cell-num">คิดเป็น %</th>
+                <th>ความก้าวหน้า</th>
+              </tr>
+            </thead>
+            <tbody id="ganttTableBody">
+              <!-- Dynamically populated -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="app-footer">
+      <p>ระบบติดตามสถานะงานก่อสร้างสายส่งและสถานีไฟฟ้า (PSCTM) | การไฟฟ้าส่วนภูมิภาค (PEA)</p>
+      <p style="margin-top: 0.25rem;">รองรับการตรวจสอบความถูกต้องไฟล์ Excel อัตโนมัติ (Strict Schema Validation Engine)</p>
+    </footer>
+
+  </div>
+
+  <!-- Validation Error Modal -->
+  <div class="modal-overlay" id="validationModal">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <h3>
+          <i data-lucide="alert-triangle" style="width: 22px; height: 22px; color: var(--color-danger);"></i>
+          ไม่สามารถอัปโหลดไฟล์ได้ (ไฟล์ไม่ตรงตามรูปแบบที่กำหนด)
+        </h3>
+        <button type="button" class="modal-close-btn" id="btnCloseValidationModal">
+          <i data-lucide="x" style="width: 18px; height: 18px;"></i>
+        </button>
+      </div>
+      <div class="modal-body">
+        <p style="color: var(--text-secondary); margin-bottom: 0.75rem;">
+          ไฟล์ Excel ที่ท่านเลือกไม่ผ่านเกณฑ์การตรวจสอบโครงสร้าง ระบบจึงไม่สามารถประมวลผลข้อมูลได้ รายละเอียดข้อผิดพลาดดังนี้:
+        </p>
+        <ul class="validation-error-list" id="validationErrorList">
+          <!-- Populated dynamically -->
+        </ul>
+        <div style="background: var(--bg-secondary); border-radius: var(--radius-md); padding: 1rem; margin-top: 1rem; font-size: 0.82rem; color: var(--text-secondary);">
+          <strong style="color: var(--text-primary);">คำแนะนำ:</strong> โปรดตรวจสอบว่าไฟล์มี Sheet และหัวคอลัมน์ตรงตามมาตรฐาน เช่น <code>สถานะสายส่ง (แนบ 1)</code>, <code>สถานะการขออนุญาต</code>, <code>รายละเอียดสถานี (แนบ 2-2)</code> และชีตงบประมาณ WBS
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Detail Popup Modal -->
+  <div class="modal-overlay" id="detailModal">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <h3 id="detailModalTitle">
+          <i data-lucide="info" style="width: 20px; height: 20px; color: var(--pea-purple);"></i>
+          รายละเอียดงาน
+        </h3>
+        <button type="button" class="modal-close-btn" id="btnCloseDetailModal">
+          <i data-lucide="x" style="width: 18px; height: 18px;"></i>
+        </button>
+      </div>
+      <div class="modal-body" id="detailModalBody">
+        <!-- Dynamically populated -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification Container -->
+  <div class="toast-container" id="toastContainer"></div>
+
+  <!-- Application Scripts -->
+  <script src="js/validator.js"></script>
+  <script src="js/parser.js"></script>
+  <script src="js/defaultData.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
