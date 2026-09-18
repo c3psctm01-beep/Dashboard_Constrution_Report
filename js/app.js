@@ -8,13 +8,14 @@
   'use strict';
 
   // Global Application State
+  const savedPrefs = window.DashboardStorage ? window.DashboardStorage.loadPreferences() : null;
   let appState = {
     data: null,
     currentTheme: localStorage.getItem('pea_dashboard_theme') || 'light',
-    activeTab: 'tab-overview',
-    disbSelectedProjectIndex: 0,
-    ganttSelectedSheet: '',
-    permitFilter: 'all',
+    activeTab: (savedPrefs && savedPrefs.activeTab) ? savedPrefs.activeTab : 'tab-overview',
+    disbSelectedProjectIndex: (savedPrefs && typeof savedPrefs.disbSelectedProjectIndex !== 'undefined') ? savedPrefs.disbSelectedProjectIndex : 0,
+    ganttSelectedSheet: (savedPrefs && savedPrefs.ganttSelectedSheet) ? savedPrefs.ganttSelectedSheet : '',
+    permitFilter: (savedPrefs && savedPrefs.permitFilter) ? savedPrefs.permitFilter : 'all',
     charts: {
       overviewProgress: null,
       overviewBudget: null,
@@ -88,29 +89,43 @@
   }
 
   // Tabs Navigation
+  function switchTab(targetTab) {
+    if (!targetTab) return;
+    const tabs = document.querySelectorAll('.dashboard-nav-tabs .nav-tab');
+    const tab = Array.from(tabs).find(t => t.getAttribute('data-tab') === targetTab);
+    if (!tab) return;
+
+    tabs.forEach(t => t.classList.remove('active'));
+    tab.classList.add('active');
+
+    document.querySelectorAll('.tab-content-panel').forEach(panel => {
+      panel.classList.remove('active');
+    });
+
+    const activePanel = document.getElementById(targetTab);
+    if (activePanel) {
+      activePanel.classList.add('active');
+    }
+
+    appState.activeTab = targetTab;
+    if (window.DashboardStorage) {
+      window.DashboardStorage.savePreferences({ activeTab: targetTab });
+    }
+    setTimeout(() => updateAllCharts(), 50);
+  }
+
   function initTabs() {
     const tabs = document.querySelectorAll('.dashboard-nav-tabs .nav-tab');
     tabs.forEach(tab => {
       tab.addEventListener('click', () => {
         const targetTab = tab.getAttribute('data-tab');
-        if (!targetTab) return;
-
-        tabs.forEach(t => t.classList.remove('active'));
-        tab.classList.add('active');
-
-        document.querySelectorAll('.tab-content-panel').forEach(panel => {
-          panel.classList.remove('active');
-        });
-
-        const activePanel = document.getElementById(targetTab);
-        if (activePanel) {
-          activePanel.classList.add('active');
-        }
-
-        appState.activeTab = targetTab;
-        setTimeout(() => updateAllCharts(), 50);
+        if (targetTab) switchTab(targetTab);
       });
     });
+
+    if (appState.activeTab && appState.activeTab !== 'tab-overview') {
+      switchTab(appState.activeTab);
+    }
   }
 
   // File Upload Handling
@@ -145,11 +160,15 @@
     // Reset default button
     const btnReset = document.getElementById('btnResetDefault');
     if (btnReset) {
-      btnReset.addEventListener('click', () => {
+      btnReset.addEventListener('click', async () => {
         if (window.DEFAULT_DASHBOARD_DATA) {
+          if (window.DashboardStorage) {
+            await window.DashboardStorage.clearLatestData();
+          }
           appState.data = JSON.parse(JSON.stringify(window.DEFAULT_DASHBOARD_DATA));
+          appState.data.isCustomUpload = false;
           renderAll();
-          showToast('โหลดข้อมูลเริ่มต้นเรียบร้อยแล้ว', 'success');
+          showToast('รีเซ็ตเป็นข้อมูลเริ่มต้น และล้างสถานะไฟล์ที่บันทึกไว้เรียบร้อยแล้ว', 'success');
         }
       });
     }
@@ -188,7 +207,7 @@
     }
 
     const reader = new FileReader();
-    reader.onload = function (e) {
+    reader.onload = async function (e) {
       try {
         const data = new Uint8Array(e.target.result);
         const workbook = XLSX.read(data, { type: 'array' });
@@ -204,10 +223,16 @@
 
         // 2. Parse Workbook
         const parsedData = ExcelParser.parseWorkbook(workbook, validation.matchedSheets, file.name);
+        parsedData.isCustomUpload = true;
         appState.data = parsedData;
 
+        // 3. Persist to Storage
+        if (window.DashboardStorage) {
+          await window.DashboardStorage.saveLatestData(parsedData);
+        }
+
         renderAll();
-        showToast(`อัปโหลดไฟล์ "${file.name}" สำเร็จและอัปเดตข้อมูลเรียบร้อยแล้ว`, 'success');
+        showToast(`อัปโหลดไฟล์ "${file.name}" สำเร็จ และบันทึกสถานะล่าสุดไว้ในระบบแล้ว`, 'success');
       } catch (err) {
         console.error('Error processing Excel file:', err);
         showValidationErrors(['เกิดข้อผิดพลาดในการอ่านไฟล์: ' + err.message]);
@@ -254,6 +279,19 @@
 
     // Header info
     document.getElementById('activeFileName').textContent = `${d.fileName} (${d.lastUpdated})`;
+
+    const sourceBadge = document.getElementById('fileDataSourceBadge');
+    if (sourceBadge) {
+      if (d.isCustomUpload) {
+        sourceBadge.className = 'badge-source badge-source-saved';
+        sourceBadge.title = 'ระบบกำลังแสดงผลและจดจำสถานะตามไฟล์ล่าสุดที่อัปโหลดไว้';
+        sourceBadge.innerHTML = `<i data-lucide="hard-drive" style="width: 12px; height: 12px;"></i> ไฟล์ล่าสุดที่บันทึกไว้`;
+      } else {
+        sourceBadge.className = 'badge-source badge-source-default';
+        sourceBadge.title = 'ข้อมูลตัวอย่างเริ่มต้นของระบบ';
+        sourceBadge.innerHTML = `<i data-lucide="bookmark" style="width: 12px; height: 12px;"></i> ข้อมูลเริ่มต้น`;
+      }
+    }
 
     // Tab badges
     const transCount = d.transmissionLines ? d.transmissionLines.length : 0;
@@ -1094,15 +1132,40 @@
   }
 
   // App Initialization
-  document.addEventListener('DOMContentLoaded', () => {
+  document.addEventListener('DOMContentLoaded', async () => {
     initTheme();
     initTabs();
     initDropzone();
 
-    // Pre-load default data
-    if (window.DEFAULT_DASHBOARD_DATA) {
-      appState.data = JSON.parse(JSON.stringify(window.DEFAULT_DASHBOARD_DATA));
+    let initialData = null;
+    let isFromStorage = false;
+
+    // 1. Check if there is saved uploaded data in persistent storage
+    if (window.DashboardStorage) {
+      try {
+        const savedData = await window.DashboardStorage.loadLatestData();
+        if (savedData) {
+          initialData = savedData;
+          isFromStorage = true;
+        }
+      } catch (err) {
+        console.warn('Failed to load saved dashboard data:', err);
+      }
+    }
+
+    // 2. Fallback to default preloaded dataset
+    if (!initialData && window.DEFAULT_DASHBOARD_DATA) {
+      initialData = JSON.parse(JSON.stringify(window.DEFAULT_DASHBOARD_DATA));
+      initialData.isCustomUpload = false;
+    }
+
+    if (initialData) {
+      appState.data = initialData;
       renderAll();
+
+      if (isFromStorage) {
+        showToast(`โหลดสถานะตามไฟล์ล่าสุด: "${initialData.fileName}" เรียบร้อยแล้ว`, 'info');
+      }
     }
   });
 

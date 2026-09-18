@@ -36,6 +36,7 @@
         <div class="file-info-badge" id="fileInfoBadge">
           <i data-lucide="file-spreadsheet" style="width: 16px; height: 16px;"></i>
           <span id="activeFileName">กำลังโหลดข้อมูล...</span>
+          <span id="fileDataSourceBadge" class="badge-source"></span>
         </div>
 
         <input type="file" id="excelFileInput" class="file-input-hidden" accept=".xlsx, .xls">
@@ -557,6 +558,7 @@
   <div class="toast-container" id="toastContainer"></div>
 
   <!-- Application Scripts -->
+  <script src="js/storage.js"></script>
   <script src="js/validator.js"></script>
   <script src="js/parser.js"></script>
   <script src="js/defaultData.js"></script>
