@@ -356,12 +356,26 @@
       const labels = [];
       const values = [];
 
+      function formatBarLabel(str) {
+        if (!str || str.length <= 38) return str;
+        const mid = Math.floor(str.length / 2);
+        let splitIdx = str.indexOf(' - ', mid - 16);
+        if (splitIdx !== -1 && splitIdx < mid + 16) {
+          return [str.substring(0, splitIdx), str.substring(splitIdx + 3)];
+        }
+        splitIdx = str.indexOf(')-', mid - 16);
+        if (splitIdx !== -1 && splitIdx < mid + 16) {
+          return [str.substring(0, splitIdx + 1), str.substring(splitIdx + 2)];
+        }
+        return str;
+      }
+
       d.transmissionLines.forEach(item => {
-        labels.push(item.name);
+        labels.push(formatBarLabel(item.name));
         values.push(item.totalProgress);
       });
       d.substationsDetail.forEach(item => {
-        labels.push(item.name);
+        labels.push(formatBarLabel(item.name));
         values.push(item.progress);
       });
 
@@ -380,10 +394,23 @@
           responsive: true,
           maintainAspectRatio: false,
           indexAxis: 'y',
+          layout: {
+            padding: {
+              left: 10,
+              right: 15,
+              top: 8,
+              bottom: 8
+            }
+          },
           plugins: {
             legend: { display: false },
             tooltip: {
               callbacks: {
+                title: function(items) {
+                  if (!items || !items[0]) return '';
+                  const rawLabel = items[0].label;
+                  return Array.isArray(rawLabel) ? rawLabel.join(' - ') : rawLabel;
+                },
                 label: function(context) {
                   return ` ผลงานความก้าวหน้า: ${context.parsed.x}%`;
                 }
@@ -403,7 +430,8 @@
               ticks: {
                 color: textColor,
                 font: { family: 'Prompt', size: 12 },
-                autoSkip: false
+                autoSkip: false,
+                padding: 10
               },
               grid: { color: gridColor }
             }
