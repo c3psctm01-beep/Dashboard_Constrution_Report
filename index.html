@@ -476,11 +476,61 @@
 
     <!-- Tab 6: Gantt Schedule -->
     <section class="tab-content-panel" id="tab-gantt">
+      <!-- Gantt KPI Summary Cards -->
+      <div class="stats-grid gantt-stats-grid" id="ganttStatsGrid">
+        <div class="stat-card">
+          <div class="stat-icon-wrapper purple">
+            <i data-lucide="award"></i>
+          </div>
+          <div class="stat-info">
+            <span class="stat-label">ผลงานสะสมรวม (%งานก่อสร้างรวม)</span>
+            <span class="stat-value" id="kpiGanttActual" style="color: var(--pea-purple);">0.00%</span>
+            <span class="stat-subtext" id="kpiGanttActualSub">ตรงกับสูตรใน Excel</span>
+          </div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-icon-wrapper blue">
+            <i data-lucide="calendar-check"></i>
+          </div>
+          <div class="stat-info">
+            <span class="stat-label">แผนงานสะสมรวม</span>
+            <span class="stat-value" id="kpiGanttPlan" style="color: #2563eb;">0.00%</span>
+            <span class="stat-subtext" id="kpiGanttPlanSub">แผนงานตามช่วงเวลาดำเนินงาน</span>
+          </div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-icon-wrapper emerald">
+            <i data-lucide="scale"></i>
+          </div>
+          <div class="stat-info">
+            <span class="stat-label">น้ำหนักงานทั้งหมด</span>
+            <span class="stat-value" id="kpiGanttWeight" style="color: var(--color-success);">100.00%</span>
+            <span class="stat-subtext" id="kpiGanttItemCount">16 รายการงาน</span>
+          </div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-icon-wrapper amber" id="kpiGanttDiffIcon">
+            <i data-lucide="trending-up"></i>
+          </div>
+          <div class="stat-info">
+            <span class="stat-label">สถานะเทียบแผนงาน</span>
+            <span class="stat-value" id="kpiGanttDiff">0.00%</span>
+            <span class="stat-subtext" id="kpiGanttStatusBadge">อยู่ระหว่างดำเนินงาน</span>
+          </div>
+        </div>
+      </div>
+
       <div class="dashboard-card">
         <div class="card-header-row">
           <div class="card-title-group">
-            <i data-lucide="calendar-range" style="width: 20px; height: 20px; color: var(--pea-purple);"></i>
-            <h2>แผนงานและผลงานการดำเนินงาน (Gantt Schedule)</h2>
+            <i data-lucide="calendar-range" style="width: 22px; height: 22px; color: var(--pea-purple);"></i>
+            <div>
+              <h2>แผนงานและผลงานการดำเนินงาน (Gantt Schedule)</h2>
+              <p style="font-size: 0.8rem; color: var(--text-secondary); margin-top: 0.2rem;" id="ganttProjectSubtitle">สถานีไฟฟ้าชั่วคราวตามแผนงานปี 2569</p>
+            </div>
           </div>
           <div class="card-actions-group">
             <label for="selectGanttProject" style="font-weight: 500; font-size: 0.85rem; color: var(--text-secondary);">เลือกโครงการ:</label>
@@ -490,24 +540,84 @@
           </div>
         </div>
 
-        <div class="table-responsive">
+        <!-- View Switcher Tabs -->
+        <div class="gantt-view-switch-row">
+          <div class="gantt-view-switcher" role="tablist">
+            <button type="button" class="gantt-view-btn active" data-gantt-view="consolidated">
+              <i data-lucide="layout-list"></i> ตารางสรุปแผน-ผล
+            </button>
+            <button type="button" class="gantt-view-btn" data-gantt-view="excel">
+              <i data-lucide="file-spreadsheet"></i> ตารางแบบ Excel (แยกแถว แผน/ผล)
+            </button>
+            <button type="button" class="gantt-view-btn" data-gantt-view="timeline">
+              <i data-lucide="calendar-range"></i> ไทม์ไลน์ Gantt Schedule
+            </button>
+          </div>
+        </div>
+
+        <!-- View 1: Consolidated Plan vs Actual Table -->
+        <div class="table-responsive gantt-view-panel" id="ganttViewConsolidated">
           <table class="modern-table">
             <thead>
               <tr>
-                <th>ที่</th>
+                <th style="width: 50px; text-align: center;">ที่</th>
                 <th>รายการงาน</th>
-                <th>ประเภท</th>
-                <th class="cell-num">ผลงานสะสม (%)</th>
-                <th class="cell-num">น้ำหนักงาน</th>
-                <th class="cell-num">คิดเป็น %</th>
-                <th>ความก้าวหน้า</th>
+                <th class="cell-num" style="width: 90px;">น้ำหนักงาน</th>
+                <th class="cell-num" style="width: 100px;">แผนงาน (%)</th>
+                <th class="cell-num" style="width: 120px;">ผลการดำเนินงาน (%)</th>
+                <th class="cell-num" style="width: 100px;">คิดเป็น %</th>
+                <th style="width: 110px; text-align: center;">สถานะ</th>
+                <th style="min-width: 160px;">ความก้าวหน้า (ผลงาน vs แผนงาน)</th>
+                <th style="width: 130px;">ช่วงเวลาตามแผน</th>
+                <th style="width: 130px;">ช่วงเวลาที่ทำจริง</th>
               </tr>
             </thead>
-            <tbody id="ganttTableBody">
+            <tbody id="ganttTableBodyConsolidated">
               <!-- Dynamically populated -->
             </tbody>
+            <tfoot id="ganttTableFootConsolidated" class="gantt-table-footer">
+              <!-- Total summary row -->
+            </tfoot>
           </table>
         </div>
+
+        <!-- View 2: Excel-matched 2-Row Table -->
+        <div class="table-responsive gantt-view-panel" id="ganttViewExcel" style="display: none;">
+          <table class="modern-table modern-table-excel">
+            <thead>
+              <tr>
+                <th style="width: 50px; text-align: center;">ที่</th>
+                <th>รายการงาน</th>
+                <th style="width: 140px; text-align: center;">ประเภท</th>
+                <th class="cell-num" style="width: 120px;">ความก้าวหน้า (%)</th>
+                <th class="cell-num" style="width: 90px;">น้ำหนักงาน</th>
+                <th class="cell-num" style="width: 100px;">คิดเป็น %</th>
+                <th style="min-width: 140px;">ช่วงเวลาดำเนินงาน (Timeline)</th>
+                <th style="min-width: 140px;">แถบความก้าวหน้า</th>
+              </tr>
+            </thead>
+            <tbody id="ganttTableBodyExcel">
+              <!-- Dynamically populated -->
+            </tbody>
+            <tfoot id="ganttTableFootExcel" class="gantt-table-footer">
+              <!-- Total summary row -->
+            </tfoot>
+          </table>
+        </div>
+
+        <!-- View 3: Visual Gantt Timeline Bar Chart -->
+        <div class="gantt-timeline-container gantt-view-panel" id="ganttViewTimeline" style="display: none;">
+          <div class="gantt-timeline-legend">
+            <div class="legend-item"><span class="legend-bar plan"></span> แผนการดำเนินงาน (Plan)</div>
+            <div class="legend-item"><span class="legend-bar actual"></span> ผลการดำเนินงาน (Actual)</div>
+          </div>
+          <div class="gantt-timeline-scroll">
+            <table class="gantt-timeline-table" id="ganttTimelineTable">
+              <!-- Dynamically generated timeline header & bars -->
+            </table>
+          </div>
+        </div>
+
       </div>
     </section>
 

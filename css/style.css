@@ -1211,3 +1211,325 @@ body {
   text-decoration: underline;
 }
 
+/* ==========================================================================
+   Tab 6: Gantt Schedule Enhancements
+   ========================================================================== */
+
+.gantt-stats-grid {
+  margin-bottom: 1.25rem;
+}
+
+.gantt-view-switch-row {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  margin-bottom: 1.25rem;
+  padding-bottom: 0.85rem;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.gantt-view-switcher {
+  display: inline-flex;
+  background: var(--bg-secondary);
+  padding: 0.3rem;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border-subtle);
+  gap: 0.35rem;
+}
+
+.gantt-view-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.45rem 0.95rem;
+  border-radius: var(--radius-md);
+  border: none;
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 0.82rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.gantt-view-btn:hover {
+  color: var(--text-primary);
+  background: rgba(142, 36, 170, 0.06);
+}
+
+.gantt-view-btn.active {
+  background: var(--card-bg);
+  color: var(--pea-purple);
+  font-weight: 700;
+  box-shadow: var(--shadow-sm);
+}
+
+[data-theme="dark"] .gantt-view-btn.active {
+  background: var(--bg-tertiary);
+  color: var(--pea-purple-light);
+}
+
+.gantt-table-footer {
+  background: var(--bg-secondary);
+  font-weight: 700;
+  border-top: 2px solid var(--border-subtle);
+}
+
+.gantt-table-footer td {
+  padding: 0.85rem 0.75rem;
+  color: var(--text-primary);
+}
+
+/* Dual Progress Bar */
+.dual-progress-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  min-width: 140px;
+}
+
+.dual-progress-bar-bg {
+  position: relative;
+  width: 100%;
+  height: 9px;
+  background: var(--bg-tertiary);
+  border-radius: 9999px;
+  overflow: hidden;
+}
+
+.dual-progress-bar-plan {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  background: rgba(37, 99, 235, 0.25);
+  border-right: 2px solid #2563eb;
+  z-index: 1;
+}
+
+.dual-progress-bar-actual {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  background: var(--color-success);
+  border-radius: 9999px;
+  z-index: 2;
+  transition: width 0.3s ease;
+}
+
+.dual-progress-labels {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.72rem;
+  line-height: 1;
+}
+
+.dual-progress-labels .plan-lbl {
+  color: #2563eb;
+  font-weight: 500;
+}
+
+.dual-progress-labels .act-lbl {
+  color: var(--color-success);
+  font-weight: 700;
+}
+
+/* Status Badges for Gantt */
+.badge-gantt-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.2rem 0.55rem;
+  border-radius: 9999px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.badge-gantt-completed {
+  background: rgba(16, 185, 129, 0.12);
+  color: #059669;
+  border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+.badge-gantt-in-progress {
+  background: rgba(245, 158, 11, 0.12);
+  color: #d97706;
+  border: 1px solid rgba(245, 158, 11, 0.3);
+}
+
+.badge-gantt-delayed {
+  background: rgba(239, 68, 68, 0.12);
+  color: #dc2626;
+  border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+.badge-gantt-not-started {
+  background: var(--bg-tertiary);
+  color: var(--text-muted);
+  border: 1px solid var(--border-subtle);
+}
+
+/* Excel 2-Row Layout Styling */
+.modern-table-excel tbody tr:nth-child(4n+1),
+.modern-table-excel tbody tr:nth-child(4n+2) {
+  background: rgba(0, 0, 0, 0.015);
+}
+
+[data-theme="dark"] .modern-table-excel tbody tr:nth-child(4n+1),
+[data-theme="dark"] .modern-table-excel tbody tr:nth-child(4n+2) {
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.modern-table-excel td.cell-task-name {
+  border-bottom: 2px solid var(--border-subtle) !important;
+}
+
+.modern-table-excel tr.excel-subrow-plan td {
+  border-bottom: 1px dashed var(--border-subtle);
+}
+
+.modern-table-excel tr.excel-subrow-actual td {
+  border-bottom: 2px solid var(--border-subtle);
+}
+
+/* Visual Gantt Timeline Chart */
+.gantt-timeline-container {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+.gantt-timeline-legend {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  padding: 0.5rem 0.85rem;
+  background: var(--bg-secondary);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-subtle);
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+}
+
+.gantt-timeline-legend .legend-item {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+.gantt-timeline-legend .legend-bar {
+  display: inline-block;
+  width: 24px;
+  height: 10px;
+  border-radius: 4px;
+}
+
+.gantt-timeline-legend .legend-bar.plan {
+  background: #ef4444; /* Excel Red */
+}
+
+.gantt-timeline-legend .legend-bar.actual {
+  background: #92d050; /* Excel Green */
+}
+
+.gantt-timeline-scroll {
+  width: 100%;
+  overflow-x: auto;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  background: var(--card-bg);
+}
+
+.gantt-timeline-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.78rem;
+  min-width: 950px;
+}
+
+.gantt-timeline-table th,
+.gantt-timeline-table td {
+  padding: 0.35rem 0.25rem;
+  text-align: center;
+  border: 1px solid var(--border-subtle);
+}
+
+.gantt-timeline-table th.sticky-task-col,
+.gantt-timeline-table td.sticky-task-col {
+  position: sticky;
+  left: 0;
+  background: var(--card-bg);
+  z-index: 5;
+  text-align: left;
+  padding: 0.45rem 0.85rem;
+  min-width: 220px;
+  max-width: 260px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  box-shadow: 2px 0 5px rgba(0, 0, 0, 0.04);
+}
+
+.gantt-timeline-table th.sticky-type-col,
+.gantt-timeline-table td.sticky-type-col {
+  position: sticky;
+  left: 220px;
+  background: var(--card-bg);
+  z-index: 5;
+  width: 80px;
+  padding: 0.35rem 0.45rem;
+  box-shadow: 2px 0 5px rgba(0, 0, 0, 0.04);
+}
+
+.gantt-timeline-table th.month-header {
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  font-weight: 700;
+  font-size: 0.82rem;
+  padding: 0.5rem 0.35rem;
+}
+
+.gantt-timeline-table th.week-header {
+  background: var(--bg-tertiary);
+  color: var(--text-secondary);
+  font-weight: 600;
+  font-size: 0.72rem;
+  width: 26px;
+  min-width: 26px;
+}
+
+.gantt-timeline-table tr.timeline-row-plan {
+  background: rgba(239, 68, 68, 0.02);
+}
+
+.gantt-timeline-table tr.timeline-row-actual {
+  background: rgba(146, 208, 80, 0.03);
+}
+
+.gantt-timeline-table tr.timeline-row-actual td {
+  border-bottom: 2px solid var(--border-subtle);
+}
+
+.gantt-cell-bar {
+  display: block;
+  width: 100%;
+  height: 14px;
+  border-radius: 3px;
+  margin: 0 auto;
+}
+
+.gantt-cell-bar.plan {
+  background: #ef4444; /* Red bar matching Excel */
+  box-shadow: 0 1px 2px rgba(239, 68, 68, 0.3);
+}
+
+.gantt-cell-bar.actual {
+  background: #92d050; /* Green bar matching Excel */
+  box-shadow: 0 1px 2px rgba(146, 208, 80, 0.3);
+}
+
+

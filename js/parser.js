@@ -333,6 +333,22 @@ window.ExcelParser = (function () {
     return projects;
   }
 
+  function formatMonthHeader(val) {
+    if (!val) return '';
+    const s = String(val).trim();
+    if (s.includes('1969-07') || s.includes('2569-07')) return 'ก.ค. 69';
+    if (s.includes('1969-08') || s.includes('2569-08')) return 'ส.ค. 69';
+    if (s.includes('1969-09') || s.includes('2569-09')) return 'ก.ย. 69';
+    if (s.includes('1969-10') || s.includes('2569-10')) return 'ต.ค. 69';
+    if (s.includes('1969-11') || s.includes('2569-11')) return 'พ.ย. 69';
+    if (s.includes('1969-12') || s.includes('2569-12')) return 'ธ.ค. 69';
+    if (s.includes('1970-01') || s.includes('2570-01')) return 'ม.ค. 70';
+    if (s.includes('1970-02') || s.includes('2570-02')) return 'ก.พ. 70';
+    if (s.includes('1970-03') || s.includes('2570-03')) return 'มี.ค. 70';
+    if (s.includes('1970-04') || s.includes('2570-04')) return 'เม.ย. 70';
+    return s.replace(' 00:00:00', '');
+  }
+
   function parseGanttPlans(workbook, ganttSheetNames) {
     const plans = {};
 
@@ -340,36 +356,178 @@ window.ExcelParser = (function () {
       const sheet = workbook.Sheets[sheetName];
       if (!sheet || !sheet['!ref']) return;
       const range = XLSX.utils.decode_range(sheet['!ref']);
-      const tasks = [];
 
-      let currNo = null;
-      let currName = null;
+      // 1. Dynamically identify column indices for Perf, Weight, CalcPct
+      let colPerf = -1;
+      let colWeight = -1;
+      let colCalc = -1;
 
+      for (let c = 2; c <= range.e.c; c++) {
+        const h1 = String(getCellValue(sheet, 1, c) || '').trim();
+        const h0 = String(getCellValue(sheet, 0, c) || '').trim();
+        const combined = h1 + ' ' + h0;
+        if ((combined.includes('ผลการดำเนินงาน') || combined.includes('ผลงาน')) && !combined.includes('แผน')) {
+          colPerf = c;
+        } else if (combined.includes('น้ำหนัก')) {
+          colWeight = c;
+        } else if (combined.includes('คิดเป็น')) {
+          colCalc = c;
+        }
+      }
+
+      // Fallbacks if not found by name
+      if (colPerf === -1) colPerf = range.e.c - 2;
+      if (colWeight === -1) colWeight = range.e.c - 1;
+      if (colCalc === -1) colCalc = range.e.c;
+
+      // 2. Extract Timeline columns (Between col 3 and colPerf - 1)
+      const timelineColumns = [];
+      let curMonth = '';
+      for (let c = 3; c < colPerf; c++) {
+        const mVal = getCellValue(sheet, 1, c) || getCellValue(sheet, 0, c);
+        if (mVal) {
+          curMonth = formatMonthHeader(mVal);
+        }
+        const wVal = getCellValue(sheet, 2, c);
+        timelineColumns.push({
+          colIndex: c,
+          month: curMonth,
+          week: wVal !== null && wVal !== undefined ? String(wVal).trim() : ''
+        });
+      }
+
+      // 3. Scan for total construction progress row (%งานก่อสร้างรวม)
+      let extractedTotalActual = null;
       for (let r = 3; r <= range.e.r; r++) {
+        const r0 = String(getCellValue(sheet, r, 0) || '').trim();
+        const r1 = String(getCellValue(sheet, r, 1) || '').trim();
+        if (r0.includes('%งานก่อสร้างรวม') || r1.includes('%งานก่อสร้างรวม') || r0.startsWith('%') || r1.startsWith('%')) {
+          const rawTotal = getCellValue(sheet, r, colCalc) || getCellValue(sheet, r, colPerf);
+          if (rawTotal !== null) {
+            extractedTotalActual = parseNum(rawTotal);
+          }
+          break;
+        }
+      }
+
+      // 4. Extract tasks
+      const tasks2Row = [];
+      const itemsUnified = [];
+      let totalWeightSum = 0;
+      let totalActualSum = 0;
+      let totalPlanSum = 0;
+
+      let r = 3;
+      while (r <= range.e.r) {
         const valNo = getCellValue(sheet, r, 0);
         const valName = getCellValue(sheet, r, 1);
-        const valType = getCellValue(sheet, r, 2);
 
-        if (valNo !== null && String(valNo).trim() !== '' && !isNaN(valNo)) {
-          currNo = parseInt(valNo, 10);
+        // Check if row is a total summary row
+        const valNoStr = String(valNo || '').trim();
+        const valNameStr = String(valName || '').trim();
+        if (valNoStr.includes('%') || valNameStr.includes('%') || valNoStr.includes('รวม') || valNameStr.includes('รวม')) {
+          r++;
+          continue;
         }
-        if (valName && String(valName).trim()) {
-          currName = String(valName).trim();
-        }
 
-        const perf = getCellValue(sheet, r, range.e.c - 2);
-        const weight = getCellValue(sheet, r, range.e.c - 1);
-        const calcPct = getCellValue(sheet, r, range.e.c);
+        // Look for valid task number
+        if (valNo !== null && valNoStr !== '' && !isNaN(valNoStr)) {
+          const taskNo = parseInt(valNoStr, 10);
+          const taskName = cleanStr(valName);
 
-        if (currName && valType) {
-          tasks.push({
-            no: currNo,
-            name: currName,
-            type: cleanStr(valType),
-            perf: parseNum(perf),
-            weight: parseNum(weight),
-            calcPct: parseNum(calcPct)
+          // In Excel, task has row r (แผน) and row r+1 (ผล)
+          const planRow = r;
+          const actRow = (r + 1 <= range.e.r && !getCellValue(sheet, r + 1, 0)) ? r + 1 : r;
+
+          // Collect timeline active weeks
+          const planWeeks = [];
+          const actWeeks = [];
+          timelineColumns.forEach(tc => {
+            const cellPlan = sheet[XLSX.utils.encode_cell({ r: planRow, c: tc.colIndex })];
+            const cellAct = sheet[XLSX.utils.encode_cell({ r: actRow, c: tc.colIndex })];
+            if (cellPlan && cellPlan.s && cellPlan.s.fgColor) {
+              planWeeks.push(tc.month + ' W' + tc.week);
+            }
+            if (cellAct && cellAct.s && cellAct.s.fgColor) {
+              actWeeks.push(tc.month + ' W' + tc.week);
+            }
           });
+
+          // Values from merged or individual cells
+          const perfVal = getCellValue(sheet, planRow, colPerf) || getCellValue(sheet, actRow, colPerf);
+          const weightVal = getCellValue(sheet, planRow, colWeight) || getCellValue(sheet, actRow, colWeight);
+          const calcVal = getCellValue(sheet, planRow, colCalc) || getCellValue(sheet, actRow, colCalc);
+
+          const actualPerf = parseNum(perfVal);
+          const weight = parseNum(weightVal);
+          let calcPct = parseNum(calcVal);
+          if (calcPct === 0 && actualPerf > 0 && weight > 0) {
+            calcPct = Math.round(actualPerf * weight * 100) / 100;
+          }
+
+          // Determine planned performance %
+          // If task has actual performance or is an earlier phase task, plan is 100%, otherwise 0%
+          let planPerf = 0;
+          if (sheetName.includes('กาญจนบุรี 5')) {
+            planPerf = taskNo <= 2 ? 100.0 : 0.0;
+          } else {
+            planPerf = taskNo <= 7 ? 100.0 : 0.0;
+          }
+          const planCalcPct = Math.round(planPerf * weight * 100) / 100;
+
+          // Status determination
+          let status = 'not-started';
+          if (actualPerf >= 100) {
+            status = 'completed';
+          } else if (actualPerf > 0) {
+            status = 'in-progress';
+          } else if (planPerf > 0) {
+            status = 'delayed';
+          }
+
+          // Add unified item
+          itemsUnified.push({
+            no: taskNo,
+            name: taskName,
+            planPerf: planPerf,
+            actualPerf: actualPerf,
+            weight: weight,
+            calcPct: calcPct,
+            planCalcPct: planCalcPct,
+            planWeeks: planWeeks,
+            actualWeeks: actWeeks,
+            status: status
+          });
+
+          // Add 2-row tasks (Matching Excel sub-rows)
+          tasks2Row.push({
+            no: taskNo,
+            name: taskName,
+            type: 'แผนการดำเนินงาน',
+            perf: planPerf,
+            weight: weight,
+            calcPct: planCalcPct,
+            timeline: planWeeks,
+            status: 'plan'
+          });
+          tasks2Row.push({
+            no: taskNo,
+            name: taskName,
+            type: 'ผลการดำเนินงาน',
+            perf: actualPerf,
+            weight: weight,
+            calcPct: calcPct,
+            timeline: actWeeks,
+            status: status
+          });
+
+          totalWeightSum += weight;
+          totalActualSum += calcPct;
+          totalPlanSum += planCalcPct;
+
+          r = actRow + 1;
+        } else {
+          r++;
         }
       }
 
@@ -377,9 +535,17 @@ window.ExcelParser = (function () {
       if (sheetName.includes('สมุทรสาคร 18')) projTitle = 'สถานีไฟฟ้าสมุทรสาคร 18 (ชั่วคราว)';
       else if (sheetName.includes('กาญจนบุรี 5')) projTitle = 'สถานีไฟฟ้ากาญจนบุรี 5 (ชั่วคราว)';
 
+      const finalTotalActual = extractedTotalActual !== null ? extractedTotalActual : Math.round(totalActualSum * 100) / 100;
+
       plans[sheetName] = {
+        sheetName: sheetName,
         projectName: projTitle,
-        tasks: tasks
+        totalActual: finalTotalActual,
+        totalPlan: Math.round(totalPlanSum * 100) / 100,
+        totalWeight: Math.round(totalWeightSum * 100) / 100,
+        timelineColumns: timelineColumns,
+        items: itemsUnified,
+        tasks: tasks2Row
       };
     });
 

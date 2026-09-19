@@ -15,6 +15,7 @@
     activeTab: (savedPrefs && savedPrefs.activeTab) ? savedPrefs.activeTab : 'tab-overview',
     disbSelectedProjectIndex: (savedPrefs && typeof savedPrefs.disbSelectedProjectIndex !== 'undefined') ? savedPrefs.disbSelectedProjectIndex : 0,
     ganttSelectedSheet: (savedPrefs && savedPrefs.ganttSelectedSheet) ? savedPrefs.ganttSelectedSheet : '',
+    ganttViewMode: 'consolidated',
     permitFilter: (savedPrefs && savedPrefs.permitFilter) ? savedPrefs.permitFilter : 'all',
     charts: {
       overviewProgress: null,
@@ -1415,14 +1416,14 @@
   function renderGanttTab() {
     const d = appState.data;
     const selectGantt = document.getElementById('selectGanttProject');
-    const tableBody = document.getElementById('ganttTableBody');
-
     if (!selectGantt || !d.ganttPlans) return;
 
     const sheetKeys = Object.keys(d.ganttPlans);
     if (sheetKeys.length === 0) return;
 
-    if (selectGantt.options.length === 0) {
+    // 1. Populate Dropdown
+    if (selectGantt.options.length === 0 || selectGantt.options.length !== sheetKeys.length) {
+      selectGantt.innerHTML = '';
       sheetKeys.forEach(key => {
         const opt = document.createElement('option');
         opt.value = key;
@@ -1430,40 +1431,349 @@
         selectGantt.appendChild(opt);
       });
 
-      appState.ganttSelectedSheet = sheetKeys[0];
+      if (!appState.ganttSelectedSheet || !d.ganttPlans[appState.ganttSelectedSheet]) {
+        appState.ganttSelectedSheet = sheetKeys[0];
+      }
+      selectGantt.value = appState.ganttSelectedSheet;
+
       selectGantt.addEventListener('change', () => {
         appState.ganttSelectedSheet = selectGantt.value;
-        updateGanttTable();
+        if (window.DashboardStorage) {
+          window.DashboardStorage.savePreferences({ ganttSelectedSheet: appState.ganttSelectedSheet });
+        }
+        updateGanttContent();
       });
+    } else {
+      selectGantt.value = appState.ganttSelectedSheet || sheetKeys[0];
     }
 
-    updateGanttTable();
+    // 2. View Switcher event listeners
+    const viewButtons = document.querySelectorAll('.gantt-view-btn');
+    viewButtons.forEach(btn => {
+      if (!btn.dataset.initialized) {
+        btn.dataset.initialized = 'true';
+        btn.addEventListener('click', () => {
+          const view = btn.dataset.ganttView;
+          appState.ganttViewMode = view;
+          switchGanttView(view);
+        });
+      }
+    });
 
-    function updateGanttTable() {
+    function switchGanttView(viewMode) {
+      viewButtons.forEach(b => {
+        if (b.dataset.ganttView === viewMode) {
+          b.classList.add('active');
+        } else {
+          b.classList.remove('active');
+        }
+      });
+
+      const vConsolidated = document.getElementById('ganttViewConsolidated');
+      const vExcel = document.getElementById('ganttViewExcel');
+      const vTimeline = document.getElementById('ganttViewTimeline');
+
+      if (vConsolidated) vConsolidated.style.display = viewMode === 'consolidated' ? 'block' : 'none';
+      if (vExcel) vExcel.style.display = viewMode === 'excel' ? 'block' : 'none';
+      if (vTimeline) vTimeline.style.display = viewMode === 'timeline' ? 'block' : 'none';
+
+      lucide.createIcons();
+    }
+
+    // Initial view mode
+    if (!appState.ganttViewMode) appState.ganttViewMode = 'consolidated';
+    switchGanttView(appState.ganttViewMode);
+
+    updateGanttContent();
+
+    function updateGanttContent() {
       const plan = d.ganttPlans[appState.ganttSelectedSheet] || d.ganttPlans[sheetKeys[0]];
-      if (!plan || !tableBody) return;
+      if (!plan) return;
 
-      tableBody.innerHTML = plan.tasks.map(t => {
-        const isPlan = t.type.includes('แผน');
+      // Subtitle
+      const subTitle = document.getElementById('ganttProjectSubtitle');
+      if (subTitle) {
+        subTitle.textContent = `${plan.projectName || appState.ganttSelectedSheet} | ตามกรอบเวลาดำเนินงานปี 2569`;
+      }
+
+      // 1. KPI Cards
+      renderGanttKPIs(plan);
+
+      // 2. View 1: Consolidated Table
+      renderConsolidatedTable(plan);
+
+      // 3. View 2: Excel 2-Row Table
+      renderExcelTable(plan);
+
+      // 4. View 3: Visual Gantt Timeline
+      renderTimelineView(plan);
+
+      lucide.createIcons();
+    }
+
+    function renderGanttKPIs(plan) {
+      const kpiActual = document.getElementById('kpiGanttActual');
+      const kpiPlan = document.getElementById('kpiGanttPlan');
+      const kpiWeight = document.getElementById('kpiGanttWeight');
+      const kpiDiff = document.getElementById('kpiGanttDiff');
+      const kpiStatusBadge = document.getElementById('kpiGanttStatusBadge');
+      const kpiItemCount = document.getElementById('kpiGanttItemCount');
+
+      const items = plan.items || [];
+      const totalActual = typeof plan.totalActual === 'number' ? plan.totalActual : (items.reduce((s, it) => s + (it.calcPct || 0), 0));
+      const totalPlan = typeof plan.totalPlan === 'number' ? plan.totalPlan : (items.reduce((s, it) => s + (it.planCalcPct || 0), 0));
+      const totalWeight = typeof plan.totalWeight === 'number' ? plan.totalWeight : (items.reduce((s, it) => s + (it.weight || 0), 0));
+      const diff = Math.round((totalActual - totalPlan) * 100) / 100;
+
+      if (kpiActual) kpiActual.textContent = `${totalActual.toFixed(2)}%`;
+      if (kpiPlan) kpiPlan.textContent = `${totalPlan.toFixed(2)}%`;
+      if (kpiWeight) kpiWeight.textContent = `${(totalWeight * 100).toFixed(0)}% (${totalWeight.toFixed(2)})`;
+      if (kpiItemCount) kpiItemCount.textContent = `${items.length} รายการงาน`;
+
+      if (kpiDiff) {
+        kpiDiff.textContent = `${Math.abs(diff).toFixed(2)}%`;
+        if (diff >= 0) {
+          kpiDiff.style.color = 'var(--color-success)';
+          if (kpiStatusBadge) {
+            kpiStatusBadge.textContent = diff === 0 ? 'เป็นไปตามแผน' : 'เร็วกว่าแผนงาน';
+            kpiStatusBadge.style.color = 'var(--color-success)';
+          }
+        } else {
+          kpiDiff.style.color = '#ef4444';
+          if (kpiStatusBadge) {
+            kpiStatusBadge.textContent = 'ล่าช้ากว่าแผนงาน';
+            kpiStatusBadge.style.color = '#ef4444';
+          }
+        }
+      }
+    }
+
+    function renderConsolidatedTable(plan) {
+      const tbody = document.getElementById('ganttTableBodyConsolidated');
+      const tfoot = document.getElementById('ganttTableFootConsolidated');
+      if (!tbody) return;
+
+      const items = plan.items || [];
+
+      tbody.innerHTML = items.map(it => {
+        const planWeeksStr = (it.planWeeks && it.planWeeks.length > 0) 
+          ? formatTimelineRange(it.planWeeks) 
+          : '<span style="color:var(--text-muted);">-</span>';
+        const actWeeksStr = (it.actualWeeks && it.actualWeeks.length > 0) 
+          ? formatTimelineRange(it.actualWeeks) 
+          : '<span style="color:var(--text-muted);">-</span>';
+
+        let badgeClass = 'badge-gantt-not-started';
+        let badgeText = 'ยังไม่เริ่ม';
+        if (it.actualPerf >= 100) {
+          badgeClass = 'badge-gantt-completed';
+          badgeText = 'เสร็จสมบูรณ์ 100%';
+        } else if (it.actualPerf > 0) {
+          badgeClass = 'badge-gantt-in-progress';
+          badgeText = `ดำเนินการ ${it.actualPerf.toFixed(0)}%`;
+        } else if (it.planPerf > 0) {
+          badgeClass = 'badge-gantt-delayed';
+          badgeText = 'ล่าช้า (ยังไม่เริ่ม)';
+        }
+
         return `
           <tr>
-            <td>${t.no || '-'}</td>
-            <td class="cell-bold">${t.name}</td>
-            <td><span class="badge-status ${isPlan ? 'wbs-rel' : 'wbs-crtd'}">${t.type}</span></td>
-            <td class="cell-num font-bold">${t.perf}%</td>
-            <td class="cell-num">${t.weight}</td>
-            <td class="cell-num" style="color:var(--color-success); font-weight:600;">${t.calcPct}%</td>
+            <td style="text-align: center; font-weight: 600;">${it.no}</td>
+            <td class="cell-bold">${it.name}</td>
+            <td class="cell-num">${it.weight.toFixed(2)}</td>
+            <td class="cell-num" style="color: #2563eb; font-weight: 600;">${it.planPerf.toFixed(0)}%</td>
+            <td class="cell-num font-bold" style="color: var(--color-success);">${it.actualPerf.toFixed(0)}%</td>
+            <td class="cell-num" style="font-weight: 700; color: var(--color-success);">${it.calcPct.toFixed(2)}%</td>
+            <td style="text-align: center;"><span class="badge-gantt-status ${badgeClass}">${badgeText}</span></td>
+            <td>
+              <div class="dual-progress-wrapper">
+                <div class="dual-progress-bar-bg">
+                  <div class="dual-progress-bar-plan" style="width: ${Math.min(100, it.planPerf)}%;"></div>
+                  <div class="dual-progress-bar-actual" style="width: ${Math.min(100, it.actualPerf)}%;"></div>
+                </div>
+                <div class="dual-progress-labels">
+                  <span class="plan-lbl">แผน ${it.planPerf.toFixed(0)}%</span>
+                  <span class="act-lbl">ผล ${it.actualPerf.toFixed(0)}%</span>
+                </div>
+              </div>
+            </td>
+            <td style="font-size: 0.8rem; color: var(--text-secondary);">${planWeeksStr}</td>
+            <td style="font-size: 0.8rem; color: var(--color-success); font-weight: 500;">${actWeeksStr}</td>
+          </tr>
+        `;
+      }).join('');
+
+      if (tfoot) {
+        const totalActual = typeof plan.totalActual === 'number' ? plan.totalActual : 0;
+        const totalPlan = typeof plan.totalPlan === 'number' ? plan.totalPlan : 0;
+        const totalWeight = typeof plan.totalWeight === 'number' ? plan.totalWeight : 1.0;
+
+        tfoot.innerHTML = `
+          <tr>
+            <td colspan="2" style="text-align: right; font-weight: 700; font-size: 0.92rem;">
+              %งานก่อสร้างรวม (Total Progress):
+            </td>
+            <td class="cell-num" style="font-weight: 700;">${totalWeight.toFixed(2)}</td>
+            <td class="cell-num" style="font-weight: 700; color: #2563eb;">${totalPlan.toFixed(2)}%</td>
+            <td class="cell-num" style="font-weight: 700; color: var(--color-success);">-</td>
+            <td class="cell-num" style="font-weight: 800; color: var(--pea-purple); font-size: 0.95rem;">${totalActual.toFixed(2)}%</td>
+            <td colspan="4" style="font-weight: 600; color: var(--text-secondary); font-size: 0.82rem;">
+              ผลการดำเนินงานสะสมคิดเป็น <strong>${totalActual.toFixed(2)}%</strong> (ตรงกับสูตรในตาราง Excel)
+            </td>
+          </tr>
+        `;
+      }
+    }
+
+    function renderExcelTable(plan) {
+      const tbody = document.getElementById('ganttTableBodyExcel');
+      const tfoot = document.getElementById('ganttTableFootExcel');
+      if (!tbody) return;
+
+      const items = plan.items || [];
+
+      tbody.innerHTML = items.map(it => {
+        const planWeeksStr = (it.planWeeks && it.planWeeks.length > 0) ? formatTimelineRange(it.planWeeks) : '-';
+        const actWeeksStr = (it.actualWeeks && it.actualWeeks.length > 0) ? formatTimelineRange(it.actualWeeks) : '-';
+
+        return `
+          <tr class="excel-subrow-plan">
+            <td rowspan="2" style="text-align: center; font-weight: 700; vertical-align: middle; border-bottom: 2px solid var(--border-subtle);">${it.no}</td>
+            <td rowspan="2" class="cell-bold cell-task-name" style="vertical-align: middle; border-bottom: 2px solid var(--border-subtle);">${it.name}</td>
+            <td style="text-align: center;">
+              <span class="badge-status wbs-rel" style="background: rgba(37, 99, 235, 0.1); color: #2563eb; border-color: rgba(37, 99, 235, 0.25);">
+                แผนการดำเนินงาน
+              </span>
+            </td>
+            <td class="cell-num font-bold" style="color: #2563eb;">${it.planPerf.toFixed(0)}%</td>
+            <td rowspan="2" class="cell-num" style="vertical-align: middle; font-weight: 600; border-bottom: 2px solid var(--border-subtle);">${it.weight.toFixed(2)}</td>
+            <td class="cell-num" style="color: #2563eb;">${it.planCalcPct.toFixed(2)}%</td>
+            <td style="font-size: 0.8rem; color: var(--text-secondary);">${planWeeksStr}</td>
             <td>
               <div class="progress-container">
                 <div class="progress-bar-bg">
-                  <div class="progress-bar-fill ${t.perf >= 100 ? 'success' : t.perf > 0 ? 'warning' : ''}" style="width: ${t.perf}%;"></div>
+                  <div class="progress-bar-fill" style="width: ${it.planPerf}%; background: #2563eb;"></div>
                 </div>
-                <span class="progress-pct">${t.perf}%</span>
+                <span class="progress-pct" style="color: #2563eb;">${it.planPerf.toFixed(0)}%</span>
+              </div>
+            </td>
+          </tr>
+          <tr class="excel-subrow-actual">
+            <td style="text-align: center;">
+              <span class="badge-status wbs-crtd" style="background: rgba(16, 185, 129, 0.1); color: var(--color-success); border-color: rgba(16, 185, 129, 0.25);">
+                ผลการดำเนินงาน
+              </span>
+            </td>
+            <td class="cell-num font-bold" style="color: var(--color-success);">${it.actualPerf.toFixed(0)}%</td>
+            <td class="cell-num" style="font-weight: 700; color: var(--color-success);">${it.calcPct.toFixed(2)}%</td>
+            <td style="font-size: 0.8rem; color: var(--color-success); font-weight: 500;">${actWeeksStr}</td>
+            <td>
+              <div class="progress-container">
+                <div class="progress-bar-bg">
+                  <div class="progress-bar-fill ${it.actualPerf >= 100 ? 'success' : it.actualPerf > 0 ? 'warning' : ''}" style="width: ${it.actualPerf}%;"></div>
+                </div>
+                <span class="progress-pct">${it.actualPerf.toFixed(0)}%</span>
               </div>
             </td>
           </tr>
         `;
       }).join('');
+
+      if (tfoot) {
+        const totalActual = typeof plan.totalActual === 'number' ? plan.totalActual : 0;
+        const totalWeight = typeof plan.totalWeight === 'number' ? plan.totalWeight : 1.0;
+
+        tfoot.innerHTML = `
+          <tr>
+            <td colspan="4" style="text-align: right; font-weight: 700; font-size: 0.92rem;">
+              %งานก่อสร้างรวม (ตรงกับแถวสรุปใน Excel):
+            </td>
+            <td class="cell-num" style="font-weight: 700;">${totalWeight.toFixed(2)}</td>
+            <td class="cell-num" style="font-weight: 800; color: var(--pea-purple); font-size: 0.95rem;">${totalActual.toFixed(2)}%</td>
+            <td colspan="2" style="font-weight: 600; color: var(--text-secondary); font-size: 0.82rem;">
+              สูตรใน Excel: <code>=SUM(...)</code> คิดเป็น <strong>${totalActual.toFixed(2)}%</strong>
+            </td>
+          </tr>
+        `;
+      }
+    }
+
+    function renderTimelineView(plan) {
+      const table = document.getElementById('ganttTimelineTable');
+      if (!table) return;
+
+      const timelineCols = plan.timelineColumns || [];
+      const items = plan.items || [];
+      if (timelineCols.length === 0) {
+        table.innerHTML = '<tr><td style="padding: 2rem; color: var(--text-muted);">ไม่มีข้อมูลสัปดาห์ในปฏิทิน</td></tr>';
+        return;
+      }
+
+      // Group timelineCols by month
+      const monthGroups = [];
+      timelineCols.forEach(tc => {
+        let lastG = monthGroups[monthGroups.length - 1];
+        if (!lastG || lastG.month !== tc.month) {
+          monthGroups.push({ month: tc.month, count: 1 });
+        } else {
+          lastG.count++;
+        }
+      });
+
+      // 1. Build Header Rows
+      let theadHtml = `
+        <thead>
+          <tr>
+            <th class="sticky-task-col" rowspan="2">รายการงาน</th>
+            <th class="sticky-type-col" rowspan="2">ประเภท</th>
+            ${monthGroups.map(g => `<th class="month-header" colspan="${g.count}">${g.month}</th>`).join('')}
+            <th rowspan="2" style="width: 75px; background: var(--bg-secondary);">ผลงาน (%)</th>
+          </tr>
+          <tr>
+            ${timelineCols.map(tc => `<th class="week-header">W${tc.week}</th>`).join('')}
+          </tr>
+        </thead>
+      `;
+
+      // 2. Build Body Rows
+      let tbodyHtml = '<tbody>';
+      items.forEach(it => {
+        // Row 1: Plan
+        tbodyHtml += `
+          <tr class="timeline-row-plan">
+            <td class="sticky-task-col" rowspan="2" title="${it.name}">
+              <span style="font-weight: 700; color: var(--text-secondary); margin-right: 0.35rem;">${it.no}.</span>
+              <strong>${it.name}</strong>
+            </td>
+            <td class="sticky-type-col" style="color: #ef4444; font-weight: 600;">แผน</td>
+            ${timelineCols.map(tc => {
+              const weekKey = `${tc.month} W${tc.week}`;
+              const isMatch = it.planWeeks && it.planWeeks.some(pw => pw.includes(weekKey) || (pw.includes(tc.month) && pw.includes(`W${tc.week}`)));
+              return `<td>${isMatch ? '<span class="gantt-cell-bar plan" title="แผนงาน ' + weekKey + '"></span>' : ''}</td>`;
+            }).join('')}
+            <td rowspan="2" class="cell-num font-bold" style="vertical-align: middle; background: var(--card-bg); border-bottom: 2px solid var(--border-subtle); color: var(--color-success); font-size: 0.85rem;">
+              ${it.actualPerf.toFixed(0)}%
+            </td>
+          </tr>
+          <tr class="timeline-row-actual">
+            <td class="sticky-type-col" style="color: #65a30d; font-weight: 600; border-bottom: 2px solid var(--border-subtle);">ผล</td>
+            ${timelineCols.map(tc => {
+              const weekKey = `${tc.month} W${tc.week}`;
+              const isMatch = it.actualWeeks && it.actualWeeks.some(aw => aw.includes(weekKey) || (aw.includes(tc.month) && aw.includes(`W${tc.week}`)));
+              return `<td>${isMatch ? '<span class="gantt-cell-bar actual" title="ผลงาน ' + weekKey + '"></span>' : ''}</td>`;
+            }).join('')}
+          </tr>
+        `;
+      });
+      tbodyHtml += '</tbody>';
+
+      table.innerHTML = theadHtml + tbodyHtml;
+    }
+
+    function formatTimelineRange(weeksArray) {
+      if (!weeksArray || weeksArray.length === 0) return '-';
+      if (weeksArray.length === 1) return weeksArray[0];
+      return `${weeksArray[0]} - ${weeksArray[weeksArray.length - 1]}`;
     }
   }
 
