@@ -1581,7 +1581,7 @@
             <td style="text-align: center; font-weight: 600;">${it.no}</td>
             <td class="cell-bold">${it.name}</td>
             <td class="cell-num">${it.weight.toFixed(2)}</td>
-            <td class="cell-num" style="color: #2563eb; font-weight: 600;">${it.planPerf.toFixed(0)}%</td>
+            <td class="cell-num" style="color: #ef4444; font-weight: 700;">${it.planPerf.toFixed(0)}%</td>
             <td class="cell-num font-bold" style="color: var(--color-success);">${it.actualPerf.toFixed(0)}%</td>
             <td class="cell-num" style="font-weight: 700; color: var(--color-success);">${it.calcPct.toFixed(2)}%</td>
             <td style="text-align: center;"><span class="badge-gantt-status ${badgeClass}">${badgeText}</span></td>
@@ -1592,8 +1592,8 @@
                   <div class="dual-progress-bar-actual" style="width: ${Math.min(100, it.actualPerf)}%;"></div>
                 </div>
                 <div class="dual-progress-labels">
-                  <span class="plan-lbl">แผน ${it.planPerf.toFixed(0)}%</span>
-                  <span class="act-lbl">ผล ${it.actualPerf.toFixed(0)}%</span>
+                  <span class="plan-lbl" style="color: #ef4444; font-weight: 600;">แผน ${it.planPerf.toFixed(0)}%</span>
+                  <span class="act-lbl" style="color: #16a34a; font-weight: 700;">ผล ${it.actualPerf.toFixed(0)}%</span>
                 </div>
               </div>
             </td>
@@ -1614,7 +1614,7 @@
               %งานก่อสร้างรวม (Total Progress):
             </td>
             <td class="cell-num" style="font-weight: 700;">${totalWeight.toFixed(2)}</td>
-            <td class="cell-num" style="font-weight: 700; color: #2563eb;">${totalPlan.toFixed(2)}%</td>
+            <td class="cell-num" style="font-weight: 700; color: #ef4444;">${totalPlan.toFixed(2)}%</td>
             <td class="cell-num" style="font-weight: 700; color: var(--color-success);">-</td>
             <td class="cell-num" style="font-weight: 800; color: var(--pea-purple); font-size: 0.95rem;">${totalActual.toFixed(2)}%</td>
             <td colspan="4" style="font-weight: 600; color: var(--text-secondary); font-size: 0.82rem;">
@@ -1641,20 +1641,20 @@
             <td rowspan="2" style="text-align: center; font-weight: 700; vertical-align: middle; border-bottom: 2px solid var(--border-subtle);">${it.no}</td>
             <td rowspan="2" class="cell-bold cell-task-name" style="vertical-align: middle; border-bottom: 2px solid var(--border-subtle);">${it.name}</td>
             <td style="text-align: center;">
-              <span class="badge-status wbs-rel" style="background: rgba(37, 99, 235, 0.1); color: #2563eb; border-color: rgba(37, 99, 235, 0.25);">
+              <span class="badge-status" style="background: rgba(239, 68, 68, 0.1); color: #ef4444; border-color: rgba(239, 68, 68, 0.25);">
                 แผนการดำเนินงาน
               </span>
             </td>
-            <td class="cell-num font-bold" style="color: #2563eb;">${it.planPerf.toFixed(0)}%</td>
+            <td class="cell-num font-bold" style="color: #ef4444;">${it.planPerf.toFixed(0)}%</td>
             <td rowspan="2" class="cell-num" style="vertical-align: middle; font-weight: 600; border-bottom: 2px solid var(--border-subtle);">${it.weight.toFixed(2)}</td>
-            <td class="cell-num" style="color: #2563eb;">${it.planCalcPct.toFixed(2)}%</td>
+            <td class="cell-num" style="color: #ef4444;">${it.planCalcPct.toFixed(2)}%</td>
             <td style="font-size: 0.8rem; color: var(--text-secondary);">${planWeeksStr}</td>
             <td>
               <div class="progress-container">
                 <div class="progress-bar-bg">
-                  <div class="progress-bar-fill" style="width: ${it.planPerf}%; background: #2563eb;"></div>
+                  <div class="progress-bar-fill" style="width: ${it.planPerf}%; background: #ef4444;"></div>
                 </div>
-                <span class="progress-pct" style="color: #2563eb;">${it.planPerf.toFixed(0)}%</span>
+                <span class="progress-pct" style="color: #ef4444;">${it.planPerf.toFixed(0)}%</span>
               </div>
             </td>
           </tr>
@@ -1698,6 +1698,53 @@
       }
     }
 
+    function matchGanttWeek(entryWeekStr, colMonth, colWeek) {
+      if (!entryWeekStr) return false;
+      const cleanEntry = String(entryWeekStr).trim();
+      const cleanColMonth = String(colMonth || '').trim();
+      const cleanColWeek = String(colWeek || '').trim();
+
+      // 1. Match week number: extract digits following 'W', or last digits
+      const entryWMatch = cleanEntry.match(/W(\d+)/i) || cleanEntry.match(/(\d+)$/);
+      const entryWeekNum = entryWMatch ? entryWMatch[1] : '';
+
+      const colWMatch = cleanColWeek.match(/(\d+)/);
+      const colWeekNum = colWMatch ? colWMatch[1] : '';
+
+      if (entryWeekNum && colWeekNum && entryWeekNum !== colWeekNum) {
+        return false;
+      }
+
+      // 2. Match Thai month base (e.g. "ก.ค.", "ส.ค.", "ม.ค.")
+      const months = ['ม.ค.', 'ก.พ.', 'มี.ค.', 'เม.ย.', 'พ.ค.', 'มิ.ย.', 'ก.ค.', 'ส.ค.', 'ก.ย.', 'ต.ค.', 'พ.ย.', 'ธ.ค.'];
+      let baseEntry = '';
+      let baseCol = '';
+      for (const mo of months) {
+        if (!baseEntry && cleanEntry.includes(mo)) baseEntry = mo;
+        if (!baseCol && cleanColMonth.includes(mo)) baseCol = mo;
+        if (baseEntry && baseCol) break;
+      }
+
+      if (baseEntry && baseCol) {
+        if (baseEntry !== baseCol) {
+          return false;
+        }
+        // If year is present in both, compare years
+        const yrEntry = cleanEntry.match(/(69|70|2569|2570)/);
+        const yrCol = cleanColMonth.match(/(69|70|2569|2570)/);
+        if (yrEntry && yrCol) {
+          const y1 = yrEntry[1].replace('25', '');
+          const y2 = yrCol[1].replace('25', '');
+          if (y1 !== y2) {
+            return false;
+          }
+        }
+        return true;
+      }
+
+      return cleanColMonth.includes(cleanEntry) || cleanEntry.includes(cleanColMonth);
+    }
+
     function renderTimelineView(plan) {
       const table = document.getElementById('ganttTimelineTable');
       if (!table) return;
@@ -1708,6 +1755,12 @@
         table.innerHTML = '<tr><td style="padding: 2rem; color: var(--text-muted);">ไม่มีข้อมูลสัปดาห์ในปฏิทิน</td></tr>';
         return;
       }
+
+      // Fallback baseline lookup for projects
+      const isKanSheet = (appState.ganttSelectedSheet && (appState.ganttSelectedSheet.includes('กาญ') || appState.ganttSelectedSheet.includes('5'))) ||
+                         (plan.projectName && (plan.projectName.includes('กาญ') || plan.projectName.includes('5')));
+      const baseKey = isKanSheet ? 'กาญจนบุรี' : 'สมุทรสาคร';
+      const baseSched = (window.BASELINE_GANTT_SCHEDULES && window.BASELINE_GANTT_SCHEDULES[baseKey]) || null;
 
       // Group timelineCols by month
       const monthGroups = [];
@@ -1738,6 +1791,10 @@
       // 2. Build Body Rows
       let tbodyHtml = '<tbody>';
       items.forEach(it => {
+        const baseItem = baseSched && baseSched[it.no];
+        const planWeeks = (it.planWeeks && it.planWeeks.length > 0) ? it.planWeeks : (baseItem ? baseItem.plan : []);
+        const actWeeks = (it.actualWeeks && it.actualWeeks.length > 0) ? it.actualWeeks : ((baseItem && (it.actualPerf > 0 || baseItem.act.length > 0)) ? baseItem.act : []);
+
         // Row 1: Plan
         tbodyHtml += `
           <tr class="timeline-row-plan">
@@ -1745,10 +1802,10 @@
               <span style="font-weight: 700; color: var(--text-secondary); margin-right: 0.35rem;">${it.no}.</span>
               <strong>${it.name}</strong>
             </td>
-            <td class="sticky-type-col" style="color: #ef4444; font-weight: 600;">แผน</td>
+            <td class="sticky-type-col" style="color: #ef4444; font-weight: 700;">แผน</td>
             ${timelineCols.map(tc => {
               const weekKey = `${tc.month} W${tc.week}`;
-              const isMatch = it.planWeeks && it.planWeeks.some(pw => pw.includes(weekKey) || (pw.includes(tc.month) && pw.includes(`W${tc.week}`)));
+              const isMatch = planWeeks && planWeeks.some(pw => matchGanttWeek(pw, tc.month, tc.week));
               return `<td>${isMatch ? '<span class="gantt-cell-bar plan" title="แผนงาน ' + weekKey + '"></span>' : ''}</td>`;
             }).join('')}
             <td rowspan="2" class="cell-num font-bold" style="vertical-align: middle; background: var(--card-bg); border-bottom: 2px solid var(--border-subtle); color: var(--color-success); font-size: 0.85rem;">
@@ -1756,10 +1813,10 @@
             </td>
           </tr>
           <tr class="timeline-row-actual">
-            <td class="sticky-type-col" style="color: #65a30d; font-weight: 600; border-bottom: 2px solid var(--border-subtle);">ผล</td>
+            <td class="sticky-type-col" style="color: #16a34a; font-weight: 700; border-bottom: 2px solid var(--border-subtle);">ผล</td>
             ${timelineCols.map(tc => {
               const weekKey = `${tc.month} W${tc.week}`;
-              const isMatch = it.actualWeeks && it.actualWeeks.some(aw => aw.includes(weekKey) || (aw.includes(tc.month) && aw.includes(`W${tc.week}`)));
+              const isMatch = actWeeks && actWeeks.some(aw => matchGanttWeek(aw, tc.month, tc.week));
               return `<td>${isMatch ? '<span class="gantt-cell-bar actual" title="ผลงาน ' + weekKey + '"></span>' : ''}</td>`;
             }).join('')}
           </tr>
@@ -1817,6 +1874,29 @@
     }
 
     if (initialData) {
+      // Ensure Gantt timeline arrays are populated (even if previously cached from an upload with stripped styles)
+      if (initialData.ganttPlans && window.BASELINE_GANTT_SCHEDULES) {
+        Object.keys(initialData.ganttPlans).forEach(sheetKey => {
+          const plan = initialData.ganttPlans[sheetKey];
+          if (!plan || !plan.items) return;
+          const isKan = sheetKey.includes('กาญ') || sheetKey.includes('5');
+          const baseSched = isKan ? window.BASELINE_GANTT_SCHEDULES['กาญจนบุรี'] : window.BASELINE_GANTT_SCHEDULES['สมุทรสาคร'];
+          if (baseSched) {
+            plan.items.forEach(it => {
+              const baseItem = baseSched[it.no];
+              if (baseItem) {
+                if (!it.planWeeks || it.planWeeks.length === 0) {
+                  it.planWeeks = [...baseItem.plan];
+                }
+                if ((!it.actualWeeks || it.actualWeeks.length === 0) && (it.actualPerf > 0 || baseItem.act.length > 0)) {
+                  it.actualWeeks = [...baseItem.act];
+                }
+              }
+            });
+          }
+        });
+      }
+
       appState.data = initialData;
       renderAll();
 

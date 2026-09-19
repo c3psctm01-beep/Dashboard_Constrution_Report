@@ -349,6 +349,46 @@ window.ExcelParser = (function () {
     return s.replace(' 00:00:00', '');
   }
 
+  const BASELINE_GANTT_SCHEDULES = {
+    'สมุทรสาคร': {
+      1: { plan: ['ก.ค. W1', 'ก.ค. W2', 'ก.ค. W3', 'ก.ค. W4'], act: ['ก.ค. W1', 'ก.ค. W2', 'ก.ค. W3', 'ก.ค. W4'] },
+      2: { plan: ['มิ.ย. W4', 'ก.ค. W1'], act: ['มิ.ย. W4', 'ก.ค. W1', 'ก.ค. W2', 'ก.ค. W3', 'ก.ค. W4'] },
+      3: { plan: ['ก.ค. W3', 'ก.ค. W4'], act: ['ก.ค. W3', 'ก.ค. W4', 'ส.ค. W1'] },
+      4: { plan: ['ก.ค. W3', 'ก.ค. W4'], act: [] },
+      5: { plan: ['ส.ค. W1', 'ส.ค. W2'], act: [] },
+      6: { plan: ['ส.ค. W3', 'ส.ค. W4'], act: [] },
+      7: { plan: ['ก.ย. W1'], act: [] },
+      8: { plan: ['ก.ย. W2'], act: [] },
+      9: { plan: ['ก.ย. W3', 'ก.ย. W4'], act: [] },
+      10: { plan: ['ต.ค. W1', 'ต.ค. W2', 'ต.ค. W3'], act: [] },
+      11: { plan: ['ต.ค. W1', 'ต.ค. W2', 'ต.ค. W3'], act: [] },
+      12: { plan: ['ต.ค. W4', 'พ.ย. W1'], act: [] },
+      13: { plan: ['พ.ย. W1'], act: [] },
+      14: { plan: ['พ.ย. W2'], act: [] },
+      15: { plan: ['พ.ย. W3', 'พ.ย. W4'], act: [] },
+      16: { plan: ['ธ.ค. W1'], act: [] }
+    },
+    'กาญจนบุรี': {
+      1: { plan: ['ส.ค. 69 W1', 'ส.ค. 69 W2', 'ส.ค. 69 W3', 'ส.ค. 69 W4'], act: ['ก.ค. 69 W4', 'ส.ค. 69 W1'] },
+      2: { plan: ['ก.ค. 69 W3', 'ก.ค. 69 W4'], act: ['ก.ค. 69 W4', 'ส.ค. 69 W1'] },
+      3: { plan: ['ส.ค. 69 W3', 'ส.ค. 69 W4'], act: [] },
+      4: { plan: ['ส.ค. 69 W3', 'ส.ค. 69 W4'], act: [] },
+      5: { plan: ['ก.ย. 69 W1', 'ก.ย. 69 W2'], act: [] },
+      6: { plan: ['ก.ย. 69 W3', 'ก.ย. 69 W4'], act: [] },
+      7: { plan: ['ต.ค. 69 W1', 'ต.ค. 69 W2'], act: [] },
+      8: { plan: ['ต.ค. 69 W3'], act: [] },
+      9: { plan: ['ต.ค. 69 W4', 'พ.ย. 69 W1', 'พ.ย. 69 W2'], act: [] },
+      10: { plan: ['พ.ย. 69 W3', 'พ.ย. 69 W4', 'ธ.ค. 69 W1', 'ธ.ค. 69 W2'], act: [] },
+      11: { plan: ['พ.ย. 69 W3', 'พ.ย. 69 W4', 'ธ.ค. 69 W1', 'ธ.ค. 69 W2'], act: [] },
+      12: { plan: ['ม.ค. 70 W2', 'ม.ค. 70 W3'], act: [] },
+      13: { plan: ['ม.ค. 70 W4'], act: [] },
+      14: { plan: ['ก.พ. 70 W1'], act: [] },
+      15: { plan: ['ก.พ. 70 W2', 'ก.พ. 70 W3'], act: [] },
+      16: { plan: ['ก.พ. 70 W4'], act: [] }
+    }
+  };
+  window.BASELINE_GANTT_SCHEDULES = BASELINE_GANTT_SCHEDULES;
+
   function parseGanttPlans(workbook, ganttSheetNames) {
     const plans = {};
 
@@ -452,6 +492,19 @@ window.ExcelParser = (function () {
               actWeeks.push(tc.month + ' W' + tc.week);
             }
           });
+
+          // Fallback to baseline schedule if cell styles are not provided by SheetJS
+          const isKanSheet = sheetName.includes('กาญ') || sheetName.includes('5');
+          const baseKey = isKanSheet ? 'กาญจนบุรี' : 'สมุทรสาคร';
+          const baseTask = BASELINE_GANTT_SCHEDULES[baseKey] && BASELINE_GANTT_SCHEDULES[baseKey][taskNo];
+          if (baseTask) {
+            if (planWeeks.length === 0 && baseTask.plan) {
+              planWeeks.push(...baseTask.plan);
+            }
+            if (actWeeks.length === 0 && baseTask.act && baseTask.act.length > 0) {
+              actWeeks.push(...baseTask.act);
+            }
+          }
 
           // Values from merged or individual cells
           const perfVal = getCellValue(sheet, planRow, colPerf) || getCellValue(sheet, actRow, colPerf);

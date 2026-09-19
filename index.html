@@ -477,51 +477,51 @@
     <!-- Tab 6: Gantt Schedule -->
     <section class="tab-content-panel" id="tab-gantt">
       <!-- Gantt KPI Summary Cards -->
-      <div class="stats-grid gantt-stats-grid" id="ganttStatsGrid">
-        <div class="stat-card">
-          <div class="stat-icon-wrapper purple">
-            <i data-lucide="award"></i>
+      <section class="kpi-grid gantt-kpi-grid" id="ganttStatsGrid">
+        <div class="kpi-card purple">
+          <div class="kpi-info">
+            <span class="kpi-title">ผลงานสะสมรวม (%งานก่อสร้างรวม)</span>
+            <span class="kpi-value" id="kpiGanttActual" style="color: var(--pea-purple);">0.00%</span>
+            <span class="kpi-subtext" id="kpiGanttActualSub">ตรงกับสูตรใน Excel</span>
           </div>
-          <div class="stat-info">
-            <span class="stat-label">ผลงานสะสมรวม (%งานก่อสร้างรวม)</span>
-            <span class="stat-value" id="kpiGanttActual" style="color: var(--pea-purple);">0.00%</span>
-            <span class="stat-subtext" id="kpiGanttActualSub">ตรงกับสูตรใน Excel</span>
-          </div>
-        </div>
-
-        <div class="stat-card">
-          <div class="stat-icon-wrapper blue">
-            <i data-lucide="calendar-check"></i>
-          </div>
-          <div class="stat-info">
-            <span class="stat-label">แผนงานสะสมรวม</span>
-            <span class="stat-value" id="kpiGanttPlan" style="color: #2563eb;">0.00%</span>
-            <span class="stat-subtext" id="kpiGanttPlanSub">แผนงานตามช่วงเวลาดำเนินงาน</span>
+          <div class="kpi-icon-box">
+            <i data-lucide="award" style="width: 22px; height: 22px;"></i>
           </div>
         </div>
 
-        <div class="stat-card">
-          <div class="stat-icon-wrapper emerald">
-            <i data-lucide="scale"></i>
+        <div class="kpi-card red">
+          <div class="kpi-info">
+            <span class="kpi-title">แผนงานสะสมรวม</span>
+            <span class="kpi-value" id="kpiGanttPlan" style="color: #ef4444;">0.00%</span>
+            <span class="kpi-subtext" id="kpiGanttPlanSub">แผนงานตามช่วงเวลาดำเนินงาน</span>
           </div>
-          <div class="stat-info">
-            <span class="stat-label">น้ำหนักงานทั้งหมด</span>
-            <span class="stat-value" id="kpiGanttWeight" style="color: var(--color-success);">100.00%</span>
-            <span class="stat-subtext" id="kpiGanttItemCount">16 รายการงาน</span>
+          <div class="kpi-icon-box">
+            <i data-lucide="calendar-check" style="width: 22px; height: 22px;"></i>
           </div>
         </div>
 
-        <div class="stat-card">
-          <div class="stat-icon-wrapper amber" id="kpiGanttDiffIcon">
-            <i data-lucide="trending-up"></i>
+        <div class="kpi-card green">
+          <div class="kpi-info">
+            <span class="kpi-title">น้ำหนักงานทั้งหมด</span>
+            <span class="kpi-value" id="kpiGanttWeight" style="color: var(--color-success);">100.00%</span>
+            <span class="kpi-subtext" id="kpiGanttItemCount">16 รายการงาน</span>
           </div>
-          <div class="stat-info">
-            <span class="stat-label">สถานะเทียบแผนงาน</span>
-            <span class="stat-value" id="kpiGanttDiff">0.00%</span>
-            <span class="stat-subtext" id="kpiGanttStatusBadge">อยู่ระหว่างดำเนินงาน</span>
+          <div class="kpi-icon-box">
+            <i data-lucide="scale" style="width: 22px; height: 22px;"></i>
           </div>
         </div>
-      </div>
+
+        <div class="kpi-card amber">
+          <div class="kpi-info">
+            <span class="kpi-title">สถานะเทียบแผนงาน</span>
+            <span class="kpi-value" id="kpiGanttDiff">0.00%</span>
+            <span class="kpi-subtext" id="kpiGanttStatusBadge">อยู่ระหว่างดำเนินงาน</span>
+          </div>
+          <div class="kpi-icon-box" id="kpiGanttDiffIcon">
+            <i data-lucide="trending-up" style="width: 22px; height: 22px;"></i>
+          </div>
+        </div>
+      </section>
 
       <div class="dashboard-card">
         <div class="card-header-row">
