@@ -137,7 +137,21 @@ window.ExcelValidator = (function () {
 
     // 6. Identify Gantt / Monthly timeline sheets
     sheetNames.forEach(name => {
-      if (name.includes('(ช)') || name.includes('แผนงาน')) {
+      const cleanName = cleanText(name);
+      const isGanttName = cleanName.includes('(ช)') ||
+                          cleanName.includes('แผนงาน') ||
+                          cleanName.includes('(ชค') ||
+                          cleanName.includes('gantt') ||
+                          cleanName.includes('schedule') ||
+                          ((cleanName.includes('กาญ') || cleanName.includes('สาคร')) && cleanName.includes('ชั่วคราว'));
+      const sheet = workbook.Sheets[name];
+      const hasGanttKeywords = sheet && (
+        sheetContainsKeywords(sheet, ['น้ำหนัก', 'ผลการดำเนินงาน']) ||
+        sheetContainsKeywords(sheet, ['น้ำหนัก', 'ผลงาน']) ||
+        sheetContainsKeywords(sheet, ['แผนการดำเนินงาน', 'ผลการดำเนินงาน'])
+      );
+
+      if ((isGanttName || hasGanttKeywords) && !result.matchedSheets.gantt.includes(name)) {
         result.matchedSheets.gantt.push(name);
       }
     });

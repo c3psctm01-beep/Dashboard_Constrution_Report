@@ -265,6 +265,7 @@
 
         // 2. Parse Workbook
         const parsedData = ExcelParser.parseWorkbook(workbook, validation.matchedSheets, file.name);
+        ensureGanttBaseline(parsedData);
         parsedData.isCustomUpload = true;
         appState.data = parsedData;
 
@@ -424,6 +425,7 @@
 
   function renderOverviewCharts() {
     const d = appState.data;
+    if (!d || !d.transmissionLines || !d.substationsDetail) return;
     const isDark = appState.currentTheme === 'dark';
     const textColor = isDark ? '#cbd5e1' : '#475569';
     const gridColor = isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)';
@@ -937,6 +939,17 @@
             ? `<button type="button" class="station-card-link" onclick="window.viewSubstationDetailModal(${st.detailIndex})"><i data-lucide="external-link" style="width: 13px; height: 13px;"></i> ดูรายละเอียดสัญญา / ผู้รับจ้าง / การทดสอบ</button>`
             : '';
 
+          const hasGantt = d.ganttPlans && Object.keys(d.ganttPlans).some(k => 
+            k.includes(st.name) || st.name.includes(k) || 
+            (d.ganttPlans[k].projectName && (d.ganttPlans[k].projectName.includes(st.name) || st.name.includes(d.ganttPlans[k].projectName))) ||
+            (st.name.includes('กาญ') && (k.includes('กาญ') || k.includes('5'))) ||
+            (st.name.includes('สาคร 18') && (k.includes('สาคร') || k.includes('18')))
+          );
+
+          const ganttLinkHtml = hasGantt
+            ? `<button type="button" class="station-card-link" style="color: var(--pea-purple); font-weight: 600; margin-top: 0.35rem;" onclick="window.viewStationGantt('${st.name}')"><i data-lucide="calendar-range" style="width: 13px; height: 13px;"></i> แผนงานและผลงาน (Gantt Schedule)</button>`
+            : '';
+
           return `
             <div class="station-card">
               <div class="station-card-top">
@@ -957,6 +970,7 @@
                 ${st.notes || '-'}
               </div>
               ${detailLinkHtml}
+              ${ganttLinkHtml}
             </div>
           `;
         }).join('');
@@ -1006,12 +1020,78 @@
             <strong style="color:var(--pea-purple);">สถานะงานก่อสร้าง / การทดสอบ:</strong>
             <p style="margin-top: 0.25rem; white-space: pre-line; color: var(--text-secondary); background: rgba(142,36,170,0.05); padding: 0.75rem; border-radius: var(--radius-sm);">${item.statusText || '-'}</p>
           </div>
+          ${(d.ganttPlans && Object.keys(d.ganttPlans).some(k => k.includes(item.name) || item.name.includes(k) || (item.name.includes('กาญ') && (k.includes('กาญ') || k.includes('5'))) || (item.name.includes('สาคร 18') && (k.includes('สาคร') || k.includes('18'))))) ? `
+            <div style="margin-top: 0.5rem; padding: 0.85rem 1rem; background: rgba(142,36,170,0.08); border: 1px solid rgba(142,36,170,0.25); border-radius: var(--radius-md); display: flex; align-items: center; justify-content: space-between; gap: 0.75rem; flex-wrap: wrap;">
+              <div>
+                <div style="font-weight: 700; color: var(--pea-purple); display: flex; align-items: center; gap: 0.4rem;">
+                  <i data-lucide="calendar-range" style="width: 16px; height: 16px;"></i>
+                  แผนงานและผลงานการดำเนินงาน (Gantt Schedule)
+                </div>
+                <div style="font-size: 0.8rem; color: var(--text-secondary); margin-top: 0.2rem;">
+                  สถานีนี้มีตารางแผนงานและไทม์ไลน์ดำเนินงานประจำปี 2569 (ผลงานสะสม ${item.progress}%)
+                </div>
+              </div>
+              <button type="button" class="btn btn-primary" style="font-size: 0.82rem; padding: 0.45rem 0.9rem;" onclick="window.viewStationGantt('${item.name}')">
+                เปิดดูตารางและไทม์ไลน์ Gantt <i data-lucide="arrow-right" style="width: 14px; height: 14px; margin-left: 4px;"></i>
+              </button>
+            </div>
+          ` : ''}
         </div>
       `;
     }
 
     if (modal) modal.classList.add('active');
     lucide.createIcons();
+  };
+
+  // Direct navigation hook to view Gantt schedule of a specific station
+  window.viewStationGantt = function(stationNameOrKey) {
+    const d = appState.data;
+    if (!d || !d.ganttPlans) return;
+
+    // Close any open modals
+    const modal = document.getElementById('detailModal');
+    if (modal) modal.classList.remove('active');
+
+    let targetKey = null;
+    const sKeys = Object.keys(d.ganttPlans);
+    const searchStr = String(stationNameOrKey || '').toLowerCase();
+
+    for (const k of sKeys) {
+      const p = d.ganttPlans[k];
+      if (k === stationNameOrKey || (p && p.projectName === stationNameOrKey)) {
+        targetKey = k;
+        break;
+      }
+      if (searchStr.includes('กาญ') && (k.includes('กาญ') || k.includes('5'))) {
+        targetKey = k;
+        break;
+      }
+      if ((searchStr.includes('สมุทรสาคร') || searchStr.includes('สาคร 18')) && (k.includes('สาคร') || k.includes('18'))) {
+        targetKey = k;
+        break;
+      }
+    }
+
+    if (!targetKey && sKeys.length > 0) targetKey = sKeys[0];
+
+    appState.ganttSelectedSheet = targetKey;
+    if (window.DashboardStorage) {
+      window.DashboardStorage.savePreferences({ ganttSelectedSheet: targetKey });
+    }
+
+    switchTab('tab-gantt');
+
+    const selectGantt = document.getElementById('selectGanttProject');
+    if (selectGantt) {
+      selectGantt.value = targetKey;
+    }
+    renderGanttTab();
+
+    const ganttSec = document.getElementById('tab-gantt');
+    if (ganttSec) {
+      ganttSec.scrollIntoView({ behavior: 'smooth' });
+    }
   };
 
   // Tab 4: Disbursement & WBS
@@ -1421,6 +1501,22 @@
     const sheetKeys = Object.keys(d.ganttPlans);
     if (sheetKeys.length === 0) return;
 
+    function findGanttPlan(key) {
+      if (!d.ganttPlans) return null;
+      if (key && d.ganttPlans[key]) return d.ganttPlans[key];
+      if (!key) return d.ganttPlans[sheetKeys[0]];
+      const kStr = String(key).toLowerCase();
+      for (const sk of sheetKeys) {
+        if (sk === key) return d.ganttPlans[sk];
+        const p = d.ganttPlans[sk];
+        if (p.projectName && (p.projectName === key || p.projectName.includes(key) || key.includes(p.projectName))) return p;
+        if (sk.includes(key) || key.includes(sk)) return p;
+        if (kStr.includes('กาญ') && (sk.includes('กาญ') || sk.includes('5'))) return p;
+        if (kStr.includes('สาคร') && (sk.includes('สาคร') || sk.includes('18'))) return p;
+      }
+      return d.ganttPlans[sheetKeys[0]];
+    }
+
     // 1. Populate Dropdown
     if (selectGantt.options.length === 0 || selectGantt.options.length !== sheetKeys.length) {
       selectGantt.innerHTML = '';
@@ -1431,10 +1527,9 @@
         selectGantt.appendChild(opt);
       });
 
-      if (!appState.ganttSelectedSheet || !d.ganttPlans[appState.ganttSelectedSheet]) {
+      if (!appState.ganttSelectedSheet || !findGanttPlan(appState.ganttSelectedSheet)) {
         appState.ganttSelectedSheet = sheetKeys[0];
       }
-      selectGantt.value = appState.ganttSelectedSheet;
 
       selectGantt.addEventListener('change', () => {
         appState.ganttSelectedSheet = selectGantt.value;
@@ -1443,8 +1538,13 @@
         }
         updateGanttContent();
       });
-    } else {
-      selectGantt.value = appState.ganttSelectedSheet || sheetKeys[0];
+    }
+
+    // Sync selectGantt value with active plan
+    const activePlan = findGanttPlan(appState.ganttSelectedSheet) || d.ganttPlans[sheetKeys[0]];
+    if (activePlan) {
+      appState.ganttSelectedSheet = activePlan.sheetName || sheetKeys[0];
+      selectGantt.value = appState.ganttSelectedSheet;
     }
 
     // 2. View Switcher event listeners
@@ -1487,7 +1587,7 @@
     updateGanttContent();
 
     function updateGanttContent() {
-      const plan = d.ganttPlans[appState.ganttSelectedSheet] || d.ganttPlans[sheetKeys[0]];
+      const plan = findGanttPlan(appState.ganttSelectedSheet) || d.ganttPlans[sheetKeys[0]];
       if (!plan) return;
 
       // Subtitle
@@ -1845,6 +1945,29 @@
     }
   }
 
+  function ensureGanttBaseline(dataObj) {
+    if (!dataObj || !dataObj.ganttPlans || !window.BASELINE_GANTT_SCHEDULES) return;
+    Object.keys(dataObj.ganttPlans).forEach(sheetKey => {
+      const plan = dataObj.ganttPlans[sheetKey];
+      if (!plan || !plan.items) return;
+      const isKan = sheetKey.includes('กาญ') || sheetKey.includes('5') || (plan.projectName && (plan.projectName.includes('กาญ') || plan.projectName.includes('5')));
+      const baseSched = isKan ? window.BASELINE_GANTT_SCHEDULES['กาญจนบุรี'] : window.BASELINE_GANTT_SCHEDULES['สมุทรสาคร'];
+      if (baseSched) {
+        plan.items.forEach(it => {
+          const baseItem = baseSched[it.no];
+          if (baseItem) {
+            if (!it.planWeeks || it.planWeeks.length === 0) {
+              it.planWeeks = [...baseItem.plan];
+            }
+            if ((!it.actualWeeks || it.actualWeeks.length === 0) && (it.actualPerf > 0 || baseItem.act.length > 0)) {
+              it.actualWeeks = [...baseItem.act];
+            }
+          }
+        });
+      }
+    });
+  }
+
   // App Initialization
   document.addEventListener('DOMContentLoaded', async () => {
     initTheme();
@@ -1875,27 +1998,7 @@
 
     if (initialData) {
       // Ensure Gantt timeline arrays are populated (even if previously cached from an upload with stripped styles)
-      if (initialData.ganttPlans && window.BASELINE_GANTT_SCHEDULES) {
-        Object.keys(initialData.ganttPlans).forEach(sheetKey => {
-          const plan = initialData.ganttPlans[sheetKey];
-          if (!plan || !plan.items) return;
-          const isKan = sheetKey.includes('กาญ') || sheetKey.includes('5');
-          const baseSched = isKan ? window.BASELINE_GANTT_SCHEDULES['กาญจนบุรี'] : window.BASELINE_GANTT_SCHEDULES['สมุทรสาคร'];
-          if (baseSched) {
-            plan.items.forEach(it => {
-              const baseItem = baseSched[it.no];
-              if (baseItem) {
-                if (!it.planWeeks || it.planWeeks.length === 0) {
-                  it.planWeeks = [...baseItem.plan];
-                }
-                if ((!it.actualWeeks || it.actualWeeks.length === 0) && (it.actualPerf > 0 || baseItem.act.length > 0)) {
-                  it.actualWeeks = [...baseItem.act];
-                }
-              }
-            });
-          }
-        });
-      }
+      ensureGanttBaseline(initialData);
 
       appState.data = initialData;
       renderAll();

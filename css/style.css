@@ -845,6 +845,14 @@ body {
   visibility: visible;
 }
 
+#detailModal {
+  z-index: 1100;
+}
+
+#validationModal {
+  z-index: 1200;
+}
+
 .modal-dialog {
   background: var(--bg-surface);
   border: 1px solid var(--border-subtle);

@@ -333,20 +333,79 @@ window.ExcelParser = (function () {
     return projects;
   }
 
-  function formatMonthHeader(val) {
-    if (!val) return '';
-    const s = String(val).trim();
-    if (s.includes('1969-07') || s.includes('2569-07')) return 'ก.ค. 69';
-    if (s.includes('1969-08') || s.includes('2569-08')) return 'ส.ค. 69';
-    if (s.includes('1969-09') || s.includes('2569-09')) return 'ก.ย. 69';
-    if (s.includes('1969-10') || s.includes('2569-10')) return 'ต.ค. 69';
-    if (s.includes('1969-11') || s.includes('2569-11')) return 'พ.ย. 69';
-    if (s.includes('1969-12') || s.includes('2569-12')) return 'ธ.ค. 69';
-    if (s.includes('1970-01') || s.includes('2570-01')) return 'ม.ค. 70';
-    if (s.includes('1970-02') || s.includes('2570-02')) return 'ก.พ. 70';
-    if (s.includes('1970-03') || s.includes('2570-03')) return 'มี.ค. 70';
-    if (s.includes('1970-04') || s.includes('2570-04')) return 'เม.ย. 70';
-    return s.replace(' 00:00:00', '');
+  const THAI_MONTHS_SHORT = ['ม.ค.', 'ก.พ.', 'มี.ค.', 'เม.ย.', 'พ.ค.', 'มิ.ย.', 'ก.ค.', 'ส.ค.', 'ก.ย.', 'ต.ค.', 'พ.ย.', 'ธ.ค.'];
+  const ENG_MONTHS_MAP = {
+    jan: 1, feb: 2, mar: 3, apr: 4, may: 5, jun: 6,
+    jul: 7, aug: 8, sep: 9, oct: 10, nov: 11, dec: 12
+  };
+
+  function formatMonthHeader(val, cellFormatted) {
+    if (val === null || val === undefined || val === '') return '';
+
+    // 1. If val is a number (Excel date serial e.g. 25385)
+    if (typeof val === 'number' && val >= 10000 && val <= 65000 && window.XLSX && window.XLSX.SSF) {
+      try {
+        const parsed = window.XLSX.SSF.parse_date_code(val);
+        if (parsed && parsed.m) {
+          let yr = parsed.y;
+          if (yr >= 1900 && yr < 2000) yr += (2569 - 1969);
+          else if (yr >= 2000 && yr < 2500) yr += 543;
+          const yrStr = String(yr).slice(-2);
+          return `${THAI_MONTHS_SHORT[parsed.m - 1]} ${yrStr}`;
+        }
+      } catch (e) {}
+    }
+
+    // 2. If val is a Date object
+    if (val instanceof Date) {
+      let yr = val.getFullYear();
+      if (yr >= 1900 && yr < 2000) yr += (2569 - 1969);
+      else if (yr >= 2000 && yr < 2500) yr += 543;
+      const yrStr = String(yr).slice(-2);
+      return `${THAI_MONTHS_SHORT[val.getMonth()]} ${yrStr}`;
+    }
+
+    // 3. String representation
+    const raw = String(cellFormatted || val || '').trim();
+    const lower = raw.toLowerCase();
+
+    // Check English format like "Jul-69" or "July 1969"
+    for (const [eng, mNum] of Object.entries(ENG_MONTHS_MAP)) {
+      if (lower.includes(eng)) {
+        const yrMatch = lower.match(/(\d{2,4})/);
+        let yrStr = '69';
+        if (yrMatch) {
+          let yr = parseInt(yrMatch[1], 10);
+          if (yr >= 1900 && yr < 2000) yr += (2569 - 1969);
+          else if (yr >= 2000 && yr < 2500) yr += 543;
+          yrStr = String(yr).slice(-2);
+        }
+        return `${THAI_MONTHS_SHORT[mNum - 1]} ${yrStr}`;
+      }
+    }
+
+    // Check Thai months
+    for (let i = 0; i < THAI_MONTHS_SHORT.length; i++) {
+      const tm = THAI_MONTHS_SHORT[i];
+      if (raw.includes(tm)) {
+        const yrMatch = raw.match(/(69|70|2569|2570)/);
+        const yrStr = yrMatch ? yrMatch[1].slice(-2) : (i >= 5 ? '69' : '70');
+        return `${tm} ${yrStr}`;
+      }
+    }
+
+    // Fallback regex for YYYY-MM
+    const isoMatch = raw.match(/(\d{4})-(\d{2})/);
+    if (isoMatch) {
+      let yr = parseInt(isoMatch[1], 10);
+      const mo = parseInt(isoMatch[2], 10);
+      if (yr >= 1900 && yr < 2000) yr += (2569 - 1969);
+      else if (yr >= 2000 && yr < 2500) yr += 543;
+      const yrStr = String(yr).slice(-2);
+      return `${THAI_MONTHS_SHORT[mo - 1]} ${yrStr}`;
+    }
+
+    return raw.replace(' 00:00:00', '');
   }
 
   const BASELINE_GANTT_SCHEDULES = {
@@ -424,9 +483,13 @@ window.ExcelParser = (function () {
       const timelineColumns = [];
       let curMonth = '';
       for (let c = 3; c < colPerf; c++) {
-        const mVal = getCellValue(sheet, 1, c) || getCellValue(sheet, 0, c);
-        if (mVal) {
-          curMonth = formatMonthHeader(mVal);
+        const cell1 = sheet[XLSX.utils.encode_cell({ r: 1, c: c })];
+        const cell0 = sheet[XLSX.utils.encode_cell({ r: 0, c: c })];
+        const rawMVal = (cell1 && cell1.v !== undefined) ? cell1.v : (cell0 && cell0.v !== undefined ? cell0.v : null);
+        const fmtMVal = (cell1 && cell1.w) ? cell1.w : (cell0 && cell0.w ? cell0.w : null);
+        if (rawMVal !== null || fmtMVal !== null) {
+          const fm = formatMonthHeader(rawMVal, fmtMVal);
+          if (fm) curMonth = fm;
         }
         const wVal = getCellValue(sheet, 2, c);
         timelineColumns.push({
@@ -494,7 +557,7 @@ window.ExcelParser = (function () {
           });
 
           // Fallback to baseline schedule if cell styles are not provided by SheetJS
-          const isKanSheet = sheetName.includes('กาญ') || sheetName.includes('5');
+          const isKanSheet = sheetName.includes('กาญ') || sheetName.includes('5') || sheetName.toLowerCase().includes('kci');
           const baseKey = isKanSheet ? 'กาญจนบุรี' : 'สมุทรสาคร';
           const baseTask = BASELINE_GANTT_SCHEDULES[baseKey] && BASELINE_GANTT_SCHEDULES[baseKey][taskNo];
           if (baseTask) {
@@ -521,7 +584,7 @@ window.ExcelParser = (function () {
           // Determine planned performance %
           // If task has actual performance or is an earlier phase task, plan is 100%, otherwise 0%
           let planPerf = 0;
-          if (sheetName.includes('กาญจนบุรี 5')) {
+          if (isKanSheet) {
             planPerf = taskNo <= 2 ? 100.0 : 0.0;
           } else {
             planPerf = taskNo <= 7 ? 100.0 : 0.0;
@@ -585,8 +648,11 @@ window.ExcelParser = (function () {
       }
 
       let projTitle = sheetName;
-      if (sheetName.includes('สมุทรสาคร 18')) projTitle = 'สถานีไฟฟ้าสมุทรสาคร 18 (ชั่วคราว)';
-      else if (sheetName.includes('กาญจนบุรี 5')) projTitle = 'สถานีไฟฟ้ากาญจนบุรี 5 (ชั่วคราว)';
+      if (sheetName.includes('สมุทรสาคร') || sheetName.includes('สาคร') || sheetName.includes('18')) {
+        projTitle = 'สถานีไฟฟ้าสมุทรสาคร 18 (ชั่วคราว)';
+      } else if (sheetName.includes('กาญจนบุรี') || sheetName.includes('กาญ') || sheetName.includes('5')) {
+        projTitle = 'สถานีไฟฟ้ากาญจนบุรี 5 (ชั่วคราว)';
+      }
 
       const finalTotalActual = extractedTotalActual !== null ? extractedTotalActual : Math.round(totalActualSum * 100) / 100;
 
