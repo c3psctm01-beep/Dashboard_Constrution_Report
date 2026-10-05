@@ -112,10 +112,28 @@ window.DashboardStorage = (function () {
     return !!(await getServerInfo());
   }
 
+  const PASSCODE_STORAGE_KEY = 'pea_dashboard_upload_passcode';
+  function getStoredPasscode() {
+    return localStorage.getItem(PASSCODE_STORAGE_KEY) || sessionStorage.getItem(PASSCODE_STORAGE_KEY) || '';
+  }
+  function setStoredPasscode(code) {
+    if (code) {
+      localStorage.setItem(PASSCODE_STORAGE_KEY, code);
+    } else {
+      localStorage.removeItem(PASSCODE_STORAGE_KEY);
+      sessionStorage.removeItem(PASSCODE_STORAGE_KEY);
+    }
+  }
+
   async function postJson(url, body, contentType) {
+    const headers = { 'Content-Type': contentType || 'application/json' };
+    const passcode = getStoredPasscode();
+    if (passcode) {
+      headers['X-Upload-Passcode'] = passcode;
+    }
     const res = await fetch(url, {
       method: 'POST',
-      headers: { 'Content-Type': contentType || 'application/json' },
+      headers: headers,
       body: body === undefined ? '{}' : body
     });
     let json = {};
@@ -130,10 +148,17 @@ window.DashboardStorage = (function () {
    * On the local server: stored centrally (+ history). On Vercel/static: stored only in this browser.
    * @returns {Promise<{success:boolean, serverSaved:boolean, id?:string, savedAt:number}>}
    */
-  async function saveLatestData(data, rawFile, uploadedBy) {
+  async function saveLatestData(data, rawFile, uploadedBy, passcode) {
     if (!data) return { success: false, serverSaved: false };
 
-    const payload = { ...data, isCustomUpload: true, savedAt: Date.now(), uploadedBy: uploadedBy || '' };
+    const effectivePasscode = passcode || getStoredPasscode();
+    const payload = {
+      ...data,
+      isCustomUpload: true,
+      savedAt: Date.now(),
+      uploadedBy: uploadedBy || '',
+      passcode: effectivePasscode
+    };
     delete payload._storageSource;
 
     if (await isServerMode()) {
@@ -141,6 +166,7 @@ window.DashboardStorage = (function () {
         const res = await postJson('/api/save-data', JSON.stringify(payload));
         payload.savedAt = res.savedAt;
         payload.uploadId = res.id;
+        delete payload.passcode;
         if (rawFile) {
           try {
             await postJson(`/api/upload-excel?id=${encodeURIComponent(res.id)}`, rawFile, 'application/octet-stream');
@@ -152,8 +178,15 @@ window.DashboardStorage = (function () {
         return { success: true, serverSaved: true, id: res.id, savedAt: res.savedAt };
       } catch (e) {
         console.warn('Central save failed, keeping local copy only:', e);
+        throw e; // rethrow so caller can display server authentication error
       }
     }
+
+    delete payload.passcode;
+    payload._localOnly = true;
+    await saveToLocal(payload);
+    return { success: true, serverSaved: false, savedAt: payload.savedAt };
+  }
 
     payload._localOnly = true;
     await saveToLocal(payload);
@@ -267,6 +300,8 @@ window.DashboardStorage = (function () {
     restoreHistory,
     publish,
     savePreferences,
-    loadPreferences
+    loadPreferences,
+    getStoredPasscode,
+    setStoredPasscode
   };
 })();

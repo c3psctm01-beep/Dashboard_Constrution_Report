@@ -129,6 +129,61 @@
     }
   }
 
+  // ------------------------------------------------------------------
+  // Upload Passcode & Security (1212312121)
+  // ------------------------------------------------------------------
+  const UPLOAD_PASSCODE = '1212312121';
+
+  function getUploadPasscode() {
+    const input = document.getElementById('uploadPasscodeInput');
+    const val = input ? input.value.trim() : '';
+    if (val) return val;
+    if (window.DashboardStorage && window.DashboardStorage.getStoredPasscode) {
+      return window.DashboardStorage.getStoredPasscode();
+    }
+    return '';
+  }
+
+  function validatePasscode(showVisualAlert = true) {
+    const code = getUploadPasscode();
+    const input = document.getElementById('uploadPasscodeInput');
+    const helpText = document.getElementById('passcodeHelpText');
+    const modal = document.getElementById('uploadHistoryModal');
+
+    if (code === UPLOAD_PASSCODE) {
+      if (input) {
+        input.classList.remove('input-invalid');
+        input.style.borderColor = 'var(--color-success)';
+      }
+      if (helpText) {
+        helpText.innerHTML = '<span style="color:var(--color-success);font-weight:600;"><i data-lucide="check-circle" style="width:12px;height:12px;display:inline-block;vertical-align:middle;margin-right:2px;"></i> รหัสผ่านถูกต้อง</span>';
+        lucide.createIcons({ root: helpText });
+      }
+      if (window.DashboardStorage && window.DashboardStorage.setStoredPasscode) {
+        window.DashboardStorage.setStoredPasscode(code);
+      }
+      return true;
+    }
+
+    if (showVisualAlert) {
+      if (modal && !modal.classList.contains('active')) {
+        modal.classList.add('active');
+      }
+      if (input) {
+        input.classList.add('input-invalid');
+        input.focus();
+        input.select();
+        setTimeout(() => input.classList.remove('input-invalid'), 600);
+      }
+      if (helpText) {
+        helpText.innerHTML = '<span style="color:var(--color-danger);font-weight:600;"><i data-lucide="alert-circle" style="width:12px;height:12px;display:inline-block;vertical-align:middle;margin-right:2px;"></i> รหัสผ่านไม่ถูกต้อง (กรุณากรอกรหัสผ่าน 1212312121)</span>';
+        lucide.createIcons({ root: helpText });
+      }
+      showToast('กรุณากรอกรหัสผ่านสำหรับการอัปโหลดให้ถูกต้อง (1212312121)', 'error');
+    }
+    return false;
+  }
+
   // File Upload Handling
   function initDropzone() {
     const btnUpload = document.getElementById('btnUploadExcel');
@@ -138,12 +193,63 @@
       btnUpload.addEventListener('click', () => openUploadHistoryModal());
     }
 
+    const passInput = document.getElementById('uploadPasscodeInput');
+    const togglePassBtn = document.getElementById('btnTogglePasscodeVisibility');
+    const eyeIcon = document.getElementById('passcodeEyeIcon');
+
+    if (passInput) {
+      // Pre-fill with stored passcode if previously saved
+      const savedPass = window.DashboardStorage ? window.DashboardStorage.getStoredPasscode() : '';
+      if (savedPass) {
+        passInput.value = savedPass;
+        validatePasscode(false);
+      }
+      passInput.addEventListener('input', () => {
+        const val = passInput.value.trim();
+        if (window.DashboardStorage && window.DashboardStorage.setStoredPasscode) {
+          window.DashboardStorage.setStoredPasscode(val);
+        }
+        if (val === UPLOAD_PASSCODE) {
+          validatePasscode(false);
+        } else {
+          passInput.style.borderColor = '';
+          const help = document.getElementById('passcodeHelpText');
+          if (help) help.textContent = 'จำเป็นต้องใส่รหัสผ่านเพื่อยืนยันสิทธิ์การอัปโหลด';
+        }
+      });
+      passInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+          if (validatePasscode(true)) {
+            showToast('รหัสผ่านถูกต้องแล้ว สามารถเลือกไฟล์ Excel ได้ทันที', 'success');
+            if (fileInput) fileInput.click();
+          }
+        }
+      });
+    }
+
+    if (togglePassBtn && passInput) {
+      togglePassBtn.addEventListener('click', () => {
+        const isPassword = passInput.type === 'password';
+        passInput.type = isPassword ? 'text' : 'password';
+        if (eyeIcon) {
+          eyeIcon.setAttribute('data-lucide', isPassword ? 'eye-off' : 'eye');
+          lucide.createIcons({ root: togglePassBtn });
+        }
+      });
+    }
+
     const dropzone = document.getElementById('uploadDropzone');
     if (dropzone && fileInput) {
-      dropzone.addEventListener('click', () => fileInput.click());
+      dropzone.addEventListener('click', () => {
+        if (!validatePasscode(true)) return;
+        fileInput.click();
+      });
       dropzone.addEventListener('dragover', e => { e.preventDefault(); dropzone.classList.add('dragover'); });
       dropzone.addEventListener('dragleave', () => dropzone.classList.remove('dragover'));
-      dropzone.addEventListener('drop', () => dropzone.classList.remove('dragover'));
+      dropzone.addEventListener('drop', (e) => {
+        dropzone.classList.remove('dragover');
+        if (!validatePasscode(true)) return;
+      });
     }
 
     const uploaderInput = document.getElementById('uploaderNameInput');
@@ -157,6 +263,10 @@
     if (fileInput) {
       fileInput.addEventListener('change', e => {
         if (e.target.files.length > 0) {
+          if (!validatePasscode(true)) {
+            fileInput.value = '';
+            return;
+          }
           processUploadedFile(e.target.files[0]);
           fileInput.value = ''; // reset so same file can be re-uploaded if desired
         }
@@ -170,6 +280,7 @@
     window.addEventListener('drop', e => {
       e.preventDefault();
       if (e.dataTransfer && e.dataTransfer.files.length > 0) {
+        if (!validatePasscode(true)) return;
         processUploadedFile(e.dataTransfer.files[0]);
       }
     });
@@ -284,6 +395,11 @@
   }
 
   function processUploadedFile(file) {
+    if (!validatePasscode(true)) {
+      showValidationErrors(['รหัสผ่านสำหรับการอัปโหลดไม่ถูกต้อง กรุณากรอกรหัสผ่าน (1212312121) ให้ถูกต้องก่อนดำเนินการ']);
+      return;
+    }
+
     const validExtensions = ['.xlsx', '.xls'];
     const fileName = file.name.toLowerCase();
     const isExcel = validExtensions.some(ext => fileName.endsWith(ext));
@@ -318,7 +434,7 @@
         let saveResult = null;
         if (window.DashboardStorage) {
           const uploadedBy = (localStorage.getItem('pea_dashboard_uploader') || '').trim();
-          saveResult = await window.DashboardStorage.saveLatestData(parsedData, file, uploadedBy);
+          saveResult = await window.DashboardStorage.saveLatestData(parsedData, file, uploadedBy, getUploadPasscode());
           parsedData.savedAt = saveResult.savedAt;
           parsedData.uploadedBy = uploadedBy;
           if (saveResult.serverSaved) {
@@ -2150,13 +2266,13 @@
     } else {
       note.className = 'upload-mode-note public';
       note.innerHTML = `<i data-lucide="globe" style="width:16px;height:16px;color:var(--color-warning);"></i>
-        <span><strong>เว็บสาธารณะ (Vercel):</strong> ทุกคนเห็นข้อมูลล่าสุดที่สำนักงานเผยแพร่ไว้ ไฟล์ที่คุณอัปโหลดจากหน้านี้จะ
-        <strong>แสดงผลเฉพาะเครื่องของคุณ</strong></span>`;
+        <span><strong>เว็บสาธารณะ (Vercel):</strong> ทุกคนเห็นข้อมูลล่าสุดที่สำนักงานเผยแพร่ไว้ ไฟล์ที่คุณอัปโหลดจากหน้านี้จะ <strong>แสดงผลเฉพาะเครื่องของคุณ</strong></span>`;
       if (btnPub) btnPub.style.display = 'none';
       if (pubStatus) {
         pubStatus.innerHTML = `<span><strong>วิธีเผยแพร่ข้อมูลขึ้นเว็บให้ทุกคนเห็น:</strong> ให้เปิดแดชบอร์ดบนเครื่องหลักในสำนักงาน (<code style="background:rgba(0,0,0,0.06);padding:2px 5px;border-radius:3px;">start_dashboard.bat</code>) หรือดับเบิลคลิกไฟล์ <code style="background:rgba(0,0,0,0.06);padding:2px 5px;border-radius:3px;">publish_data.bat</code> ในเครื่องของคุณ</span>`;
       }
     }
+    validatePasscode(false);
     lucide.createIcons({ root: modal });
 
     renderUploadHistory(serverMode);
@@ -2243,6 +2359,7 @@
   }
 
   async function restoreHistoryEntry(entry, serverMode) {
+    if (!validatePasscode(true)) return;
     if (!confirm(`ต้องการใช้ "${entry.fileName}" (อัปโหลดเมื่อ ${entry.savedAtText}) เป็นข้อมูลปัจจุบันของทุกเครื่องหรือไม่?`)) return;
     try {
       await window.DashboardStorage.restoreHistory(entry.id);
@@ -2255,6 +2372,7 @@
   }
 
   async function publishToWeb(btn) {
+    if (!validatePasscode(true)) return;
     const statusText = document.getElementById('publishStatusText');
     const original = btn.innerHTML;
     btn.disabled = true;

@@ -37,6 +37,7 @@ HISTORY_INDEX = os.path.join(DATA_DIR, "upload_history.json")
 
 MAX_HISTORY = 20          # keep the repository small when publishing to GitHub
 ID_PATTERN = re.compile(r'^[A-Za-z0-9_\-]+$')
+UPLOAD_PASSCODE = '1212312121'
 
 os.makedirs(HISTORY_DIR, exist_ok=True)
 _lock = threading.Lock()
@@ -265,6 +266,11 @@ class DashboardHandler(http.server.SimpleHTTPRequestHandler):
             print(f"  [Server Error] {path}: {e}")
             self.send_json(500, {'error': str(e)})
 
+    def verify_passcode(self, data=None):
+        header_code = self.headers.get('X-Upload-Passcode', '').strip()
+        body_code = str(data.get('passcode', '')).strip() if isinstance(data, dict) else ''
+        return header_code == UPLOAD_PASSCODE or body_code == UPLOAD_PASSCODE
+
     def handle_save_data(self):
         body = self.read_body()
         if not body:
@@ -272,6 +278,11 @@ class DashboardHandler(http.server.SimpleHTTPRequestHandler):
             return
         data = json.loads(body.decode('utf-8'))
         data.pop('_storageSource', None)
+
+        if not self.verify_passcode(data):
+            print(f"  [Security] Unauthorized save attempt from {self.client_address[0]}")
+            self.send_json(403, {'error': 'รหัสผ่านสำหรับการอัปโหลดไม่ถูกต้อง'})
+            return
 
         now_ms = int(time.time() * 1000)
         upload_id = time.strftime('%Y%m%d_%H%M%S') + f"_{now_ms % 1000:03d}"
@@ -311,6 +322,10 @@ class DashboardHandler(http.server.SimpleHTTPRequestHandler):
         self.send_json(200, {'success': True, 'id': upload_id, 'savedAt': now_ms, 'fileName': entry['fileName']})
 
     def handle_upload_excel(self, upload_id):
+        if not self.verify_passcode():
+            print(f"  [Security] Unauthorized upload-excel attempt from {self.client_address[0]}")
+            self.send_json(403, {'error': 'รหัสผ่านสำหรับการอัปโหลดไม่ถูกต้อง'})
+            return
         file_data = self.read_body()
         if not file_data:
             self.send_json(400, {'error': 'Empty file content'})
@@ -327,6 +342,10 @@ class DashboardHandler(http.server.SimpleHTTPRequestHandler):
         self.send_json(200, {'success': True})
 
     def handle_restore(self, upload_id):
+        if not self.verify_passcode():
+            print(f"  [Security] Unauthorized restore attempt from {self.client_address[0]}")
+            self.send_json(403, {'error': 'รหัสผ่านไม่ถูกต้อง'})
+            return
         if not upload_id or not ID_PATTERN.match(upload_id):
             self.send_json(400, {'error': 'Invalid id'})
             return
@@ -359,6 +378,10 @@ class DashboardHandler(http.server.SimpleHTTPRequestHandler):
         self.send_json(200, {'success': True, 'savedAt': now_ms})
 
     def handle_reset(self):
+        if not self.verify_passcode():
+            print(f"  [Security] Unauthorized reset attempt from {self.client_address[0]}")
+            self.send_json(403, {'error': 'รหัสผ่านไม่ถูกต้อง'})
+            return
         with _lock:
             for p in (DATA_FILE, EXCEL_FILE, META_FILE):
                 if os.path.exists(p):
@@ -367,6 +390,10 @@ class DashboardHandler(http.server.SimpleHTTPRequestHandler):
         self.send_json(200, {'success': True})
 
     def handle_publish(self):
+        if not self.verify_passcode():
+            print(f"  [Security] Unauthorized publish attempt from {self.client_address[0]}")
+            self.send_json(403, {'error': 'รหัสผ่านไม่ถูกต้อง'})
+            return
         print(f"  [Publish] requested by {self.client_address[0]} ...")
         try:
             ok, message, log = publish_to_github()

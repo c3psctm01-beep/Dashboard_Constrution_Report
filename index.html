@@ -759,9 +759,29 @@
       <div class="modal-body">
         <div class="upload-mode-note" id="uploadModeNote"></div>
 
-        <div class="upload-form-row">
-          <label class="uploader-label" for="uploaderNameInput">ชื่อผู้อัปโหลด (ไม่บังคับ)</label>
-          <input type="text" class="search-input uploader-input" id="uploaderNameInput" maxlength="60" placeholder="เช่น สมชาย ผบส.">
+        <div class="upload-form-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.85rem; margin-bottom: 0.85rem;">
+          <div class="upload-form-row" style="margin-bottom: 0;">
+            <label class="uploader-label" for="uploaderNameInput">
+              <i data-lucide="user" style="width: 13px; height: 13px;"></i>
+              ชื่อผู้อัปโหลด (ไม่บังคับ)
+            </label>
+            <input type="text" class="search-input uploader-input" id="uploaderNameInput" maxlength="60" placeholder="เช่น สมชาย ผบส.">
+          </div>
+          <div class="upload-form-row" style="margin-bottom: 0;">
+            <label class="uploader-label" for="uploadPasscodeInput">
+              <i data-lucide="lock" style="width: 13px; height: 13px; color: var(--pea-purple);"></i>
+              รหัสผ่านสำหรับการอัปโหลด <span style="color: var(--color-danger); font-weight: 700;">*</span>
+            </label>
+            <div style="position: relative; display: flex; align-items: center;">
+              <input type="password" class="search-input uploader-input" id="uploadPasscodeInput" placeholder="กรอกรหัสผ่าน..." autocomplete="current-password" style="padding-right: 2.2rem; width: 100%;">
+              <button type="button" id="btnTogglePasscodeVisibility" style="position: absolute; right: 8px; background: none; border: none; cursor: pointer; color: var(--text-muted); padding: 4px; display: flex; align-items: center;" title="แสดง/ซ่อนรหัสผ่าน">
+                <i data-lucide="eye" id="passcodeEyeIcon" style="width: 15px; height: 15px;"></i>
+              </button>
+            </div>
+            <div id="passcodeHelpText" style="font-size: 0.74rem; color: var(--text-muted); margin-top: 3px;">
+              จำเป็นต้องใส่รหัสผ่านเพื่อยืนยันสิทธิ์การอัปโหลด
+            </div>
+          </div>
         </div>
 
         <button type="button" class="upload-dropzone" id="uploadDropzone">
