@@ -7,7 +7,7 @@
   <meta name="description" content="ระบบแดชบอร์ดติดตามสถานะงานก่อสร้างสายส่ง 115 kV สถานีไฟฟ้า รายละเอียดการเบิกจ่าย WBS และสถานะการขออนุญาต สำหรับ กฟภ. (PEA)">
   
   <!-- Stylesheets -->
-  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/style.css?v=4">
   
   <!-- Vendor Scripts -->
   <script src="js/vendor/xlsx.full.min.js"></script>
@@ -18,7 +18,7 @@
   <div class="app-container">
     
     <!-- Dedicated Print Report Header (Visible only in print & PDF export) -->
-    <div id="printReportHeader" class="print-only print-report-header">
+    <div id="printReportHeader" class="print-only print-report-header" style="display: none;">
       <div class="print-header-top">
         <div class="print-brand">
           <div class="print-logo-badge">PEA</div>
@@ -1014,10 +1014,12 @@
   <div class="toast-container" id="toastContainer"></div>
 
   <!-- Application Scripts -->
-  <script src="js/storage.js?v=2"></script>
-  <script src="js/validator.js?v=2"></script>
-  <script src="js/parser.js?v=2"></script>
-  <script src="js/defaultData.js?v=2"></script>
-  <script src="js/app.js?v=2"></script>
+  <script src="js/vendor/supabase.min.js"></script>
+  <script src="js/supabaseConfig.js"></script>
+  <script src="js/storage.js?v=3"></script>
+  <script src="js/validator.js?v=3"></script>
+  <script src="js/parser.js?v=3"></script>
+  <script src="js/defaultData.js?v=3"></script>
+  <script src="js/app.js?v=3"></script>
 </body>
 </html>

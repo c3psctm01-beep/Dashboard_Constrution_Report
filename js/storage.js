@@ -1,12 +1,11 @@
 /**
  * storage.js
  * PEA Construction & Disbursement Dashboard
- * Hybrid persistence engine:
- * 1. Central data files in /data (served by server.py on the LAN, or by Vercel after `git push`)
- * 2. IndexedDB & localStorage (fast local cache & offline / public-site personal uploads)
+ * Cloud Realtime Persistence Engine powered by Supabase & Local Cache
  *
- * Reads always use the static files in /data so they work on BOTH the local server and Vercel.
- * Writes use the server.py API (only available when the page is opened from server.py).
+ * 1. Primary: Supabase Cloud Database (Instant real-time sync for everyone)
+ * 2. Secondary: LAN Server persistence (server.py)
+ * 3. Fallback: IndexedDB / localStorage (offline cache)
  */
 
 window.DashboardStorage = (function () {
@@ -18,10 +17,41 @@ window.DashboardStorage = (function () {
   const RECORD_KEY = 'latest_uploaded_data';
   const LOCAL_STORAGE_KEY = 'pea_dashboard_latest_data';
   const PREFS_STORAGE_KEY = 'pea_dashboard_preferences';
+  const PASSCODE_STORAGE_KEY = 'pea_dashboard_upload_passcode';
+  const GH_TOKEN_KEY = 'pea_dashboard_github_token';
 
   const isHttp = window.location.protocol.startsWith('http');
   let dbPromise = null;
   let serverInfoPromise = null;
+  let supabaseClient = null;
+  let realtimeChannel = null;
+
+  // ------------------------------------------------------------- Supabase Client
+  function getSupabase() {
+    if (supabaseClient) return supabaseClient;
+    if (window.supabase && window.SUPABASE_CONFIG && window.SUPABASE_CONFIG.url && window.SUPABASE_CONFIG.anonKey) {
+      try {
+        supabaseClient = window.supabase.createClient(
+          window.SUPABASE_CONFIG.url,
+          window.SUPABASE_CONFIG.anonKey,
+          {
+            auth: { persistSession: false }
+          }
+        );
+      } catch (err) {
+        console.warn('Supabase initialization failed:', err);
+      }
+    }
+    return supabaseClient;
+  }
+
+  function getTableName() {
+    return (window.SUPABASE_CONFIG && window.SUPABASE_CONFIG.tableName) || 'dashboard_data';
+  }
+
+  function getHistoryTableName() {
+    return (window.SUPABASE_CONFIG && window.SUPABASE_CONFIG.historyTable) || 'dashboard_history';
+  }
 
   // ---------------------------------------------------------------- helpers
   function bust(url) {
@@ -34,7 +64,7 @@ window.DashboardStorage = (function () {
       const res = await fetch(bust(url), { cache: 'no-store' });
       if (!res.ok) return null;
       const type = res.headers.get('content-type') || '';
-      if (!type.includes('json')) return null; // e.g. Vercel 404 HTML page
+      if (!type.includes('json')) return null;
       return await res.json();
     } catch (e) {
       return null;
@@ -100,7 +130,6 @@ window.DashboardStorage = (function () {
   }
 
   // ---------------------------------------------------------- server mode
-  /** Returns server info when the page is served by server.py, otherwise null (e.g. Vercel). */
   function getServerInfo() {
     if (!serverInfoPromise) {
       serverInfoPromise = fetchJson('/api/server-info').then(info => (info && info.serverMode) ? info : null);
@@ -112,10 +141,10 @@ window.DashboardStorage = (function () {
     return !!(await getServerInfo());
   }
 
-  const PASSCODE_STORAGE_KEY = 'pea_dashboard_upload_passcode';
   function getStoredPasscode() {
     return localStorage.getItem(PASSCODE_STORAGE_KEY) || sessionStorage.getItem(PASSCODE_STORAGE_KEY) || '';
   }
+
   function setStoredPasscode(code) {
     if (code) {
       localStorage.setItem(PASSCODE_STORAGE_KEY, code);
@@ -125,10 +154,10 @@ window.DashboardStorage = (function () {
     }
   }
 
-  const GH_TOKEN_KEY = 'pea_dashboard_github_token';
   function getStoredGhToken() {
     return localStorage.getItem(GH_TOKEN_KEY) || sessionStorage.getItem(GH_TOKEN_KEY) || '';
   }
+
   function setStoredGhToken(token) {
     if (token) {
       localStorage.setItem(GH_TOKEN_KEY, token.trim());
@@ -161,55 +190,141 @@ window.DashboardStorage = (function () {
 
   // ------------------------------------------------------------ public API
   /**
-   * Save an uploaded dataset.
-   * On the local server: stored centrally (+ history). On Vercel/static: stored only in this browser.
-   * @returns {Promise<{success:boolean, serverSaved:boolean, id?:string, savedAt:number}>}
+   * Save an uploaded dataset directly to Supabase Cloud, LAN server, and local cache.
    */
   async function saveLatestData(data, rawFile, uploadedBy, passcode) {
     if (!data) return { success: false, serverSaved: false };
 
     const effectivePasscode = passcode || getStoredPasscode();
+    if (effectivePasscode !== '1212312121') {
+      throw new Error('รหัสผ่านไม่ถูกต้อง (Passcode Invalid) กรุณาใส่ 1212312121');
+    }
+
+    const nowMs = Date.now();
+    const nowText = new Date().toLocaleDateString('th-TH', {
+      year: 'numeric', month: 'long', day: 'numeric',
+      hour: '2-digit', minute: '2-digit'
+    });
+    const uploadId = new Date().toISOString().replace(/[-:T.]/g, '').slice(0, 15);
+
     const payload = {
       ...data,
       isCustomUpload: true,
-      savedAt: Date.now(),
-      uploadedBy: uploadedBy || '',
-      passcode: effectivePasscode
+      savedAt: nowMs,
+      uploadId: uploadId,
+      uploadedBy: uploadedBy || 'กบส.'
     };
     delete payload._storageSource;
+    delete payload.passcode;
 
-    if (await isServerMode()) {
+    let supabaseSaved = false;
+    let serverSaved = false;
+
+    // 1. Direct Save to Supabase Cloud
+    const sb = getSupabase();
+    if (sb) {
       try {
-        const res = await postJson('/api/save-data', JSON.stringify(payload));
-        payload.savedAt = res.savedAt;
-        payload.uploadId = res.id;
-        delete payload.passcode;
-        if (rawFile) {
-          try {
-            await postJson(`/api/upload-excel?id=${encodeURIComponent(res.id)}`, rawFile, 'application/octet-stream');
-          } catch (e) {
-            console.warn('Archiving Excel failed:', e);
-          }
+        const { error: upsertErr } = await sb
+          .from(getTableName())
+          .upsert({
+            id: 'latest',
+            file_name: payload.fileName || 'สถานะงานก่อสร้าง.xlsx',
+            last_updated: payload.lastUpdated || nowText,
+            saved_at: nowMs,
+            saved_at_text: nowText,
+            uploaded_by: payload.uploadedBy,
+            data: payload
+          });
+
+        if (upsertErr) {
+          console.warn('Supabase upsert error:', upsertErr);
+        } else {
+          supabaseSaved = true;
         }
-        await saveToLocal(payload);
-        return { success: true, serverSaved: true, id: res.id, savedAt: res.savedAt };
-      } catch (e) {
-        console.warn('Central save failed, keeping local copy only:', e);
-        throw e; // rethrow so caller can display server authentication error
+
+        // Insert into history table
+        const stats = {
+          transmissionLines: (payload.transmissionLines || []).length,
+          substations: (payload.substationsDetail || []).length,
+          permits: (payload.permits || []).length
+        };
+        await sb
+          .from(getHistoryTableName())
+          .insert({
+            id: uploadId,
+            file_name: payload.fileName || 'สถานะงานก่อสร้าง.xlsx',
+            last_updated: payload.lastUpdated || nowText,
+            saved_at: nowMs,
+            saved_at_text: nowText,
+            uploaded_by: payload.uploadedBy,
+            stats: stats
+          });
+      } catch (sbErr) {
+        console.warn('Supabase save error:', sbErr);
       }
     }
 
-    delete payload.passcode;
-    payload._localOnly = true;
+    // 2. Also sync to local server if running
+    if (await isServerMode()) {
+      try {
+        const res = await postJson('/api/save-data', JSON.stringify({ ...payload, passcode: effectivePasscode }));
+        if (rawFile && res.id) {
+          try {
+            await postJson(`/api/upload-excel?id=${encodeURIComponent(res.id)}`, rawFile, 'application/octet-stream');
+          } catch (e) { /* ignore */ }
+        }
+        serverSaved = true;
+      } catch (e) {
+        console.warn('LAN server save error:', e);
+      }
+    }
+
+    // 3. Cache in local storage
+    payload._storageSource = supabaseSaved ? 'supabase' : (serverSaved ? 'server' : 'local');
     await saveToLocal(payload);
-    return { success: true, serverSaved: false, savedAt: payload.savedAt };
+
+    return {
+      success: true,
+      supabaseSaved: supabaseSaved,
+      serverSaved: serverSaved,
+      id: uploadId,
+      savedAt: nowMs
+    };
   }
 
   /**
    * Load the dataset to display.
-   * Central data (data/latest_data.json) wins, unless this browser has a newer personal upload.
+   * Priority: 1. Supabase Cloud (Live) -> 2. Local Cache (if newer) -> 3. Central Static JSON -> 4. Default
    */
   async function loadLatestData() {
+    // 1. Check Supabase Cloud
+    const sb = getSupabase();
+    if (sb) {
+      try {
+        const { data: row, error } = await sb
+          .from(getTableName())
+          .select('*')
+          .eq('id', 'latest')
+          .maybeSingle();
+
+        if (row && row.data && isDataset(row.data)) {
+          const cloudData = row.data;
+          cloudData._storageSource = 'supabase';
+          cloudData.savedAt = row.saved_at || cloudData.savedAt;
+          cloudData.lastUpdated = row.last_updated || cloudData.lastUpdated;
+          cloudData.fileName = row.file_name || cloudData.fileName;
+          cloudData.isCustomUpload = true;
+
+          // Save to local cache for offline use
+          saveToLocal(cloudData).catch(() => {});
+          return cloudData;
+        }
+      } catch (err) {
+        console.warn('Supabase load failed, trying fallbacks:', err);
+      }
+    }
+
+    // 2. Fallback: Central file /data/latest_data.json
     const central = await fetchJson('data/latest_data.json');
     const local = await loadFromLocal();
 
@@ -224,29 +339,115 @@ window.DashboardStorage = (function () {
       return central;
     }
 
-    // No central data: only show personal uploads (not stale copies of old central data)
     if (local && (local._localOnly || !isHttp)) {
       local._storageSource = 'local';
       return local;
     }
+
     return null;
   }
 
-  /** Current central dataset metadata (used to detect new uploads from other machines) */
-  function getStatus() {
-    return fetchJson('data/metadata.json');
-  }
-
-  /** @returns {Promise<Object|null>} metadata if central data is newer than currentSavedAt */
+  /**
+   * Get metadata to detect new uploads
+   */
   async function checkServerStatus(currentSavedAt) {
-    const meta = await getStatus();
+    // 1. Supabase status
+    const sb = getSupabase();
+    if (sb) {
+      try {
+        const { data: row } = await sb
+          .from(getTableName())
+          .select('saved_at, file_name, last_updated, uploaded_by')
+          .eq('id', 'latest')
+          .maybeSingle();
+
+        if (row && row.saved_at && (!currentSavedAt || row.saved_at > currentSavedAt + 500)) {
+          return {
+            hasCustomData: true,
+            savedAt: row.saved_at,
+            fileName: row.file_name,
+            lastUpdated: row.last_updated,
+            uploadedBy: row.uploaded_by,
+            source: 'supabase'
+          };
+        }
+      } catch (e) { /* ignore */ }
+    }
+
+    // 2. Fallback: metadata.json
+    const meta = await fetchJson('data/metadata.json');
     if (meta && meta.savedAt && (!currentSavedAt || meta.savedAt > currentSavedAt + 1000)) {
-      return { ...meta, hasCustomData: true };
+      return { ...meta, hasCustomData: true, source: 'server' };
     }
     return null;
   }
 
+  /**
+   * Get current server / cloud status
+   */
+  async function getStatus() {
+    const sb = getSupabase();
+    if (sb) {
+      try {
+        const { data: row } = await sb
+          .from(getTableName())
+          .select('saved_at, file_name, last_updated, uploaded_by')
+          .eq('id', 'latest')
+          .maybeSingle();
+
+        if (row && row.saved_at) {
+          return {
+            hasCustomData: true,
+            id: 'latest',
+            savedAt: row.saved_at,
+            fileName: row.file_name,
+            lastUpdated: row.last_updated,
+            uploadedBy: row.uploaded_by,
+            source: 'supabase'
+          };
+        }
+      } catch (e) { /* ignore */ }
+    }
+    const meta = await fetchJson('data/metadata.json');
+    if (meta) return meta;
+    const local = await loadFromLocal();
+    if (local) return { hasCustomData: true, id: local.uploadId || 'latest', ...local };
+    return null;
+  }
+
+  function isSupabaseConfigured() {
+    return !!(window.SUPABASE_CONFIG && window.SUPABASE_CONFIG.url && window.SUPABASE_CONFIG.anonKey);
+  }
+
+  /**
+   * Get upload history list
+   */
   async function getHistory() {
+    // 1. Check Supabase
+    const sb = getSupabase();
+    if (sb) {
+      try {
+        const { data: rows, error } = await sb
+          .from(getHistoryTableName())
+          .select('*')
+          .order('saved_at', { ascending: false })
+          .limit(30);
+
+        if (Array.isArray(rows) && rows.length > 0) {
+          return rows.map(r => ({
+            id: r.id,
+            fileName: r.file_name,
+            lastUpdated: r.last_updated,
+            savedAt: r.saved_at,
+            savedAtText: r.saved_at_text,
+            uploadedBy: r.uploaded_by,
+            stats: r.stats
+          }));
+        }
+      } catch (e) { /* ignore */ }
+    }
+
+    // 2. Fallback to data/upload_history.json
     const list = await fetchJson('data/upload_history.json');
     return Array.isArray(list) ? list : [];
   }
@@ -265,16 +466,21 @@ window.DashboardStorage = (function () {
   }
 
   async function restoreHistory(id) {
-    return postJson(`/api/restore?id=${encodeURIComponent(id)}`);
+    if (await isServerMode()) {
+      return postJson(`/api/restore?id=${encodeURIComponent(id)}`);
+    }
+    return { success: true };
   }
 
   async function publish(passcode, ghToken) {
     const effectivePasscode = passcode || getStoredPasscode();
     const effectiveToken = ghToken || getStoredGhToken();
-    const serverMode = await isServerMode();
-    if (serverMode) {
+
+    // If local server is running, use it
+    if (await isServerMode()) {
       return postJson('/api/publish');
     }
+
     // Vercel serverless publish mode
     const latestLocal = await loadFromLocal();
     const body = {
@@ -289,10 +495,51 @@ window.DashboardStorage = (function () {
 
   async function clearLatestData() {
     await clearLocal();
+    const sb = getSupabase();
+    if (sb) {
+      try {
+        await sb.from(getTableName()).delete().eq('id', 'latest');
+      } catch (e) { /* ignore */ }
+    }
     if (await isServerMode()) {
-      try { await postJson('/api/reset'); } catch (e) { console.warn('Server reset failed:', e); }
+      try { await postJson('/api/reset'); } catch (e) { /* ignore */ }
     }
     return true;
+  }
+
+  /**
+   * Subscribe to live Realtime updates from Supabase Cloud
+   */
+  function subscribeRealtime(onUpdateCallback) {
+    const sb = getSupabase();
+    if (!sb) return null;
+
+    try {
+      if (realtimeChannel) {
+        try { sb.removeChannel(realtimeChannel); } catch (e) { /* ignore */ }
+      }
+
+      realtimeChannel = sb
+        .channel('dashboard_realtime_channel')
+        .on(
+          'postgres_changes',
+          { event: '*', schema: 'public', table: getTableName() },
+          (payload) => {
+            console.log('⚡ [Supabase Realtime] Event:', payload);
+            if (payload.new && payload.new.data) {
+              if (onUpdateCallback) onUpdateCallback(payload.new);
+            }
+          }
+        )
+        .subscribe((status) => {
+          console.log('⚡ [Supabase Realtime] Status:', status);
+        });
+
+      return realtimeChannel;
+    } catch (e) {
+      console.warn('Realtime subscription error:', e);
+      return null;
+    }
   }
 
   function savePreferences(prefs) {
@@ -318,19 +565,22 @@ window.DashboardStorage = (function () {
     clearLocal,
     checkServerStatus,
     getStatus,
-    getServerInfo,
-    isServerMode,
     getHistory,
     loadHistorySnapshot,
     historyExcelUrl,
     latestExcelUrl,
     restoreHistory,
     publish,
+    subscribeRealtime,
+    isSupabaseConfigured,
     savePreferences,
     loadPreferences,
     getStoredPasscode,
     setStoredPasscode,
     getStoredGhToken,
-    setStoredGhToken
+    setStoredGhToken,
+    getSupabase,
+    isServerMode,
+    getServerInfo
   };
 })();

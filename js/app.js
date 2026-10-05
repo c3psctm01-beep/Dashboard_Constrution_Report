@@ -582,14 +582,17 @@
         parsedData.isCustomUpload = true;
         appState.data = parsedData;
 
-        // 3. Persist to Storage (Server + Local)
+        // 3. Persist to Storage (Supabase Cloud + Server + Local)
         let saveResult = null;
         if (window.DashboardStorage) {
           const uploadedBy = (localStorage.getItem('pea_dashboard_uploader') || '').trim();
           saveResult = await window.DashboardStorage.saveLatestData(parsedData, file, uploadedBy, getUploadPasscode());
           parsedData.savedAt = saveResult.savedAt;
           parsedData.uploadedBy = uploadedBy;
-          if (saveResult.serverSaved) {
+          if (saveResult.supabaseSaved) {
+            parsedData.uploadId = saveResult.id;
+            parsedData._storageSource = 'supabase';
+          } else if (saveResult.serverSaved) {
             parsedData.uploadId = saveResult.id;
             parsedData._storageSource = 'server';
           } else {
@@ -608,6 +611,7 @@
         const uploadModal = document.getElementById('uploadHistoryModal');
         if (uploadModal) uploadModal.classList.add('active');
 
+        const isSupabase = saveResult && saveResult.supabaseSaved;
         const publishPanel = document.getElementById('publishPanel');
         const publishStatusText = document.getElementById('publishStatusText');
         const btnPublish = document.getElementById('btnPublishWeb');
@@ -615,7 +619,13 @@
           publishPanel.style.display = 'flex';
           publishPanel.classList.add('publish-panel-highlight');
           if (publishStatusText) {
-            if (serverMode) {
+            if (isSupabase) {
+              publishStatusText.innerHTML = `<span style="color:var(--color-success); font-weight:700; display:block; margin-bottom:2px;"><i data-lucide="cloud-lightning" style="width:16px;height:16px;display:inline-block;vertical-align:middle;color:#10b981;"></i> ซิงค์ขึ้น Supabase Cloud สำเร็จเรียบร้อย!</span> ข้อมูลถูกบันทึกลงคลาวด์แล้ว ทุกคนที่เปิดเว็บจะเห็นข้อมูลอัปเดตตรงกันทันทีแบบเรียลไทม์`;
+              if (btnPublish) {
+                btnPublish.style.display = 'inline-flex';
+                btnPublish.innerHTML = `<i data-lucide="github" style="width:14px;height:14px;"></i> สำรองข้อมูลขึ้น GitHub`;
+              }
+            } else if (serverMode) {
               publishStatusText.innerHTML = `<span style="color:var(--color-success); font-weight:700; display:block; margin-bottom:2px;">✅ อัปโหลดไฟล์ "${escapeHtml(file.name)}" เรียบร้อยแล้ว!</span> คลิกปุ่ม <strong>"เผยแพร่ขึ้นเว็บ"</strong> ด้านขวานี้เพื่อส่งข้อมูลขึ้น GitHub → Vercel ทันที`;
               if (btnPublish) btnPublish.style.display = 'inline-flex';
             } else {
@@ -629,7 +639,9 @@
           }, 100);
         }
 
-        if (saveResult && saveResult.serverSaved) {
+        if (isSupabase) {
+          showToast(`ซิงค์ข้อมูลลง Supabase Cloud สำเร็จ! ทุกคนจะเห็นข้อมูลทันที`, 'success');
+        } else if (saveResult && saveResult.serverSaved) {
           showToast(`อัปโหลดไฟล์ "${file.name}" สำเร็จ — กดปุ่ม "เผยแพร่ขึ้นเว็บ" ในหน้าต่างป๊อปอัปเพื่ออัปเดตเว็บสาธารณะ`, 'success');
         } else {
           showToast(`อัปโหลดไฟล์ "${file.name}" สำเร็จ (แสดงผลเฉพาะเครื่องนี้)`, 'success');
@@ -684,7 +696,11 @@
     const sourceBadge = document.getElementById('fileDataSourceBadge');
     if (sourceBadge) {
       if (d.isCustomUpload) {
-        if (d._storageSource === 'server') {
+        if (d._storageSource === 'supabase') {
+          sourceBadge.className = 'badge-source badge-source-supabase';
+          sourceBadge.title = 'ข้อมูลชุดนี้ถูกบันทึกบน Supabase Cloud (ซิงค์เรียลไทม์ให้ทุกคนเห็นทันที)';
+          sourceBadge.innerHTML = `<i data-lucide="cloud-lightning" style="width: 12px; height: 12px;"></i> Supabase Cloud (เรียลไทม์)`;
+        } else if (d._storageSource === 'server') {
           sourceBadge.className = 'badge-source badge-source-server';
           sourceBadge.title = 'ข้อมูลชุดนี้ถูกบันทึกไว้บนเซิร์ฟเวอร์ส่วนกลาง ทุกเครื่องที่เปิดใช้งานจะเห็นข้อมูลตรงกัน';
           sourceBadge.innerHTML = `<i data-lucide="server" style="width: 12px; height: 12px;"></i> เซิร์ฟเวอร์ส่วนกลาง (แชร์ทุกเครื่อง)`;
@@ -2395,6 +2411,7 @@
     if (!modal) return;
     modal.classList.add('active');
 
+    const isSupabase = window.DashboardStorage && window.DashboardStorage.isSupabaseConfigured();
     const serverMode = window.DashboardStorage ? await window.DashboardStorage.isServerMode() : false;
     const note = document.getElementById('uploadModeNote');
     const pubPanel = document.getElementById('publishPanel');
@@ -2406,7 +2423,18 @@
       pubPanel.style.display = 'flex';
     }
 
-    if (serverMode) {
+    if (isSupabase) {
+      note.className = 'upload-mode-note supabase';
+      note.innerHTML = `<i data-lucide="cloud-lightning" style="width:16px;height:16px;color:#10b981;"></i>
+        <span><strong>ระบบคลาวด์ Supabase (ซิงค์เรียลไทม์):</strong> เชื่อมต่อฐานข้อมูล Supabase Cloud เรียบร้อยแล้ว ไฟล์ที่อัปโหลดจะถูกบันทึกและซิงค์ให้ทุกคนเห็นทันทีโดยอัตโนมัติ (ไม่ต้องรอ Vercel Build)</span>`;
+      if (btnPub) {
+        btnPub.style.display = 'inline-flex';
+        btnPub.innerHTML = `<i data-lucide="github" style="width:14px;height:14px;"></i> สำรองข้อมูลขึ้น GitHub`;
+      }
+      if (pubStatus) {
+        pubStatus.innerHTML = `<span><strong>ระบบคลาวด์เรียลไทม์:</strong> อัปโหลดแล้วข้อมูลจะแสดงให้ทุกคนเห็นทันที (สามารถกดปุ่มสำรองไฟล์ขึ้น GitHub เพิ่มเติมได้)</span>`;
+      }
+    } else if (serverMode) {
       note.className = 'upload-mode-note server';
       note.innerHTML = `<i data-lucide="server" style="width:16px;height:16px;color:var(--color-success);"></i>
         <span><strong>เครื่องในสำนักงาน (เซิร์ฟเวอร์ส่วนกลาง):</strong> ไฟล์ที่อัปโหลดจะถูกบันทึกและเก็บประวัติ ทุกเครื่องใน LAN เห็นทันที
@@ -2632,10 +2660,30 @@
     }
   }
 
-  // Sync Watcher: detects new central data (LAN server or newly published public site)
+  // Sync Watcher: detects new central data (Supabase Realtime, LAN server, or public site)
   function initNetworkSyncWatcher() {
     if (!window.location.protocol.startsWith('http')) return;
 
+    // 1. Instant Realtime Subscription via Supabase Cloud
+    if (window.DashboardStorage && window.DashboardStorage.subscribeRealtime) {
+      window.DashboardStorage.subscribeRealtime((newPayload) => {
+        if (appState.viewingHistory) return;
+        const currentSavedAt = appState.data ? appState.data.savedAt : null;
+        if (newPayload && newPayload.saved_at && (!currentSavedAt || newPayload.saved_at > currentSavedAt + 500)) {
+          const banner = document.getElementById('networkUpdateBanner');
+          const text = document.getElementById('networkUpdateText');
+          if (banner && text) {
+            const who = newPayload.uploaded_by ? ` โดย ${newPayload.uploaded_by}` : '';
+            text.textContent = `⚡ มีการอัปเดตข้อมูลแบบเรียลไทม์: "${newPayload.file_name || 'ไฟล์ล่าสุด'}"${who} (${newPayload.saved_at_text || newPayload.last_updated || ''})`;
+            banner.style.display = 'flex';
+            lucide.createIcons({ root: banner });
+          }
+          showToast(`⚡ มีข้อมูลใหม่จาก Supabase Cloud: "${newPayload.file_name || 'ไฟล์ล่าสุด'}"`, 'info');
+        }
+      });
+    }
+
+    // 2. Periodic Polling fallback
     async function checkUpdate() {
       if (!window.DashboardStorage || appState.viewingHistory) return;
       const currentSavedAt = appState.data ? appState.data.savedAt : null;
@@ -2690,7 +2738,7 @@
     let initialData = null;
     let isFromStorage = false;
 
-    // 1. Check if there is saved uploaded data in persistent storage (Server or Local)
+    // 1. Check if there is saved uploaded data in persistent storage (Supabase / Server / Local)
     if (window.DashboardStorage) {
       try {
         const savedData = await window.DashboardStorage.loadLatestData();
@@ -2717,7 +2765,9 @@
       renderAll();
 
       if (isFromStorage) {
-        if (initialData._storageSource === 'server') {
+        if (initialData._storageSource === 'supabase') {
+          showToast(`เชื่อมต่อ Supabase Cloud: โหลดข้อมูลล่าสุด "${initialData.fileName}" เรียบร้อยแล้ว`, 'info');
+        } else if (initialData._storageSource === 'server') {
           showToast(`เชื่อมต่อเซิร์ฟเวอร์ส่วนกลาง: โหลดข้อมูลล่าสุด "${initialData.fileName}" เรียบร้อยแล้ว`, 'info');
         } else {
           showToast(`โหลดสถานะตามไฟล์ล่าสุด: "${initialData.fileName}" เรียบร้อยแล้ว`, 'info');
