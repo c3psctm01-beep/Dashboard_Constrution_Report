@@ -442,6 +442,23 @@
       });
     }
 
+    const btnTogglePubGhToken = document.getElementById('btnTogglePubGhToken');
+    if (btnTogglePubGhToken) {
+      btnTogglePubGhToken.addEventListener('click', () => {
+        const input = document.getElementById('pubModalGhToken');
+        const icon = document.getElementById('iconPubGhToken');
+        if (!input) return;
+        if (input.type === 'password') {
+          input.type = 'text';
+          if (icon) icon.setAttribute('data-lucide', 'eye-off');
+        } else {
+          input.type = 'password';
+          if (icon) icon.setAttribute('data-lucide', 'eye');
+        }
+        lucide.createIcons({ root: btnTogglePubGhToken });
+      });
+    }
+
     const btnExecutePublish = document.getElementById('btnExecutePublishWeb');
     if (btnExecutePublish) {
       btnExecutePublish.addEventListener('click', () => executePublishWeb(btnExecutePublish));
@@ -2504,7 +2521,7 @@
     }
   }
 
-  function openPublishModal() {
+  async function openPublishModal() {
     const modal = document.getElementById('publishModal');
     if (!modal) return;
 
@@ -2512,14 +2529,25 @@
     const fnEl = document.getElementById('pubModalFileName');
     const luEl = document.getElementById('pubModalLastUpdated');
     const passInput = document.getElementById('pubModalPasscode');
+    const ghTokenInput = document.getElementById('pubModalGhToken');
+    const tokenSection = document.getElementById('pubModalTokenSection');
     const statusBox = document.getElementById('pubStatusBox');
 
     if (fnEl) fnEl.textContent = d.fileName || 'สถานะงานก่อสร้าง.xlsx';
     if (luEl) luEl.textContent = d.lastUpdated || '-';
     if (passInput) passInput.value = (window.DashboardStorage ? window.DashboardStorage.getStoredPasscode() : '') || '1212312121';
+    if (ghTokenInput) ghTokenInput.value = (window.DashboardStorage ? window.DashboardStorage.getStoredGhToken() : '') || '';
     if (statusBox) {
       statusBox.style.display = 'none';
       statusBox.innerHTML = '';
+    }
+
+    // If running in local server mode, token section is not strictly required
+    if (window.DashboardStorage) {
+      const isServer = await window.DashboardStorage.isServerMode();
+      if (tokenSection) {
+        tokenSection.style.display = isServer ? 'none' : 'block';
+      }
     }
 
     modal.classList.add('active');
@@ -2529,6 +2557,8 @@
   async function executePublishWeb(btn) {
     const passInput = document.getElementById('pubModalPasscode');
     const passcode = passInput ? passInput.value.trim() : '';
+    const ghTokenInput = document.getElementById('pubModalGhToken');
+    const ghToken = ghTokenInput ? ghTokenInput.value.trim() : '';
     const statusBox = document.getElementById('pubStatusBox');
 
     if (passcode !== '1212312121') {
@@ -2544,6 +2574,9 @@
 
     if (window.DashboardStorage) {
       window.DashboardStorage.setStoredPasscode(passcode);
+      if (ghToken) {
+        window.DashboardStorage.setStoredGhToken(ghToken);
+      }
     }
 
     const originalText = btn.innerHTML;
@@ -2560,8 +2593,16 @@
     }
 
     try {
-      const res = await window.DashboardStorage.publish(passcode);
-      if (res && res.success !== false) {
+      const res = await window.DashboardStorage.publish(passcode, ghToken);
+      if (res && res.needVercelConfig) {
+        if (statusBox) {
+          statusBox.style.background = 'var(--color-warning-bg)';
+          statusBox.style.color = 'var(--text-primary)';
+          statusBox.style.border = '1px solid var(--color-warning-border)';
+          statusBox.innerHTML = `<strong>⚠️ ${res.message}</strong><br>สามารถใส่ GitHub Token ในช่องด้านบนแล้วกด <strong>"ยืนยันเผยแพร่ขึ้นเว็บทันที"</strong> อีกครั้งได้เลยครับ`;
+        }
+        showToast('กรุณาใส่ GitHub Token เพื่อเผยแพร่ผ่านเว็บ', 'warning');
+      } else if (res && res.success !== false) {
         if (statusBox) {
           statusBox.style.background = 'var(--color-success-bg)';
           statusBox.style.color = 'var(--color-success)';

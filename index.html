@@ -976,6 +976,26 @@
           </div>
         </div>
 
+        <!-- GitHub Token Section (Used for Vercel / External Web publishing) -->
+        <div id="pubModalTokenSection" style="margin-bottom: 1.15rem; background: var(--bg-secondary); border: 1px dashed var(--border-subtle); border-radius: var(--radius-md); padding: 0.75rem 1rem;">
+          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.4rem;">
+            <label for="pubModalGhToken" style="font-size: 0.83rem; font-weight: 600; color: var(--text-primary); display: flex; align-items: center; gap: 0.35rem;">
+              <i data-lucide="key" style="width: 14px; height: 14px; color: #10b981;"></i>
+              GitHub Token (สำหรับการเผยแพร่ผ่านเว็บ Vercel):
+            </label>
+            <span style="font-size: 0.72rem; color: var(--text-muted);">จําในเครื่องนี้</span>
+          </div>
+          <div style="display: flex; gap: 0.5rem;">
+            <input type="password" id="pubModalGhToken" class="form-input" placeholder="ใส่ GitHub Token (เช่น gho_... หรือ ghp_...)" style="flex: 1; padding: 0.45rem 0.75rem; border: 1px solid var(--border-subtle); border-radius: var(--radius-sm); font-size: 0.82rem; background: var(--bg-surface); color: var(--text-primary);">
+            <button type="button" class="btn-secondary" id="btnTogglePubGhToken" style="padding: 0.45rem 0.65rem;" title="แสดง/ซ่อน Token">
+              <i data-lucide="eye" id="iconPubGhToken" style="width: 15px; height: 15px;"></i>
+            </button>
+          </div>
+          <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.35rem; line-height: 1.4;">
+            💡 หากตั้งค่า <code>GITHUB_TOKEN</code> ใน Vercel Settings แล้ว ช่องนี้สามารถเว้นว่างได้
+          </div>
+        </div>
+
         <!-- Status Message Area during publish -->
         <div id="pubStatusBox" style="display: none; padding: 0.75rem 1rem; border-radius: var(--radius-md); font-size: 0.83rem; margin-bottom: 1rem; line-height: 1.45;"></div>
 

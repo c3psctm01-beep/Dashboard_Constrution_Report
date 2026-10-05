@@ -125,11 +125,28 @@ window.DashboardStorage = (function () {
     }
   }
 
-  async function postJson(url, body, contentType) {
-    const headers = { 'Content-Type': contentType || 'application/json' };
+  const GH_TOKEN_KEY = 'pea_dashboard_github_token';
+  function getStoredGhToken() {
+    return localStorage.getItem(GH_TOKEN_KEY) || sessionStorage.getItem(GH_TOKEN_KEY) || '';
+  }
+  function setStoredGhToken(token) {
+    if (token) {
+      localStorage.setItem(GH_TOKEN_KEY, token.trim());
+    } else {
+      localStorage.removeItem(GH_TOKEN_KEY);
+      sessionStorage.removeItem(GH_TOKEN_KEY);
+    }
+  }
+
+  async function postJson(url, body, contentType, extraHeaders) {
+    const headers = { 'Content-Type': contentType || 'application/json', ...(extraHeaders || {}) };
     const passcode = getStoredPasscode();
-    if (passcode) {
+    if (passcode && !headers['X-Upload-Passcode']) {
       headers['X-Upload-Passcode'] = passcode;
+    }
+    const ghToken = getStoredGhToken();
+    if (ghToken && !headers['X-GitHub-Token']) {
+      headers['X-GitHub-Token'] = ghToken;
     }
     const res = await fetch(url, {
       method: 'POST',
@@ -251,8 +268,9 @@ window.DashboardStorage = (function () {
     return postJson(`/api/restore?id=${encodeURIComponent(id)}`);
   }
 
-  async function publish(passcode) {
+  async function publish(passcode, ghToken) {
     const effectivePasscode = passcode || getStoredPasscode();
+    const effectiveToken = ghToken || getStoredGhToken();
     const serverMode = await isServerMode();
     if (serverMode) {
       return postJson('/api/publish');
@@ -261,9 +279,12 @@ window.DashboardStorage = (function () {
     const latestLocal = await loadFromLocal();
     const body = {
       passcode: effectivePasscode,
+      githubToken: effectiveToken,
       dataset: latestLocal || (window.appState && window.appState.data) || null
     };
-    return postJson('/api/publish', JSON.stringify(body));
+    const extraHeaders = {};
+    if (effectiveToken) extraHeaders['X-GitHub-Token'] = effectiveToken;
+    return postJson('/api/publish', JSON.stringify(body), 'application/json', extraHeaders);
   }
 
   async function clearLatestData() {
@@ -308,6 +329,8 @@ window.DashboardStorage = (function () {
     savePreferences,
     loadPreferences,
     getStoredPasscode,
-    setStoredPasscode
+    setStoredPasscode,
+    getStoredGhToken,
+    setStoredGhToken
   };
 })();

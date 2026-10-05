@@ -34,14 +34,14 @@ export default async function handler(req, res) {
     const repoName = 'Dashboard_Constrution_Report';
     const branch = 'main';
 
-    // GitHub token from environment or header
-    const token = process.env.GITHUB_TOKEN || req.headers['x-github-token'];
+    // GitHub token from environment, header, or request body
+    const token = process.env.GITHUB_TOKEN || req.headers['x-github-token'] || body.githubToken;
 
     if (!token) {
       return res.status(200).json({
         success: false,
         needVercelConfig: true,
-        message: 'กรุณาตั้งค่า GITHUB_TOKEN ใน Vercel Environment Variables เพื่อเปิดใช้งานการเผยแพร่ตรงจากภายนอก'
+        message: 'กรุณาใส่ GitHub Token ในช่องตั้งค่า หรือตั้งค่า GITHUB_TOKEN ใน Vercel Environment Variables'
       });
     }
 
