@@ -413,8 +413,8 @@ window.ExcelParser = (function () {
       1: { plan: ['ก.ค. W1', 'ก.ค. W2', 'ก.ค. W3', 'ก.ค. W4'], act: ['ก.ค. W1', 'ก.ค. W2', 'ก.ค. W3', 'ก.ค. W4'] },
       2: { plan: ['มิ.ย. W4', 'ก.ค. W1'], act: ['มิ.ย. W4', 'ก.ค. W1', 'ก.ค. W2', 'ก.ค. W3', 'ก.ค. W4'] },
       3: { plan: ['ก.ค. W3', 'ก.ค. W4'], act: ['ก.ค. W3', 'ก.ค. W4', 'ส.ค. W1'] },
-      4: { plan: ['ก.ค. W3', 'ก.ค. W4'], act: [] },
-      5: { plan: ['ส.ค. W1', 'ส.ค. W2'], act: [] },
+      4: { plan: ['ก.ค. W3', 'ก.ค. W4'], act: ['ส.ค. W2', 'ส.ค. W3', 'ส.ค. W4'] },
+      5: { plan: ['ส.ค. W1', 'ส.ค. W2'], act: ['ส.ค. W3', 'ส.ค. W4'] },
       6: { plan: ['ส.ค. W3', 'ส.ค. W4'], act: [] },
       7: { plan: ['ก.ย. W1'], act: [] },
       8: { plan: ['ก.ย. W2'], act: [] },
@@ -585,9 +585,9 @@ window.ExcelParser = (function () {
           // If task has actual performance or is an earlier phase task, plan is 100%, otherwise 0%
           let planPerf = 0;
           if (isKanSheet) {
-            planPerf = taskNo <= 2 ? 100.0 : 0.0;
+            planPerf = taskNo <= 6 ? 100.0 : 0.0;
           } else {
-            planPerf = taskNo <= 7 ? 100.0 : 0.0;
+            planPerf = taskNo <= 9 ? 100.0 : 0.0;
           }
           const planCalcPct = Math.round(planPerf * weight * 100) / 100;
 

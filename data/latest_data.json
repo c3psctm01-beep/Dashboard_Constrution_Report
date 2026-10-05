@@ -150,637 +150,637 @@
         {
           "no": 1,
           "name": "รื้อถอนสถานีไฟฟ้าสมุทรสาคร 10 (ชั่วคราว)",
-          "status": "in-progress",
+          "planPerf": 100.0,
+          "actualPerf": 80.0,
           "weight": 0.1,
-          "calcPct": 9,
-          "planPerf": 100,
+          "calcPct": 8.0,
+          "planCalcPct": 10.0,
           "planWeeks": [
             "ส.ค. 69 W1",
             "ส.ค. 69 W2",
             "ส.ค. 69 W3",
             "ส.ค. 69 W4"
           ],
-          "actualPerf": 90,
           "actualWeeks": [
             "ก.ค. 69 W4",
             "ส.ค. 69 W1"
           ],
-          "planCalcPct": 10
+          "status": "in-progress"
         },
         {
           "no": 2,
-          "name": "ปรับปรุงที่ดิน",
-          "status": "completed",
-          "weight": 0.1,
-          "calcPct": 10,
-          "planPerf": 100,
+          "name": "ปรับปรุงดิน",
+          "planPerf": 100.0,
+          "actualPerf": 10.0,
+          "weight": 0.05,
+          "calcPct": 0.5,
+          "planCalcPct": 5.0,
           "planWeeks": [
             "ก.ค. 69 W3",
             "ก.ค. 69 W4"
           ],
-          "actualPerf": 100,
           "actualWeeks": [
             "ก.ค. 69 W4",
             "ส.ค. 69 W1"
           ],
-          "planCalcPct": 10
+          "status": "in-progress"
         },
         {
           "no": 3,
-          "name": "ขนย้ายติดตั้งฐานราก",
-          "status": "completed",
+          "name": "ขุดและติดตั้งฐานราก",
+          "planPerf": 100.0,
+          "actualPerf": 0.0,
           "weight": 0.05,
-          "calcPct": 5,
-          "planPerf": 0,
+          "calcPct": 0.0,
+          "planCalcPct": 5.0,
           "planWeeks": [
             "ส.ค. 69 W3",
             "ส.ค. 69 W4"
           ],
-          "actualPerf": 100,
           "actualWeeks": [],
-          "planCalcPct": 0
+          "status": "delayed"
         },
         {
           "no": 4,
-          "name": "ขนย้ายอุปกรณ์ป้องกัน 115 kV และหม้อแปลงไฟฟ้ากำลัง",
-          "status": "completed",
-          "weight": 0.1,
-          "calcPct": 10,
-          "planPerf": 0,
+          "name": "อุปกรณ์ป้องกัน 115 kV ขนส่งไฟฟ้ากำลัง",
+          "planPerf": 100.0,
+          "actualPerf": 0.0,
+          "weight": 0.05,
+          "calcPct": 0.0,
+          "planCalcPct": 5.0,
           "planWeeks": [
             "ส.ค. 69 W3",
             "ส.ค. 69 W4"
           ],
-          "actualPerf": 100,
           "actualWeeks": [],
-          "planCalcPct": 0
+          "status": "delayed"
         },
         {
           "no": 5,
-          "name": "ติดตั้งอุปกรณ์ป้องกัน 115 kV และหม้อแปลงไฟฟ้ากำลัง",
-          "status": "not-started",
-          "weight": 0.1,
-          "calcPct": 0,
-          "planPerf": 0,
+          "name": "ติดตั้งอุปกรณ์ป้องกัน 115 kV ขนส่งไฟฟ้ากำลัง",
+          "planPerf": 100.0,
+          "actualPerf": 0.0,
+          "weight": 0.05,
+          "calcPct": 0.0,
+          "planCalcPct": 5.0,
           "planWeeks": [
             "ก.ย. 69 W1",
             "ก.ย. 69 W2"
           ],
-          "actualPerf": 0,
           "actualWeeks": [],
-          "planCalcPct": 0
+          "status": "delayed"
         },
         {
           "no": 6,
-          "name": "ปักเสาภายในสถานีไฟฟ้า",
-          "status": "in-progress",
+          "name": "ปักเสาสถานีไฟฟ้า",
+          "planPerf": 100.0,
+          "actualPerf": 0.0,
           "weight": 0.05,
-          "calcPct": 1.5,
-          "planPerf": 0,
+          "calcPct": 0.0,
+          "planCalcPct": 5.0,
           "planWeeks": [
             "ก.ย. 69 W3",
             "ก.ย. 69 W4"
           ],
-          "actualPerf": 30,
           "actualWeeks": [],
-          "planCalcPct": 0
+          "status": "delayed"
         },
         {
           "no": 7,
           "name": "ติดตั้งระบบกราวด์กริด",
-          "status": "not-started",
+          "planPerf": 0.0,
+          "actualPerf": 0.0,
           "weight": 0.05,
-          "calcPct": 0,
-          "planPerf": 0,
+          "calcPct": 0.0,
+          "planCalcPct": 0.0,
           "planWeeks": [
             "ต.ค. 69 W1",
             "ต.ค. 69 W2"
           ],
-          "actualPerf": 0,
           "actualWeeks": [],
-          "planCalcPct": 0
+          "status": "not-started"
         },
         {
           "no": 8,
-          "name": "ลงหินเบอร์ 2",
-          "status": "not-started",
+          "name": "ลงหินคลุก 2",
+          "planPerf": 0.0,
+          "actualPerf": 0.0,
           "weight": 0.05,
-          "calcPct": 0,
-          "planPerf": 0,
+          "calcPct": 0.0,
+          "planCalcPct": 0.0,
           "planWeeks": [
             "ต.ค. 69 W3"
           ],
-          "actualPerf": 0,
           "actualWeeks": [],
-          "planCalcPct": 0
+          "status": "not-started"
         },
         {
           "no": 9,
           "name": "ติดตั้ง Ladder",
-          "status": "not-started",
+          "planPerf": 0.0,
+          "actualPerf": 0.0,
           "weight": 0.05,
-          "calcPct": 0,
-          "planPerf": 0,
+          "calcPct": 0.0,
+          "planCalcPct": 0.0,
           "planWeeks": [
             "ต.ค. 69 W4",
             "พ.ย. 69 W1",
             "พ.ย. 69 W2"
           ],
-          "actualPerf": 0,
           "actualWeeks": [],
-          "planCalcPct": 0
+          "status": "not-started"
         },
         {
           "no": 10,
-          "name": "ลากสายและติดตั้งสาย Control cable",
-          "status": "not-started",
-          "weight": 0.05,
-          "calcPct": 0,
-          "planPerf": 0,
+          "name": "ลากและติดตั้ง Control cable",
+          "planPerf": 0.0,
+          "actualPerf": 0.0,
+          "weight": 0.1,
+          "calcPct": 0.0,
+          "planCalcPct": 0.0,
           "planWeeks": [
             "พ.ย. 69 W3",
             "พ.ย. 69 W4",
             "ธ.ค. 69 W1",
             "ธ.ค. 69 W2"
           ],
-          "actualPerf": 0,
           "actualWeeks": [],
-          "planCalcPct": 0
+          "status": "not-started"
         },
         {
           "no": 11,
-          "name": "ลากสายและติดตั้งสาย Power cable",
-          "status": "not-started",
-          "weight": 0.05,
-          "calcPct": 0,
-          "planPerf": 0,
+          "name": "ลากและติดตั้ง Power cable",
+          "planPerf": 0.0,
+          "actualPerf": 0.0,
+          "weight": 0.1,
+          "calcPct": 0.0,
+          "planCalcPct": 0.0,
           "planWeeks": [
             "พ.ย. 69 W3",
             "พ.ย. 69 W4",
             "ธ.ค. 69 W1",
             "ธ.ค. 69 W2"
           ],
-          "actualPerf": 0,
           "actualWeeks": [],
-          "planCalcPct": 0
+          "status": "not-started"
         },
         {
           "no": 12,
           "name": "CSCS",
-          "status": "not-started",
-          "weight": 0.05,
-          "calcPct": 0,
-          "planPerf": 0,
+          "planPerf": 0.0,
+          "actualPerf": 0.0,
+          "weight": 0.1,
+          "calcPct": 0.0,
+          "planCalcPct": 0.0,
           "planWeeks": [
             "ม.ค. 70 W2",
             "ม.ค. 70 W3"
           ],
-          "actualPerf": 0,
           "actualWeeks": [],
-          "planCalcPct": 0
+          "status": "not-started"
         },
         {
           "no": 13,
           "name": "Individual Test",
-          "status": "not-started",
+          "planPerf": 0.0,
+          "actualPerf": 0.0,
           "weight": 0.05,
-          "calcPct": 0,
-          "planPerf": 0,
+          "calcPct": 0.0,
+          "planCalcPct": 0.0,
           "planWeeks": [
             "ม.ค. 70 W4"
           ],
-          "actualPerf": 0,
           "actualWeeks": [],
-          "planCalcPct": 0
+          "status": "not-started"
         },
         {
           "no": 14,
           "name": "Commisioning Test",
-          "status": "not-started",
+          "planPerf": 0.0,
+          "actualPerf": 0.0,
           "weight": 0.05,
-          "calcPct": 0,
-          "planPerf": 0,
+          "calcPct": 0.0,
+          "planCalcPct": 0.0,
           "planWeeks": [
             "ก.พ. 70 W1"
           ],
-          "actualPerf": 0,
           "actualWeeks": [],
-          "planCalcPct": 0
+          "status": "not-started"
         },
         {
           "no": 15,
           "name": "Settind Relay / End to End Test",
-          "status": "not-started",
+          "planPerf": 0.0,
+          "actualPerf": 0.0,
           "weight": 0.05,
-          "calcPct": 0,
-          "planPerf": 0,
+          "calcPct": 0.0,
+          "planCalcPct": 0.0,
           "planWeeks": [
             "ก.พ. 70 W2",
             "ก.พ. 70 W3"
           ],
-          "actualPerf": 0,
           "actualWeeks": [],
-          "planCalcPct": 0
+          "status": "not-started"
         },
         {
           "no": 16,
-          "name": "AC Withstand Test",
-          "status": "not-started",
+          "name": "AC Withstand Test ",
+          "planPerf": 0.0,
+          "actualPerf": 0.0,
           "weight": 0.05,
-          "calcPct": 0,
-          "planPerf": 0,
+          "calcPct": 0.0,
+          "planCalcPct": 0.0,
           "planWeeks": [
             "ก.พ. 70 W4"
           ],
-          "actualPerf": 0,
           "actualWeeks": [],
-          "planCalcPct": 0
+          "status": "not-started"
         }
       ],
       "tasks": [
         {
           "no": 1,
           "name": "รื้อถอนสถานีไฟฟ้าสมุทรสาคร 10 (ชั่วคราว)",
-          "perf": 100,
           "type": "แผนการดำเนินงาน",
-          "status": "plan",
+          "perf": 100.0,
           "weight": 0.1,
-          "calcPct": 10,
+          "calcPct": 10.0,
           "timeline": [
             "ส.ค. 69 W1",
             "ส.ค. 69 W2",
             "ส.ค. 69 W3",
             "ส.ค. 69 W4"
-          ]
+          ],
+          "status": "plan"
         },
         {
           "no": 1,
           "name": "รื้อถอนสถานีไฟฟ้าสมุทรสาคร 10 (ชั่วคราว)",
-          "perf": 90,
           "type": "ผลการดำเนินงาน",
-          "status": "in-progress",
+          "perf": 80.0,
           "weight": 0.1,
-          "calcPct": 9,
+          "calcPct": 8.0,
           "timeline": [
             "ก.ค. 69 W4",
             "ส.ค. 69 W1"
-          ]
+          ],
+          "status": "in-progress"
         },
         {
           "no": 2,
-          "name": "ปรับปรุงที่ดิน",
-          "perf": 100,
+          "name": "ปรับปรุงดิน",
           "type": "แผนการดำเนินงาน",
-          "status": "plan",
-          "weight": 0.1,
-          "calcPct": 10,
+          "perf": 100.0,
+          "weight": 0.05,
+          "calcPct": 5.0,
           "timeline": [
             "ก.ค. 69 W3",
             "ก.ค. 69 W4"
-          ]
+          ],
+          "status": "plan"
         },
         {
           "no": 2,
-          "name": "ปรับปรุงที่ดิน",
-          "perf": 100,
+          "name": "ปรับปรุงดิน",
           "type": "ผลการดำเนินงาน",
-          "status": "completed",
-          "weight": 0.1,
-          "calcPct": 10,
+          "perf": 10.0,
+          "weight": 0.05,
+          "calcPct": 0.5,
           "timeline": [
             "ก.ค. 69 W4",
             "ส.ค. 69 W1"
-          ]
+          ],
+          "status": "in-progress"
         },
         {
           "no": 3,
-          "name": "ขนย้ายติดตั้งฐานราก",
-          "perf": 0,
+          "name": "ขุดและติดตั้งฐานราก",
           "type": "แผนการดำเนินงาน",
-          "status": "plan",
+          "perf": 100.0,
           "weight": 0.05,
-          "calcPct": 0,
+          "calcPct": 5.0,
           "timeline": [
             "ส.ค. 69 W3",
             "ส.ค. 69 W4"
-          ]
+          ],
+          "status": "plan"
         },
         {
           "no": 3,
-          "name": "ขนย้ายติดตั้งฐานราก",
-          "perf": 100,
+          "name": "ขุดและติดตั้งฐานราก",
           "type": "ผลการดำเนินงาน",
-          "status": "completed",
+          "perf": 0.0,
           "weight": 0.05,
-          "calcPct": 5,
-          "timeline": []
+          "calcPct": 0.0,
+          "timeline": [],
+          "status": "delayed"
         },
         {
           "no": 4,
-          "name": "ขนย้ายอุปกรณ์ป้องกัน 115 kV และหม้อแปลงไฟฟ้ากำลัง",
-          "perf": 0,
+          "name": "อุปกรณ์ป้องกัน 115 kV ขนส่งไฟฟ้ากำลัง",
           "type": "แผนการดำเนินงาน",
-          "status": "plan",
-          "weight": 0.1,
-          "calcPct": 0,
+          "perf": 100.0,
+          "weight": 0.05,
+          "calcPct": 5.0,
           "timeline": [
             "ส.ค. 69 W3",
             "ส.ค. 69 W4"
-          ]
+          ],
+          "status": "plan"
         },
         {
           "no": 4,
-          "name": "ขนย้ายอุปกรณ์ป้องกัน 115 kV และหม้อแปลงไฟฟ้ากำลัง",
-          "perf": 100,
+          "name": "อุปกรณ์ป้องกัน 115 kV ขนส่งไฟฟ้ากำลัง",
           "type": "ผลการดำเนินงาน",
-          "status": "completed",
-          "weight": 0.1,
-          "calcPct": 10,
-          "timeline": []
+          "perf": 0.0,
+          "weight": 0.05,
+          "calcPct": 0.0,
+          "timeline": [],
+          "status": "delayed"
         },
         {
           "no": 5,
-          "name": "ติดตั้งอุปกรณ์ป้องกัน 115 kV และหม้อแปลงไฟฟ้ากำลัง",
-          "perf": 0,
+          "name": "ติดตั้งอุปกรณ์ป้องกัน 115 kV ขนส่งไฟฟ้ากำลัง",
           "type": "แผนการดำเนินงาน",
-          "status": "plan",
-          "weight": 0.1,
-          "calcPct": 0,
+          "perf": 100.0,
+          "weight": 0.05,
+          "calcPct": 5.0,
           "timeline": [
             "ก.ย. 69 W1",
             "ก.ย. 69 W2"
-          ]
+          ],
+          "status": "plan"
         },
         {
           "no": 5,
-          "name": "ติดตั้งอุปกรณ์ป้องกัน 115 kV และหม้อแปลงไฟฟ้ากำลัง",
-          "perf": 0,
+          "name": "ติดตั้งอุปกรณ์ป้องกัน 115 kV ขนส่งไฟฟ้ากำลัง",
           "type": "ผลการดำเนินงาน",
-          "status": "not-started",
-          "weight": 0.1,
-          "calcPct": 0,
-          "timeline": []
+          "perf": 0.0,
+          "weight": 0.05,
+          "calcPct": 0.0,
+          "timeline": [],
+          "status": "delayed"
         },
         {
           "no": 6,
-          "name": "ปักเสาภายในสถานีไฟฟ้า",
-          "perf": 0,
+          "name": "ปักเสาสถานีไฟฟ้า",
           "type": "แผนการดำเนินงาน",
-          "status": "plan",
+          "perf": 100.0,
           "weight": 0.05,
-          "calcPct": 0,
+          "calcPct": 5.0,
           "timeline": [
             "ก.ย. 69 W3",
             "ก.ย. 69 W4"
-          ]
+          ],
+          "status": "plan"
         },
         {
           "no": 6,
-          "name": "ปักเสาภายในสถานีไฟฟ้า",
-          "perf": 30,
+          "name": "ปักเสาสถานีไฟฟ้า",
           "type": "ผลการดำเนินงาน",
-          "status": "in-progress",
+          "perf": 0.0,
           "weight": 0.05,
-          "calcPct": 1.5,
-          "timeline": []
+          "calcPct": 0.0,
+          "timeline": [],
+          "status": "delayed"
         },
         {
           "no": 7,
           "name": "ติดตั้งระบบกราวด์กริด",
-          "perf": 0,
           "type": "แผนการดำเนินงาน",
-          "status": "plan",
+          "perf": 0.0,
           "weight": 0.05,
-          "calcPct": 0,
+          "calcPct": 0.0,
           "timeline": [
             "ต.ค. 69 W1",
             "ต.ค. 69 W2"
-          ]
+          ],
+          "status": "plan"
         },
         {
           "no": 7,
           "name": "ติดตั้งระบบกราวด์กริด",
-          "perf": 0,
           "type": "ผลการดำเนินงาน",
-          "status": "not-started",
+          "perf": 0.0,
           "weight": 0.05,
-          "calcPct": 0,
-          "timeline": []
+          "calcPct": 0.0,
+          "timeline": [],
+          "status": "not-started"
         },
         {
           "no": 8,
-          "name": "ลงหินเบอร์ 2",
-          "perf": 0,
+          "name": "ลงหินคลุก 2",
           "type": "แผนการดำเนินงาน",
-          "status": "plan",
+          "perf": 0.0,
           "weight": 0.05,
-          "calcPct": 0,
+          "calcPct": 0.0,
           "timeline": [
             "ต.ค. 69 W3"
-          ]
+          ],
+          "status": "plan"
         },
         {
           "no": 8,
-          "name": "ลงหินเบอร์ 2",
-          "perf": 0,
+          "name": "ลงหินคลุก 2",
           "type": "ผลการดำเนินงาน",
-          "status": "not-started",
+          "perf": 0.0,
           "weight": 0.05,
-          "calcPct": 0,
-          "timeline": []
+          "calcPct": 0.0,
+          "timeline": [],
+          "status": "not-started"
         },
         {
           "no": 9,
           "name": "ติดตั้ง Ladder",
-          "perf": 0,
           "type": "แผนการดำเนินงาน",
-          "status": "plan",
+          "perf": 0.0,
           "weight": 0.05,
-          "calcPct": 0,
+          "calcPct": 0.0,
           "timeline": [
             "ต.ค. 69 W4",
             "พ.ย. 69 W1",
             "พ.ย. 69 W2"
-          ]
+          ],
+          "status": "plan"
         },
         {
           "no": 9,
           "name": "ติดตั้ง Ladder",
-          "perf": 0,
           "type": "ผลการดำเนินงาน",
-          "status": "not-started",
+          "perf": 0.0,
           "weight": 0.05,
-          "calcPct": 0,
-          "timeline": []
+          "calcPct": 0.0,
+          "timeline": [],
+          "status": "not-started"
         },
         {
           "no": 10,
-          "name": "ลากสายและติดตั้งสาย Control cable",
-          "perf": 0,
+          "name": "ลากและติดตั้ง Control cable",
           "type": "แผนการดำเนินงาน",
-          "status": "plan",
-          "weight": 0.05,
-          "calcPct": 0,
+          "perf": 0.0,
+          "weight": 0.1,
+          "calcPct": 0.0,
           "timeline": [
             "พ.ย. 69 W3",
             "พ.ย. 69 W4",
             "ธ.ค. 69 W1",
             "ธ.ค. 69 W2"
-          ]
+          ],
+          "status": "plan"
         },
         {
           "no": 10,
-          "name": "ลากสายและติดตั้งสาย Control cable",
-          "perf": 0,
+          "name": "ลากและติดตั้ง Control cable",
           "type": "ผลการดำเนินงาน",
-          "status": "not-started",
-          "weight": 0.05,
-          "calcPct": 0,
-          "timeline": []
+          "perf": 0.0,
+          "weight": 0.1,
+          "calcPct": 0.0,
+          "timeline": [],
+          "status": "not-started"
         },
         {
           "no": 11,
-          "name": "ลากสายและติดตั้งสาย Power cable",
-          "perf": 0,
+          "name": "ลากและติดตั้ง Power cable",
           "type": "แผนการดำเนินงาน",
-          "status": "plan",
-          "weight": 0.05,
-          "calcPct": 0,
+          "perf": 0.0,
+          "weight": 0.1,
+          "calcPct": 0.0,
           "timeline": [
             "พ.ย. 69 W3",
             "พ.ย. 69 W4",
             "ธ.ค. 69 W1",
             "ธ.ค. 69 W2"
-          ]
+          ],
+          "status": "plan"
         },
         {
           "no": 11,
-          "name": "ลากสายและติดตั้งสาย Power cable",
-          "perf": 0,
+          "name": "ลากและติดตั้ง Power cable",
           "type": "ผลการดำเนินงาน",
-          "status": "not-started",
-          "weight": 0.05,
-          "calcPct": 0,
-          "timeline": []
+          "perf": 0.0,
+          "weight": 0.1,
+          "calcPct": 0.0,
+          "timeline": [],
+          "status": "not-started"
         },
         {
           "no": 12,
           "name": "CSCS",
-          "perf": 0,
           "type": "แผนการดำเนินงาน",
-          "status": "plan",
-          "weight": 0.05,
-          "calcPct": 0,
+          "perf": 0.0,
+          "weight": 0.1,
+          "calcPct": 0.0,
           "timeline": [
             "ม.ค. 70 W2",
             "ม.ค. 70 W3"
-          ]
+          ],
+          "status": "plan"
         },
         {
           "no": 12,
           "name": "CSCS",
-          "perf": 0,
           "type": "ผลการดำเนินงาน",
-          "status": "not-started",
-          "weight": 0.05,
-          "calcPct": 0,
-          "timeline": []
+          "perf": 0.0,
+          "weight": 0.1,
+          "calcPct": 0.0,
+          "timeline": [],
+          "status": "not-started"
         },
         {
           "no": 13,
           "name": "Individual Test",
-          "perf": 0,
           "type": "แผนการดำเนินงาน",
-          "status": "plan",
+          "perf": 0.0,
           "weight": 0.05,
-          "calcPct": 0,
+          "calcPct": 0.0,
           "timeline": [
             "ม.ค. 70 W4"
-          ]
+          ],
+          "status": "plan"
         },
         {
           "no": 13,
           "name": "Individual Test",
-          "perf": 0,
           "type": "ผลการดำเนินงาน",
-          "status": "not-started",
+          "perf": 0.0,
           "weight": 0.05,
-          "calcPct": 0,
-          "timeline": []
+          "calcPct": 0.0,
+          "timeline": [],
+          "status": "not-started"
         },
         {
           "no": 14,
           "name": "Commisioning Test",
-          "perf": 0,
           "type": "แผนการดำเนินงาน",
-          "status": "plan",
+          "perf": 0.0,
           "weight": 0.05,
-          "calcPct": 0,
+          "calcPct": 0.0,
           "timeline": [
             "ก.พ. 70 W1"
-          ]
+          ],
+          "status": "plan"
         },
         {
           "no": 14,
           "name": "Commisioning Test",
-          "perf": 0,
           "type": "ผลการดำเนินงาน",
-          "status": "not-started",
+          "perf": 0.0,
           "weight": 0.05,
-          "calcPct": 0,
-          "timeline": []
+          "calcPct": 0.0,
+          "timeline": [],
+          "status": "not-started"
         },
         {
           "no": 15,
           "name": "Settind Relay / End to End Test",
-          "perf": 0,
           "type": "แผนการดำเนินงาน",
-          "status": "plan",
+          "perf": 0.0,
           "weight": 0.05,
-          "calcPct": 0,
+          "calcPct": 0.0,
           "timeline": [
             "ก.พ. 70 W2",
             "ก.พ. 70 W3"
-          ]
+          ],
+          "status": "plan"
         },
         {
           "no": 15,
           "name": "Settind Relay / End to End Test",
-          "perf": 0,
           "type": "ผลการดำเนินงาน",
-          "status": "not-started",
+          "perf": 0.0,
           "weight": 0.05,
-          "calcPct": 0,
-          "timeline": []
+          "calcPct": 0.0,
+          "timeline": [],
+          "status": "not-started"
         },
         {
           "no": 16,
-          "name": "AC Withstand Test",
-          "perf": 0,
+          "name": "AC Withstand Test ",
           "type": "แผนการดำเนินงาน",
-          "status": "plan",
+          "perf": 0.0,
           "weight": 0.05,
-          "calcPct": 0,
+          "calcPct": 0.0,
           "timeline": [
             "ก.พ. 70 W4"
-          ]
+          ],
+          "status": "plan"
         },
         {
           "no": 16,
-          "name": "AC Withstand Test",
-          "perf": 0,
+          "name": "AC Withstand Test ",
           "type": "ผลการดำเนินงาน",
-          "status": "not-started",
+          "perf": 0.0,
           "weight": 0.05,
-          "calcPct": 0,
-          "timeline": []
+          "calcPct": 0.0,
+          "timeline": [],
+          "status": "not-started"
         }
       ],
       "sheetName": "กาญจนบุรี 5 (ช)",
-      "totalPlan": 20,
+      "totalPlan": 35.0,
       "projectName": "สถานีไฟฟ้ากาญจนบุรี 5 (ชั่วคราว)",
-      "totalActual": 35.5,
-      "totalWeight": 1,
+      "totalActual": 8.5,
+      "totalWeight": 1.0,
       "timelineColumns": [
         {
           "week": "1",
@@ -989,37 +989,37 @@
         {
           "no": 1,
           "name": "รื้อถอนสถานีไฟฟ้าสมุทรสาคร 16 (ชั่วคราว)",
-          "status": "in-progress",
+          "planPerf": 100.0,
+          "actualPerf": 100.0,
           "weight": 0.1,
-          "calcPct": 9,
-          "planPerf": 100,
+          "calcPct": 10.0,
+          "planCalcPct": 10.0,
           "planWeeks": [
             "ก.ค. W1",
             "ก.ค. W2",
             "ก.ค. W3",
             "ก.ค. W4"
           ],
-          "actualPerf": 90,
           "actualWeeks": [
             "ก.ค. W1",
             "ก.ค. W2",
             "ก.ค. W3",
             "ก.ค. W4"
           ],
-          "planCalcPct": 10
+          "status": "completed"
         },
         {
           "no": 2,
-          "name": "ปรับปรุงที่ดิน",
-          "status": "completed",
-          "weight": 0.1,
-          "calcPct": 10,
-          "planPerf": 100,
+          "name": "ปรับปรุงดิน",
+          "planPerf": 100.0,
+          "actualPerf": 100.0,
+          "weight": 0.05,
+          "calcPct": 5.0,
+          "planCalcPct": 5.0,
           "planWeeks": [
             "มิ.ย. W4",
             "ก.ค. W1"
           ],
-          "actualPerf": 100,
           "actualWeeks": [
             "มิ.ย. W4",
             "ก.ค. W1",
@@ -1027,609 +1027,623 @@
             "ก.ค. W3",
             "ก.ค. W4"
           ],
-          "planCalcPct": 10
+          "status": "completed"
         },
         {
           "no": 3,
-          "name": "ขนย้ายติดตั้งฐานราก",
-          "status": "completed",
+          "name": "ขุดและติดตั้งฐานราก",
+          "planPerf": 100.0,
+          "actualPerf": 100.0,
           "weight": 0.05,
-          "calcPct": 5,
-          "planPerf": 100,
+          "calcPct": 5.0,
+          "planCalcPct": 5.0,
           "planWeeks": [
             "ก.ค. W3",
             "ก.ค. W4"
           ],
-          "actualPerf": 100,
           "actualWeeks": [
             "ก.ค. W3",
             "ก.ค. W4",
             "ส.ค. W1"
           ],
-          "planCalcPct": 5
+          "status": "completed"
         },
         {
           "no": 4,
-          "name": "ขนย้ายอุปกรณ์ป้องกัน 115 kV และหม้อแปลงไฟฟ้ากำลัง",
-          "status": "completed",
-          "weight": 0.1,
-          "calcPct": 10,
-          "planPerf": 100,
+          "name": "อุปกรณ์ป้องกัน 115 kV ขนส่งไฟฟ้ากำลัง",
+          "planPerf": 100.0,
+          "actualPerf": 100.0,
+          "weight": 0.05,
+          "calcPct": 5.0,
+          "planCalcPct": 5.0,
           "planWeeks": [
             "ก.ค. W3",
             "ก.ค. W4"
           ],
-          "actualPerf": 100,
-          "actualWeeks": [],
-          "planCalcPct": 10
+          "actualWeeks": [
+            "ส.ค. W2",
+            "ส.ค. W3",
+            "ส.ค. W4"
+          ],
+          "status": "completed"
         },
         {
           "no": 5,
-          "name": "ติดตั้งอุปกรณ์ป้องกัน 115 kV และหม้อแปลงไฟฟ้ากำลัง",
-          "status": "completed",
-          "weight": 0.1,
-          "calcPct": 10,
-          "planPerf": 100,
+          "name": "ติดตั้งอุปกรณ์ป้องกัน 115 kV ขนส่งไฟฟ้ากำลัง",
+          "planPerf": 100.0,
+          "actualPerf": 60.0,
+          "weight": 0.05,
+          "calcPct": 3.0,
+          "planCalcPct": 5.0,
           "planWeeks": [
             "ส.ค. W1",
             "ส.ค. W2"
           ],
-          "actualPerf": 100,
-          "actualWeeks": [],
-          "planCalcPct": 10
+          "actualWeeks": [
+            "ส.ค. W3",
+            "ส.ค. W4"
+          ],
+          "status": "in-progress"
         },
         {
           "no": 6,
-          "name": "ปักเสาภายในสถานีไฟฟ้า",
-          "status": "in-progress",
+          "name": "ปักเสาสถานีไฟฟ้า",
+          "planPerf": 100.0,
+          "actualPerf": 0.0,
           "weight": 0.05,
-          "calcPct": 2.25,
-          "planPerf": 100,
+          "calcPct": 0.0,
+          "planCalcPct": 5.0,
           "planWeeks": [
             "ส.ค. W3",
             "ส.ค. W4"
           ],
-          "actualPerf": 45,
           "actualWeeks": [],
-          "planCalcPct": 5
+          "status": "delayed"
         },
         {
           "no": 7,
           "name": "ติดตั้งระบบกราวด์กริด",
-          "status": "delayed",
+          "planPerf": 100.0,
+          "actualPerf": 0.0,
           "weight": 0.05,
-          "calcPct": 0,
-          "planPerf": 100,
+          "calcPct": 0.0,
+          "planCalcPct": 5.0,
           "planWeeks": [
             "ก.ย. W1"
           ],
-          "actualPerf": 0,
           "actualWeeks": [],
-          "planCalcPct": 5
+          "status": "delayed"
         },
         {
           "no": 8,
-          "name": "ลงหินเบอร์ 2",
-          "status": "not-started",
+          "name": "ลงหินคลุก 2",
+          "planPerf": 100.0,
+          "actualPerf": 0.0,
           "weight": 0.05,
-          "calcPct": 0,
-          "planPerf": 0,
+          "calcPct": 0.0,
+          "planCalcPct": 5.0,
           "planWeeks": [
             "ก.ย. W2"
           ],
-          "actualPerf": 0,
           "actualWeeks": [],
-          "planCalcPct": 0
+          "status": "delayed"
         },
         {
           "no": 9,
           "name": "ติดตั้ง Ladder",
-          "status": "not-started",
+          "planPerf": 100.0,
+          "actualPerf": 0.0,
           "weight": 0.05,
-          "calcPct": 0,
-          "planPerf": 0,
+          "calcPct": 0.0,
+          "planCalcPct": 5.0,
           "planWeeks": [
             "ก.ย. W3",
             "ก.ย. W4"
           ],
-          "actualPerf": 0,
           "actualWeeks": [],
-          "planCalcPct": 0
+          "status": "delayed"
         },
         {
           "no": 10,
-          "name": "ลากสายและติดตั้งสาย Control cable",
-          "status": "not-started",
-          "weight": 0.05,
-          "calcPct": 0,
-          "planPerf": 0,
+          "name": "ลากและติดตั้ง Control cable",
+          "planPerf": 0.0,
+          "actualPerf": 0.0,
+          "weight": 0.1,
+          "calcPct": 0.0,
+          "planCalcPct": 0.0,
           "planWeeks": [
             "ต.ค. W1",
             "ต.ค. W2",
             "ต.ค. W3"
           ],
-          "actualPerf": 0,
           "actualWeeks": [],
-          "planCalcPct": 0
+          "status": "not-started"
         },
         {
           "no": 11,
-          "name": "ลากสายและติดตั้งสาย Power cable",
-          "status": "not-started",
-          "weight": 0.05,
-          "calcPct": 0,
-          "planPerf": 0,
+          "name": "ลากและติดตั้ง Power cable",
+          "planPerf": 0.0,
+          "actualPerf": 0.0,
+          "weight": 0.1,
+          "calcPct": 0.0,
+          "planCalcPct": 0.0,
           "planWeeks": [
             "ต.ค. W1",
             "ต.ค. W2",
             "ต.ค. W3"
           ],
-          "actualPerf": 0,
           "actualWeeks": [],
-          "planCalcPct": 0
+          "status": "not-started"
         },
         {
           "no": 12,
           "name": "CSCS",
-          "status": "not-started",
-          "weight": 0.05,
-          "calcPct": 0,
-          "planPerf": 0,
+          "planPerf": 0.0,
+          "actualPerf": 0.0,
+          "weight": 0.1,
+          "calcPct": 0.0,
+          "planCalcPct": 0.0,
           "planWeeks": [
             "ต.ค. W4",
             "พ.ย. W1"
           ],
-          "actualPerf": 0,
           "actualWeeks": [],
-          "planCalcPct": 0
+          "status": "not-started"
         },
         {
           "no": 13,
           "name": "Individual Test",
-          "status": "not-started",
+          "planPerf": 0.0,
+          "actualPerf": 0.0,
           "weight": 0.05,
-          "calcPct": 0,
-          "planPerf": 0,
+          "calcPct": 0.0,
+          "planCalcPct": 0.0,
           "planWeeks": [
             "พ.ย. W1"
           ],
-          "actualPerf": 0,
           "actualWeeks": [],
-          "planCalcPct": 0
+          "status": "not-started"
         },
         {
           "no": 14,
           "name": "Commisioning Test",
-          "status": "not-started",
+          "planPerf": 0.0,
+          "actualPerf": 0.0,
           "weight": 0.05,
-          "calcPct": 0,
-          "planPerf": 0,
+          "calcPct": 0.0,
+          "planCalcPct": 0.0,
           "planWeeks": [
             "พ.ย. W2"
           ],
-          "actualPerf": 0,
           "actualWeeks": [],
-          "planCalcPct": 0
+          "status": "not-started"
         },
         {
           "no": 15,
           "name": "Settind Relay / End to End Test",
-          "status": "not-started",
+          "planPerf": 0.0,
+          "actualPerf": 0.0,
           "weight": 0.05,
-          "calcPct": 0,
-          "planPerf": 0,
+          "calcPct": 0.0,
+          "planCalcPct": 0.0,
           "planWeeks": [
             "พ.ย. W3",
             "พ.ย. W4"
           ],
-          "actualPerf": 0,
           "actualWeeks": [],
-          "planCalcPct": 0
+          "status": "not-started"
         },
         {
           "no": 16,
-          "name": "AC Withstand Test",
-          "status": "not-started",
+          "name": "AC Withstand Test ",
+          "planPerf": 0.0,
+          "actualPerf": 0.0,
           "weight": 0.05,
-          "calcPct": 0,
-          "planPerf": 0,
+          "calcPct": 0.0,
+          "planCalcPct": 0.0,
           "planWeeks": [
             "ธ.ค. W1"
           ],
-          "actualPerf": 0,
           "actualWeeks": [],
-          "planCalcPct": 0
+          "status": "not-started"
         }
       ],
       "tasks": [
         {
           "no": 1,
           "name": "รื้อถอนสถานีไฟฟ้าสมุทรสาคร 16 (ชั่วคราว)",
-          "perf": 100,
           "type": "แผนการดำเนินงาน",
-          "status": "plan",
+          "perf": 100.0,
           "weight": 0.1,
-          "calcPct": 10,
+          "calcPct": 10.0,
           "timeline": [
             "ก.ค. W1",
             "ก.ค. W2",
             "ก.ค. W3",
             "ก.ค. W4"
-          ]
+          ],
+          "status": "plan"
         },
         {
           "no": 1,
           "name": "รื้อถอนสถานีไฟฟ้าสมุทรสาคร 16 (ชั่วคราว)",
-          "perf": 90,
           "type": "ผลการดำเนินงาน",
-          "status": "in-progress",
+          "perf": 100.0,
           "weight": 0.1,
-          "calcPct": 9,
+          "calcPct": 10.0,
           "timeline": [
             "ก.ค. W1",
             "ก.ค. W2",
             "ก.ค. W3",
             "ก.ค. W4"
-          ]
+          ],
+          "status": "completed"
         },
         {
           "no": 2,
-          "name": "ปรับปรุงที่ดิน",
-          "perf": 100,
+          "name": "ปรับปรุงดิน",
           "type": "แผนการดำเนินงาน",
-          "status": "plan",
-          "weight": 0.1,
-          "calcPct": 10,
+          "perf": 100.0,
+          "weight": 0.05,
+          "calcPct": 5.0,
           "timeline": [
             "มิ.ย. W4",
             "ก.ค. W1"
-          ]
+          ],
+          "status": "plan"
         },
         {
           "no": 2,
-          "name": "ปรับปรุงที่ดิน",
-          "perf": 100,
+          "name": "ปรับปรุงดิน",
           "type": "ผลการดำเนินงาน",
-          "status": "completed",
-          "weight": 0.1,
-          "calcPct": 10,
+          "perf": 100.0,
+          "weight": 0.05,
+          "calcPct": 5.0,
           "timeline": [
             "มิ.ย. W4",
             "ก.ค. W1",
             "ก.ค. W2",
             "ก.ค. W3",
             "ก.ค. W4"
-          ]
+          ],
+          "status": "completed"
         },
         {
           "no": 3,
-          "name": "ขนย้ายติดตั้งฐานราก",
-          "perf": 100,
+          "name": "ขุดและติดตั้งฐานราก",
           "type": "แผนการดำเนินงาน",
-          "status": "plan",
+          "perf": 100.0,
           "weight": 0.05,
-          "calcPct": 5,
+          "calcPct": 5.0,
           "timeline": [
             "ก.ค. W3",
             "ก.ค. W4"
-          ]
+          ],
+          "status": "plan"
         },
         {
           "no": 3,
-          "name": "ขนย้ายติดตั้งฐานราก",
-          "perf": 100,
+          "name": "ขุดและติดตั้งฐานราก",
           "type": "ผลการดำเนินงาน",
-          "status": "completed",
+          "perf": 100.0,
           "weight": 0.05,
-          "calcPct": 5,
+          "calcPct": 5.0,
           "timeline": [
             "ก.ค. W3",
             "ก.ค. W4",
             "ส.ค. W1"
-          ]
+          ],
+          "status": "completed"
         },
         {
           "no": 4,
-          "name": "ขนย้ายอุปกรณ์ป้องกัน 115 kV และหม้อแปลงไฟฟ้ากำลัง",
-          "perf": 100,
+          "name": "อุปกรณ์ป้องกัน 115 kV ขนส่งไฟฟ้ากำลัง",
           "type": "แผนการดำเนินงาน",
-          "status": "plan",
-          "weight": 0.1,
-          "calcPct": 10,
+          "perf": 100.0,
+          "weight": 0.05,
+          "calcPct": 5.0,
           "timeline": [
             "ก.ค. W3",
             "ก.ค. W4"
-          ]
+          ],
+          "status": "plan"
         },
         {
           "no": 4,
-          "name": "ขนย้ายอุปกรณ์ป้องกัน 115 kV และหม้อแปลงไฟฟ้ากำลัง",
-          "perf": 100,
+          "name": "อุปกรณ์ป้องกัน 115 kV ขนส่งไฟฟ้ากำลัง",
           "type": "ผลการดำเนินงาน",
-          "status": "completed",
-          "weight": 0.1,
-          "calcPct": 10,
-          "timeline": []
+          "perf": 100.0,
+          "weight": 0.05,
+          "calcPct": 5.0,
+          "timeline": [
+            "ส.ค. W2",
+            "ส.ค. W3",
+            "ส.ค. W4"
+          ],
+          "status": "completed"
         },
         {
           "no": 5,
-          "name": "ติดตั้งอุปกรณ์ป้องกัน 115 kV และหม้อแปลงไฟฟ้ากำลัง",
-          "perf": 100,
+          "name": "ติดตั้งอุปกรณ์ป้องกัน 115 kV ขนส่งไฟฟ้ากำลัง",
           "type": "แผนการดำเนินงาน",
-          "status": "plan",
-          "weight": 0.1,
-          "calcPct": 10,
+          "perf": 100.0,
+          "weight": 0.05,
+          "calcPct": 5.0,
           "timeline": [
             "ส.ค. W1",
             "ส.ค. W2"
-          ]
+          ],
+          "status": "plan"
         },
         {
           "no": 5,
-          "name": "ติดตั้งอุปกรณ์ป้องกัน 115 kV และหม้อแปลงไฟฟ้ากำลัง",
-          "perf": 100,
+          "name": "ติดตั้งอุปกรณ์ป้องกัน 115 kV ขนส่งไฟฟ้ากำลัง",
           "type": "ผลการดำเนินงาน",
-          "status": "completed",
-          "weight": 0.1,
-          "calcPct": 10,
-          "timeline": []
-        },
-        {
-          "no": 6,
-          "name": "ปักเสาภายในสถานีไฟฟ้า",
-          "perf": 100,
-          "type": "แผนการดำเนินงาน",
-          "status": "plan",
+          "perf": 60.0,
           "weight": 0.05,
-          "calcPct": 5,
+          "calcPct": 3.0,
           "timeline": [
             "ส.ค. W3",
             "ส.ค. W4"
-          ]
+          ],
+          "status": "in-progress"
         },
         {
           "no": 6,
-          "name": "ปักเสาภายในสถานีไฟฟ้า",
-          "perf": 45,
-          "type": "ผลการดำเนินงาน",
-          "status": "in-progress",
+          "name": "ปักเสาสถานีไฟฟ้า",
+          "type": "แผนการดำเนินงาน",
+          "perf": 100.0,
           "weight": 0.05,
-          "calcPct": 2.25,
-          "timeline": []
+          "calcPct": 5.0,
+          "timeline": [
+            "ส.ค. W3",
+            "ส.ค. W4"
+          ],
+          "status": "plan"
+        },
+        {
+          "no": 6,
+          "name": "ปักเสาสถานีไฟฟ้า",
+          "type": "ผลการดำเนินงาน",
+          "perf": 0.0,
+          "weight": 0.05,
+          "calcPct": 0.0,
+          "timeline": [],
+          "status": "delayed"
         },
         {
           "no": 7,
           "name": "ติดตั้งระบบกราวด์กริด",
-          "perf": 100,
           "type": "แผนการดำเนินงาน",
-          "status": "plan",
+          "perf": 100.0,
           "weight": 0.05,
-          "calcPct": 5,
+          "calcPct": 5.0,
           "timeline": [
             "ก.ย. W1"
-          ]
+          ],
+          "status": "plan"
         },
         {
           "no": 7,
           "name": "ติดตั้งระบบกราวด์กริด",
-          "perf": 0,
           "type": "ผลการดำเนินงาน",
-          "status": "delayed",
+          "perf": 0.0,
           "weight": 0.05,
-          "calcPct": 0,
-          "timeline": []
+          "calcPct": 0.0,
+          "timeline": [],
+          "status": "delayed"
         },
         {
           "no": 8,
-          "name": "ลงหินเบอร์ 2",
-          "perf": 0,
+          "name": "ลงหินคลุก 2",
           "type": "แผนการดำเนินงาน",
-          "status": "plan",
+          "perf": 100.0,
           "weight": 0.05,
-          "calcPct": 0,
+          "calcPct": 5.0,
           "timeline": [
             "ก.ย. W2"
-          ]
+          ],
+          "status": "plan"
         },
         {
           "no": 8,
-          "name": "ลงหินเบอร์ 2",
-          "perf": 0,
+          "name": "ลงหินคลุก 2",
           "type": "ผลการดำเนินงาน",
-          "status": "not-started",
+          "perf": 0.0,
           "weight": 0.05,
-          "calcPct": 0,
-          "timeline": []
+          "calcPct": 0.0,
+          "timeline": [],
+          "status": "delayed"
         },
         {
           "no": 9,
           "name": "ติดตั้ง Ladder",
-          "perf": 0,
           "type": "แผนการดำเนินงาน",
-          "status": "plan",
+          "perf": 100.0,
           "weight": 0.05,
-          "calcPct": 0,
+          "calcPct": 5.0,
           "timeline": [
             "ก.ย. W3",
             "ก.ย. W4"
-          ]
+          ],
+          "status": "plan"
         },
         {
           "no": 9,
           "name": "ติดตั้ง Ladder",
-          "perf": 0,
           "type": "ผลการดำเนินงาน",
-          "status": "not-started",
+          "perf": 0.0,
           "weight": 0.05,
-          "calcPct": 0,
-          "timeline": []
+          "calcPct": 0.0,
+          "timeline": [],
+          "status": "delayed"
         },
         {
           "no": 10,
-          "name": "ลากสายและติดตั้งสาย Control cable",
-          "perf": 0,
+          "name": "ลากและติดตั้ง Control cable",
           "type": "แผนการดำเนินงาน",
-          "status": "plan",
-          "weight": 0.05,
-          "calcPct": 0,
+          "perf": 0.0,
+          "weight": 0.1,
+          "calcPct": 0.0,
           "timeline": [
             "ต.ค. W1",
             "ต.ค. W2",
             "ต.ค. W3"
-          ]
+          ],
+          "status": "plan"
         },
         {
           "no": 10,
-          "name": "ลากสายและติดตั้งสาย Control cable",
-          "perf": 0,
+          "name": "ลากและติดตั้ง Control cable",
           "type": "ผลการดำเนินงาน",
-          "status": "not-started",
-          "weight": 0.05,
-          "calcPct": 0,
-          "timeline": []
+          "perf": 0.0,
+          "weight": 0.1,
+          "calcPct": 0.0,
+          "timeline": [],
+          "status": "not-started"
         },
         {
           "no": 11,
-          "name": "ลากสายและติดตั้งสาย Power cable",
-          "perf": 0,
+          "name": "ลากและติดตั้ง Power cable",
           "type": "แผนการดำเนินงาน",
-          "status": "plan",
-          "weight": 0.05,
-          "calcPct": 0,
+          "perf": 0.0,
+          "weight": 0.1,
+          "calcPct": 0.0,
           "timeline": [
             "ต.ค. W1",
             "ต.ค. W2",
             "ต.ค. W3"
-          ]
+          ],
+          "status": "plan"
         },
         {
           "no": 11,
-          "name": "ลากสายและติดตั้งสาย Power cable",
-          "perf": 0,
+          "name": "ลากและติดตั้ง Power cable",
           "type": "ผลการดำเนินงาน",
-          "status": "not-started",
-          "weight": 0.05,
-          "calcPct": 0,
-          "timeline": []
+          "perf": 0.0,
+          "weight": 0.1,
+          "calcPct": 0.0,
+          "timeline": [],
+          "status": "not-started"
         },
         {
           "no": 12,
           "name": "CSCS",
-          "perf": 0,
           "type": "แผนการดำเนินงาน",
-          "status": "plan",
-          "weight": 0.05,
-          "calcPct": 0,
+          "perf": 0.0,
+          "weight": 0.1,
+          "calcPct": 0.0,
           "timeline": [
             "ต.ค. W4",
             "พ.ย. W1"
-          ]
+          ],
+          "status": "plan"
         },
         {
           "no": 12,
           "name": "CSCS",
-          "perf": 0,
           "type": "ผลการดำเนินงาน",
-          "status": "not-started",
-          "weight": 0.05,
-          "calcPct": 0,
-          "timeline": []
+          "perf": 0.0,
+          "weight": 0.1,
+          "calcPct": 0.0,
+          "timeline": [],
+          "status": "not-started"
         },
         {
           "no": 13,
           "name": "Individual Test",
-          "perf": 0,
           "type": "แผนการดำเนินงาน",
-          "status": "plan",
+          "perf": 0.0,
           "weight": 0.05,
-          "calcPct": 0,
+          "calcPct": 0.0,
           "timeline": [
             "พ.ย. W1"
-          ]
+          ],
+          "status": "plan"
         },
         {
           "no": 13,
           "name": "Individual Test",
-          "perf": 0,
           "type": "ผลการดำเนินงาน",
-          "status": "not-started",
+          "perf": 0.0,
           "weight": 0.05,
-          "calcPct": 0,
-          "timeline": []
+          "calcPct": 0.0,
+          "timeline": [],
+          "status": "not-started"
         },
         {
           "no": 14,
           "name": "Commisioning Test",
-          "perf": 0,
           "type": "แผนการดำเนินงาน",
-          "status": "plan",
+          "perf": 0.0,
           "weight": 0.05,
-          "calcPct": 0,
+          "calcPct": 0.0,
           "timeline": [
             "พ.ย. W2"
-          ]
+          ],
+          "status": "plan"
         },
         {
           "no": 14,
           "name": "Commisioning Test",
-          "perf": 0,
           "type": "ผลการดำเนินงาน",
-          "status": "not-started",
+          "perf": 0.0,
           "weight": 0.05,
-          "calcPct": 0,
-          "timeline": []
+          "calcPct": 0.0,
+          "timeline": [],
+          "status": "not-started"
         },
         {
           "no": 15,
           "name": "Settind Relay / End to End Test",
-          "perf": 0,
           "type": "แผนการดำเนินงาน",
-          "status": "plan",
+          "perf": 0.0,
           "weight": 0.05,
-          "calcPct": 0,
+          "calcPct": 0.0,
           "timeline": [
             "พ.ย. W3",
             "พ.ย. W4"
-          ]
+          ],
+          "status": "plan"
         },
         {
           "no": 15,
           "name": "Settind Relay / End to End Test",
-          "perf": 0,
           "type": "ผลการดำเนินงาน",
-          "status": "not-started",
+          "perf": 0.0,
           "weight": 0.05,
-          "calcPct": 0,
-          "timeline": []
+          "calcPct": 0.0,
+          "timeline": [],
+          "status": "not-started"
         },
         {
           "no": 16,
-          "name": "AC Withstand Test",
-          "perf": 0,
+          "name": "AC Withstand Test ",
           "type": "แผนการดำเนินงาน",
-          "status": "plan",
+          "perf": 0.0,
           "weight": 0.05,
-          "calcPct": 0,
+          "calcPct": 0.0,
           "timeline": [
             "ธ.ค. W1"
-          ]
+          ],
+          "status": "plan"
         },
         {
           "no": 16,
-          "name": "AC Withstand Test",
-          "perf": 0,
+          "name": "AC Withstand Test ",
           "type": "ผลการดำเนินงาน",
-          "status": "not-started",
+          "perf": 0.0,
           "weight": 0.05,
-          "calcPct": 0,
-          "timeline": []
+          "calcPct": 0.0,
+          "timeline": [],
+          "status": "not-started"
         }
       ],
       "sheetName": "สมุทรสาคร 18 (ช)",
-      "totalPlan": 55,
+      "totalPlan": 50.0,
       "projectName": "สถานีไฟฟ้าสมุทรสาคร 18 (ชั่วคราว)",
-      "totalActual": 46.25,
-      "totalWeight": 1,
+      "totalActual": 28.0,
+      "totalWeight": 1.0,
       "timelineColumns": [
         {
           "week": "1",
@@ -2801,7 +2815,7 @@
       "project": "งบลงทุนเร่งด่วน ปี 2569",
       "contract": "-",
       "duration": "-",
-      "progress": 46.25,
+      "progress": 28.0,
       "committee": "",
       "contractor": "กฟภ. ดำเนินการเอง",
       "statusText": "รื้อถอนสถานีไฟฟ้าสมุทรสาคร 16 (ชั่วคราว) งานรื้อถอนดำเนินการส่งคืนผลิตภัณฑ์คอนกรีต 100% เหลืองานรื้อถอนสายกราวด์กริดภายในสถานีไฟฟ้าฯ \r\nสถานีไฟฟ้าสมุทรสาคร 18 (ชั่วคราว) อยู่ระหว่าง กกฟ.2 ทำฐานรากสำหรับเสา 115 kV ขั้นตอนปักเสาภายในสถานีได้ 45% ของงานปักเสาภายในสถานีไฟฟ้า",
@@ -2815,7 +2829,7 @@
       "project": "งบลงทุนเร่งด่วน ปี 2569",
       "contract": "-",
       "duration": "-",
-      "progress": 35.5,
+      "progress": 8.5,
       "committee": "",
       "contractor": "กฟภ. ดำเนินการเอง",
       "statusText": "รื้อย้ายอุปกรณ์ป้องกัน 22,115 kV และหม้อแปลงกำลัง จากสถานีไฟฟ้าสมุทรสาคร 10 (ชั่วคราว) ได้ประมาณ 90% ของงานรื้อถอน เหลืองานรื้อถอนสายกราวด์กริดภายในสถานีไฟฟ้าฯ และส่งคืนผลิตภัณฑ์คอนกรีต\r\nสถานีไฟฟ้ากาญจนบุรี 5 (ชั่วคราว) งานขนย้ายอุปกรณ์และหม้อแปลงไฟฟ้ากำลังจากสถานีไฟฟ้าสมุทรสาคร 10 (ชั่วคราว) ไปติดตั้งสถานีไฟฟ้ากาญจนบุรี 5 (ชั่วคราว) แล้วเสร็จ อยู่ระหว่างขั้นตอนปักเสาภายในสถานีไฟฟ้า",
