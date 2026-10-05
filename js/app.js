@@ -405,64 +405,6 @@
         document.getElementById('uploadHistoryModal').classList.remove('active');
       });
     }
-    const btnPublish = document.getElementById('btnPublishWeb');
-    if (btnPublish) {
-      btnPublish.addEventListener('click', () => openPublishModal());
-    }
-
-    // Top Header Publish Button
-    const btnHeaderPublish = document.getElementById('btnHeaderPublishWeb');
-    if (btnHeaderPublish) {
-      btnHeaderPublish.addEventListener('click', () => openPublishModal());
-    }
-
-    // Publish Modal Controls
-    const btnClosePublishModal = document.getElementById('btnClosePublishModal');
-    const btnCancelPublishModal = document.getElementById('btnCancelPublishModal');
-    [btnClosePublishModal, btnCancelPublishModal].forEach(btn => {
-      btn?.addEventListener('click', () => {
-        document.getElementById('publishModal')?.classList.remove('active');
-      });
-    });
-
-    const btnTogglePubPasscode = document.getElementById('btnTogglePubPasscode');
-    if (btnTogglePubPasscode) {
-      btnTogglePubPasscode.addEventListener('click', () => {
-        const input = document.getElementById('pubModalPasscode');
-        const icon = document.getElementById('iconPubPasscode');
-        if (!input) return;
-        if (input.type === 'password') {
-          input.type = 'text';
-          if (icon) icon.setAttribute('data-lucide', 'eye-off');
-        } else {
-          input.type = 'password';
-          if (icon) icon.setAttribute('data-lucide', 'eye');
-        }
-        lucide.createIcons({ root: btnTogglePubPasscode });
-      });
-    }
-
-    const btnTogglePubGhToken = document.getElementById('btnTogglePubGhToken');
-    if (btnTogglePubGhToken) {
-      btnTogglePubGhToken.addEventListener('click', () => {
-        const input = document.getElementById('pubModalGhToken');
-        const icon = document.getElementById('iconPubGhToken');
-        if (!input) return;
-        if (input.type === 'password') {
-          input.type = 'text';
-          if (icon) icon.setAttribute('data-lucide', 'eye-off');
-        } else {
-          input.type = 'password';
-          if (icon) icon.setAttribute('data-lucide', 'eye');
-        }
-        lucide.createIcons({ root: btnTogglePubGhToken });
-      });
-    }
-
-    const btnExecutePublish = document.getElementById('btnExecutePublishWeb');
-    if (btnExecutePublish) {
-      btnExecutePublish.addEventListener('click', () => executePublishWeb(btnExecutePublish));
-    }
 
     const btnExitHistory = document.getElementById('btnExitHistoryView');
     if (btnExitHistory) {
@@ -531,10 +473,6 @@
       const printModal = document.getElementById('printOptionsModal');
       if (printModal && e.target === printModal) {
         printModal.classList.remove('active');
-      }
-      const pubModal = document.getElementById('publishModal');
-      if (pubModal && e.target === pubModal) {
-        pubModal.classList.remove('active');
       }
     });
 
@@ -612,37 +550,10 @@
         if (uploadModal) uploadModal.classList.add('active');
 
         const isSupabase = saveResult && saveResult.supabaseSaved;
-        const publishPanel = document.getElementById('publishPanel');
-        const publishStatusText = document.getElementById('publishStatusText');
-        const btnPublish = document.getElementById('btnPublishWeb');
-        if (publishPanel) {
-          publishPanel.style.display = 'flex';
-          publishPanel.classList.add('publish-panel-highlight');
-          if (publishStatusText) {
-            if (isSupabase) {
-              publishStatusText.innerHTML = `<span style="color:var(--color-success); font-weight:700; display:block; margin-bottom:2px;"><i data-lucide="cloud-lightning" style="width:16px;height:16px;display:inline-block;vertical-align:middle;color:#10b981;"></i> ซิงค์ขึ้น Supabase Cloud สำเร็จเรียบร้อย!</span> ข้อมูลถูกบันทึกลงคลาวด์แล้ว ทุกคนที่เปิดเว็บจะเห็นข้อมูลอัปเดตตรงกันทันทีแบบเรียลไทม์`;
-              if (btnPublish) {
-                btnPublish.style.display = 'inline-flex';
-                btnPublish.innerHTML = `<i data-lucide="github" style="width:14px;height:14px;"></i> สำรองข้อมูลขึ้น GitHub`;
-              }
-            } else if (serverMode) {
-              publishStatusText.innerHTML = `<span style="color:var(--color-success); font-weight:700; display:block; margin-bottom:2px;">✅ อัปโหลดไฟล์ "${escapeHtml(file.name)}" เรียบร้อยแล้ว!</span> คลิกปุ่ม <strong>"เผยแพร่ขึ้นเว็บ"</strong> ด้านขวานี้เพื่อส่งข้อมูลขึ้น GitHub → Vercel ทันที`;
-              if (btnPublish) btnPublish.style.display = 'inline-flex';
-            } else {
-              publishStatusText.innerHTML = `<span style="color:var(--color-success); font-weight:700; display:block; margin-bottom:2px;">✅ อัปโหลดไฟล์ "${escapeHtml(file.name)}" สำเร็จ (แสดงผลเฉพาะเครื่องนี้)</span> หากต้องการเผยแพร่ให้คนข้างนอกเห็น ให้รันผ่าน <code>start_dashboard.bat</code> บนเครื่องหลัก หรือดับเบิลคลิก <code>publish_data.bat</code>`;
-              if (btnPublish) btnPublish.style.display = 'none';
-            }
-          }
-          lucide.createIcons({ root: publishPanel });
-          setTimeout(() => {
-            publishPanel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-          }, 100);
-        }
-
         if (isSupabase) {
-          showToast(`ซิงค์ข้อมูลลง Supabase Cloud สำเร็จ! ทุกคนจะเห็นข้อมูลทันที`, 'success');
+          showToast(`ซิงค์ข้อมูลลง Supabase Cloud เรียบร้อยแล้ว! ทุกคนเห็นข้อมูลตรงกันทันที`, 'success');
         } else if (saveResult && saveResult.serverSaved) {
-          showToast(`อัปโหลดไฟล์ "${file.name}" สำเร็จ — กดปุ่ม "เผยแพร่ขึ้นเว็บ" ในหน้าต่างป๊อปอัปเพื่ออัปเดตเว็บสาธารณะ`, 'success');
+          showToast(`อัปโหลดไฟล์ "${file.name}" สำเร็จ`, 'success');
         } else {
           showToast(`อัปโหลดไฟล์ "${file.name}" สำเร็จ (แสดงผลเฉพาะเครื่องนี้)`, 'success');
         }
@@ -2414,41 +2325,19 @@
     const isSupabase = window.DashboardStorage && window.DashboardStorage.isSupabaseConfigured();
     const serverMode = window.DashboardStorage ? await window.DashboardStorage.isServerMode() : false;
     const note = document.getElementById('uploadModeNote');
-    const pubPanel = document.getElementById('publishPanel');
-    const btnPub = document.getElementById('btnPublishWeb');
-    const pubStatus = document.getElementById('publishStatusText');
-
-    if (pubPanel) {
-      pubPanel.classList.remove('publish-panel-highlight');
-      pubPanel.style.display = 'flex';
-    }
 
     if (isSupabase) {
       note.className = 'upload-mode-note supabase';
       note.innerHTML = `<i data-lucide="cloud-lightning" style="width:16px;height:16px;color:#10b981;"></i>
-        <span><strong>ระบบคลาวด์ Supabase (ซิงค์เรียลไทม์):</strong> เชื่อมต่อฐานข้อมูล Supabase Cloud เรียบร้อยแล้ว ไฟล์ที่อัปโหลดจะถูกบันทึกและซิงค์ให้ทุกคนเห็นทันทีโดยอัตโนมัติ (ไม่ต้องรอ Vercel Build)</span>`;
-      if (btnPub) {
-        btnPub.style.display = 'inline-flex';
-        btnPub.innerHTML = `<i data-lucide="github" style="width:14px;height:14px;"></i> สำรองข้อมูลขึ้น GitHub`;
-      }
-      if (pubStatus) {
-        pubStatus.innerHTML = `<span><strong>ระบบคลาวด์เรียลไทม์:</strong> อัปโหลดแล้วข้อมูลจะแสดงให้ทุกคนเห็นทันที (สามารถกดปุ่มสำรองไฟล์ขึ้น GitHub เพิ่มเติมได้)</span>`;
-      }
+        <span><strong>ระบบคลาวด์ Supabase (ซิงค์เรียลไทม์):</strong> เชื่อมต่อฐานข้อมูล Supabase Cloud เรียบร้อยแล้ว เมื่ออัปโหลดไฟล์ ระบบจะบันทึกและซิงค์ให้ทุกคนเห็นทันทีโดยอัตโนมัติ</span>`;
     } else if (serverMode) {
       note.className = 'upload-mode-note server';
       note.innerHTML = `<i data-lucide="server" style="width:16px;height:16px;color:var(--color-success);"></i>
-        <span><strong>เครื่องในสำนักงาน (เซิร์ฟเวอร์ส่วนกลาง):</strong> ไฟล์ที่อัปโหลดจะถูกบันทึกและเก็บประวัติ ทุกเครื่องใน LAN เห็นทันที
-        และกด <strong>"เผยแพร่ขึ้นเว็บ"</strong> เพื่อให้คนข้างนอกเห็นด้วย</span>`;
-      if (btnPub) btnPub.style.display = 'inline-flex';
-      if (pubStatus) pubStatus.innerHTML = 'ส่งข้อมูลปัจจุบันและประวัติขึ้น GitHub → Vercel จะอัปเดตเว็บภายในประมาณ 1 นาที';
+        <span><strong>เซิร์ฟเวอร์ส่วนกลาง:</strong> ไฟล์ที่อัปโหลดจะถูกบันทึกและเก็บประวัติ ทุกเครื่องในเครือข่ายเห็นทันที</span>`;
     } else {
       note.className = 'upload-mode-note public';
       note.innerHTML = `<i data-lucide="globe" style="width:16px;height:16px;color:var(--color-warning);"></i>
-        <span><strong>เว็บสาธารณะ (Vercel):</strong> ทุกคนเห็นข้อมูลล่าสุดที่สำนักงานเผยแพร่ไว้ ไฟล์ที่คุณอัปโหลดจากหน้านี้จะ <strong>แสดงผลเฉพาะเครื่องของคุณ</strong></span>`;
-      if (btnPub) btnPub.style.display = 'none';
-      if (pubStatus) {
-        pubStatus.innerHTML = `<span><strong>วิธีเผยแพร่ข้อมูลขึ้นเว็บให้ทุกคนเห็น:</strong> ให้เปิดแดชบอร์ดบนเครื่องหลักในสำนักงาน (<code style="background:rgba(0,0,0,0.06);padding:2px 5px;border-radius:3px;">start_dashboard.bat</code>) หรือดับเบิลคลิกไฟล์ <code style="background:rgba(0,0,0,0.06);padding:2px 5px;border-radius:3px;">publish_data.bat</code> ในเครื่องของคุณ</span>`;
-      }
+        <span><strong>แดชบอร์ดติดตามงาน:</strong> เมื่ออัปโหลดไฟล์ Excel ระบบจะประมวลผลและแสดงผลข้อมูลทันที</span>`;
     }
     validatePasscode(false);
     lucide.createIcons({ root: modal });
@@ -2542,121 +2431,10 @@
     try {
       await window.DashboardStorage.restoreHistory(entry.id);
       await reloadLatestData(false);
-      showToast(`นำ "${entry.fileName}" กลับมาเป็นข้อมูลปัจจุบันแล้ว (กด "เผยแพร่ขึ้นเว็บ" เพื่ออัปเดตเว็บสาธารณะ)`, 'success');
+      showToast(`นำ "${entry.fileName}" กลับมาเป็นข้อมูลปัจจุบันเรียบร้อยแล้ว`, 'success');
       renderUploadHistory(serverMode);
     } catch (err) {
       showToast('นำข้อมูลย้อนหลังกลับมาใช้ไม่สำเร็จ: ' + err.message, 'error');
-    }
-  }
-
-  async function openPublishModal() {
-    const modal = document.getElementById('publishModal');
-    if (!modal) return;
-
-    const d = appState.data || {};
-    const fnEl = document.getElementById('pubModalFileName');
-    const luEl = document.getElementById('pubModalLastUpdated');
-    const passInput = document.getElementById('pubModalPasscode');
-    const ghTokenInput = document.getElementById('pubModalGhToken');
-    const tokenSection = document.getElementById('pubModalTokenSection');
-    const statusBox = document.getElementById('pubStatusBox');
-
-    if (fnEl) fnEl.textContent = d.fileName || 'สถานะงานก่อสร้าง.xlsx';
-    if (luEl) luEl.textContent = d.lastUpdated || '-';
-    if (passInput) passInput.value = (window.DashboardStorage ? window.DashboardStorage.getStoredPasscode() : '') || '1212312121';
-    if (ghTokenInput) ghTokenInput.value = (window.DashboardStorage ? window.DashboardStorage.getStoredGhToken() : '') || '';
-    if (statusBox) {
-      statusBox.style.display = 'none';
-      statusBox.innerHTML = '';
-    }
-
-    // If running in local server mode, token section is not strictly required
-    if (window.DashboardStorage) {
-      const isServer = await window.DashboardStorage.isServerMode();
-      if (tokenSection) {
-        tokenSection.style.display = isServer ? 'none' : 'block';
-      }
-    }
-
-    modal.classList.add('active');
-    lucide.createIcons({ root: modal });
-  }
-
-  async function executePublishWeb(btn) {
-    const passInput = document.getElementById('pubModalPasscode');
-    const passcode = passInput ? passInput.value.trim() : '';
-    const ghTokenInput = document.getElementById('pubModalGhToken');
-    const ghToken = ghTokenInput ? ghTokenInput.value.trim() : '';
-    const statusBox = document.getElementById('pubStatusBox');
-
-    if (passcode !== '1212312121') {
-      if (statusBox) {
-        statusBox.style.display = 'block';
-        statusBox.style.background = 'var(--color-danger-bg)';
-        statusBox.style.color = 'var(--color-danger)';
-        statusBox.style.border = '1px solid var(--color-danger-border)';
-        statusBox.innerHTML = '❌ รหัสผ่านไม่ถูกต้อง กรุณาใส่ 1212312121';
-      }
-      return;
-    }
-
-    if (window.DashboardStorage) {
-      window.DashboardStorage.setStoredPasscode(passcode);
-      if (ghToken) {
-        window.DashboardStorage.setStoredGhToken(ghToken);
-      }
-    }
-
-    const originalText = btn.innerHTML;
-    btn.disabled = true;
-    btn.innerHTML = `<i data-lucide="loader" style="width:15px;height:15px;"></i> กำลังส่งขึ้น GitHub...`;
-    lucide.createIcons({ root: btn });
-
-    if (statusBox) {
-      statusBox.style.display = 'block';
-      statusBox.style.background = 'var(--pea-gradient-subtle)';
-      statusBox.style.color = 'var(--text-primary)';
-      statusBox.style.border = '1px solid var(--pea-purple-glow)';
-      statusBox.innerHTML = '⏳ กำลังเชื่อมต่อ GitHub และบันทึกข้อมูล กรุณารอสักครู่ (ประมาณ 5-10 วินาที)...';
-    }
-
-    try {
-      const res = await window.DashboardStorage.publish(passcode, ghToken);
-      if (res && res.needVercelConfig) {
-        if (statusBox) {
-          statusBox.style.background = 'var(--color-warning-bg)';
-          statusBox.style.color = 'var(--text-primary)';
-          statusBox.style.border = '1px solid var(--color-warning-border)';
-          statusBox.innerHTML = `<strong>⚠️ ${res.message}</strong><br>สามารถใส่ GitHub Token ในช่องด้านบนแล้วกด <strong>"ยืนยันเผยแพร่ขึ้นเว็บทันที"</strong> อีกครั้งได้เลยครับ`;
-        }
-        showToast('กรุณาใส่ GitHub Token เพื่อเผยแพร่ผ่านเว็บ', 'warning');
-      } else if (res && res.success !== false) {
-        if (statusBox) {
-          statusBox.style.background = 'var(--color-success-bg)';
-          statusBox.style.color = 'var(--color-success)';
-          statusBox.style.border = '1px solid var(--color-success-border)';
-          statusBox.innerHTML = `<strong>✅ เผยแพร่ขึ้น GitHub สำเร็จ!</strong><br>${res.message || 'ระบบ Vercel กำลัง Build และอัปเดตเว็บให้อัตโนมัติ ทุกคนจะเห็นข้อมูลชุดนี้ภายใน 1-2 นาที'}`;
-        }
-        showToast('เผยแพร่ข้อมูลขึ้นเว็บสาธารณะสำเร็จ!', 'success');
-        setTimeout(() => {
-          document.getElementById('publishModal')?.classList.remove('active');
-          document.getElementById('uploadHistoryModal')?.classList.remove('active');
-        }, 2200);
-      } else {
-        throw new Error(res.message || res.error || 'การเผยแพร่ไม่สำเร็จ');
-      }
-    } catch (err) {
-      if (statusBox) {
-        statusBox.style.background = 'var(--color-danger-bg)';
-        statusBox.style.color = 'var(--color-danger)';
-        statusBox.style.border = '1px solid var(--color-danger-border)';
-        statusBox.innerHTML = `<strong>❌ ไม่สามารถเผยแพร่ได้:</strong> ${err.message}`;
-      }
-      showToast('เผยแพร่ไม่สำเร็จ: ' + err.message, 'error');
-    } finally {
-      btn.disabled = false;
-      btn.innerHTML = originalText;
-      lucide.createIcons({ root: btn });
     }
   }
 

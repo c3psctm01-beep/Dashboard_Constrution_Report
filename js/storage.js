@@ -18,7 +18,6 @@ window.DashboardStorage = (function () {
   const LOCAL_STORAGE_KEY = 'pea_dashboard_latest_data';
   const PREFS_STORAGE_KEY = 'pea_dashboard_preferences';
   const PASSCODE_STORAGE_KEY = 'pea_dashboard_upload_passcode';
-  const GH_TOKEN_KEY = 'pea_dashboard_github_token';
 
   const isHttp = window.location.protocol.startsWith('http');
   let dbPromise = null;
@@ -154,28 +153,11 @@ window.DashboardStorage = (function () {
     }
   }
 
-  function getStoredGhToken() {
-    return localStorage.getItem(GH_TOKEN_KEY) || sessionStorage.getItem(GH_TOKEN_KEY) || '';
-  }
-
-  function setStoredGhToken(token) {
-    if (token) {
-      localStorage.setItem(GH_TOKEN_KEY, token.trim());
-    } else {
-      localStorage.removeItem(GH_TOKEN_KEY);
-      sessionStorage.removeItem(GH_TOKEN_KEY);
-    }
-  }
-
   async function postJson(url, body, contentType, extraHeaders) {
     const headers = { 'Content-Type': contentType || 'application/json', ...(extraHeaders || {}) };
     const passcode = getStoredPasscode();
     if (passcode && !headers['X-Upload-Passcode']) {
       headers['X-Upload-Passcode'] = passcode;
-    }
-    const ghToken = getStoredGhToken();
-    if (ghToken && !headers['X-GitHub-Token']) {
-      headers['X-GitHub-Token'] = ghToken;
     }
     const res = await fetch(url, {
       method: 'POST',
@@ -466,31 +448,38 @@ window.DashboardStorage = (function () {
   }
 
   async function restoreHistory(id) {
+    const snap = await loadHistorySnapshot(id);
+    if (snap) {
+      const sb = getSupabase();
+      if (sb) {
+        try {
+          const nowMs = Date.now();
+          const nowText = new Date().toLocaleDateString('th-TH', {
+            year: 'numeric', month: 'long', day: 'numeric',
+            hour: '2-digit', minute: '2-digit'
+          });
+          await sb
+            .from(getTableName())
+            .upsert({
+              id: 'latest',
+              file_name: snap.fileName || 'สถานะงานก่อสร้าง.xlsx',
+              last_updated: snap.lastUpdated || nowText,
+              saved_at: nowMs,
+              saved_at_text: nowText,
+              uploaded_by: snap.uploadedBy || 'กบส.',
+              data: snap
+            });
+        } catch (e) { /* ignore */ }
+      }
+    }
     if (await isServerMode()) {
       return postJson(`/api/restore?id=${encodeURIComponent(id)}`);
     }
     return { success: true };
   }
 
-  async function publish(passcode, ghToken) {
-    const effectivePasscode = passcode || getStoredPasscode();
-    const effectiveToken = ghToken || getStoredGhToken();
-
-    // If local server is running, use it
-    if (await isServerMode()) {
-      return postJson('/api/publish');
-    }
-
-    // Vercel serverless publish mode
-    const latestLocal = await loadFromLocal();
-    const body = {
-      passcode: effectivePasscode,
-      githubToken: effectiveToken,
-      dataset: latestLocal || (window.appState && window.appState.data) || null
-    };
-    const extraHeaders = {};
-    if (effectiveToken) extraHeaders['X-GitHub-Token'] = effectiveToken;
-    return postJson('/api/publish', JSON.stringify(body), 'application/json', extraHeaders);
+  async function publish() {
+    return { success: true, message: 'ข้อมูลซิงค์กับระบบคลาวด์ Supabase เรียบร้อยแล้ว' };
   }
 
   async function clearLatestData() {
@@ -577,8 +566,6 @@ window.DashboardStorage = (function () {
     loadPreferences,
     getStoredPasscode,
     setStoredPasscode,
-    getStoredGhToken,
-    setStoredGhToken,
     getSupabase,
     isServerMode,
     getServerInfo
