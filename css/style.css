@@ -402,6 +402,16 @@ body {
 .publish-panel-info { display: flex; flex-direction: column; gap: 0.2rem; font-size: 0.82rem; color: var(--text-secondary); }
 .publish-panel-info strong { display: flex; align-items: center; gap: 0.4rem; color: var(--text-primary); font-size: 0.88rem; }
 .publish-panel .btn-primary[disabled] { opacity: 0.6; cursor: wait; }
+.publish-panel.publish-panel-highlight {
+  border-color: var(--pea-purple);
+  background: var(--pea-gradient-subtle);
+  box-shadow: 0 0 0 3px rgba(116, 50, 180, 0.25);
+  animation: pulsePublish 1.5s ease-in-out infinite alternate;
+}
+@keyframes pulsePublish {
+  from { box-shadow: 0 0 0 2px rgba(116, 50, 180, 0.2); }
+  to { box-shadow: 0 0 0 6px rgba(116, 50, 180, 0.45); }
+}
 
 .history-section-header {
   display: flex;

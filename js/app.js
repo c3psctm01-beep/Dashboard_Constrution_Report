@@ -199,6 +199,12 @@
         document.getElementById('uploadHistoryModal').classList.remove('active');
       });
     }
+    const btnDismissUpload = document.getElementById('btnDismissUploadModal');
+    if (btnDismissUpload) {
+      btnDismissUpload.addEventListener('click', () => {
+        document.getElementById('uploadHistoryModal').classList.remove('active');
+      });
+    }
     const btnPublish = document.getElementById('btnPublishWeb');
     if (btnPublish) {
       btnPublish.addEventListener('click', () => publishToWeb(btnPublish));
@@ -326,10 +332,37 @@
 
         setHistoryView(null);
         document.getElementById('networkUpdateBanner').style.display = 'none';
-        document.getElementById('uploadHistoryModal').classList.remove('active');
         renderAll();
+
+        const serverMode = window.DashboardStorage ? await window.DashboardStorage.isServerMode() : false;
+        await renderUploadHistory(serverMode);
+
+        const uploadModal = document.getElementById('uploadHistoryModal');
+        if (uploadModal) uploadModal.classList.add('active');
+
+        const publishPanel = document.getElementById('publishPanel');
+        const publishStatusText = document.getElementById('publishStatusText');
+        const btnPublish = document.getElementById('btnPublishWeb');
+        if (publishPanel) {
+          publishPanel.style.display = 'flex';
+          publishPanel.classList.add('publish-panel-highlight');
+          if (publishStatusText) {
+            if (serverMode) {
+              publishStatusText.innerHTML = `<span style="color:var(--color-success); font-weight:700; display:block; margin-bottom:2px;">✅ อัปโหลดไฟล์ "${escapeHtml(file.name)}" เรียบร้อยแล้ว!</span> คลิกปุ่ม <strong>"เผยแพร่ขึ้นเว็บ"</strong> ด้านขวานี้เพื่อส่งข้อมูลขึ้น GitHub → Vercel ทันที`;
+              if (btnPublish) btnPublish.style.display = 'inline-flex';
+            } else {
+              publishStatusText.innerHTML = `<span style="color:var(--color-success); font-weight:700; display:block; margin-bottom:2px;">✅ อัปโหลดไฟล์ "${escapeHtml(file.name)}" สำเร็จ (แสดงผลเฉพาะเครื่องนี้)</span> หากต้องการเผยแพร่ให้คนข้างนอกเห็น ให้รันผ่าน <code>start_dashboard.bat</code> บนเครื่องหลัก หรือดับเบิลคลิก <code>publish_data.bat</code>`;
+              if (btnPublish) btnPublish.style.display = 'none';
+            }
+          }
+          lucide.createIcons({ root: publishPanel });
+          setTimeout(() => {
+            publishPanel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+          }, 100);
+        }
+
         if (saveResult && saveResult.serverSaved) {
-          showToast(`อัปโหลดไฟล์ "${file.name}" สำเร็จ บันทึกส่วนกลางและเก็บประวัติแล้ว (กด "เผยแพร่ขึ้นเว็บ" เพื่อให้คนข้างนอกเห็น)`, 'success');
+          showToast(`อัปโหลดไฟล์ "${file.name}" สำเร็จ — กดปุ่ม "เผยแพร่ขึ้นเว็บ" ในหน้าต่างป๊อปอัปเพื่ออัปเดตเว็บสาธารณะ`, 'success');
         } else {
           showToast(`อัปโหลดไฟล์ "${file.name}" สำเร็จ (แสดงผลเฉพาะเครื่องนี้)`, 'success');
         }
@@ -2098,18 +2131,32 @@
 
     const serverMode = window.DashboardStorage ? await window.DashboardStorage.isServerMode() : false;
     const note = document.getElementById('uploadModeNote');
+    const pubPanel = document.getElementById('publishPanel');
+    const btnPub = document.getElementById('btnPublishWeb');
+    const pubStatus = document.getElementById('publishStatusText');
+
+    if (pubPanel) {
+      pubPanel.classList.remove('publish-panel-highlight');
+      pubPanel.style.display = 'flex';
+    }
+
     if (serverMode) {
       note.className = 'upload-mode-note server';
       note.innerHTML = `<i data-lucide="server" style="width:16px;height:16px;color:var(--color-success);"></i>
         <span><strong>เครื่องในสำนักงาน (เซิร์ฟเวอร์ส่วนกลาง):</strong> ไฟล์ที่อัปโหลดจะถูกบันทึกและเก็บประวัติ ทุกเครื่องใน LAN เห็นทันที
         และกด <strong>"เผยแพร่ขึ้นเว็บ"</strong> เพื่อให้คนข้างนอกเห็นด้วย</span>`;
+      if (btnPub) btnPub.style.display = 'inline-flex';
+      if (pubStatus) pubStatus.innerHTML = 'ส่งข้อมูลปัจจุบันและประวัติขึ้น GitHub → Vercel จะอัปเดตเว็บภายในประมาณ 1 นาที';
     } else {
       note.className = 'upload-mode-note public';
       note.innerHTML = `<i data-lucide="globe" style="width:16px;height:16px;color:var(--color-warning);"></i>
-        <span><strong>เว็บสาธารณะ:</strong> ทุกคนเห็นข้อมูลล่าสุดที่สำนักงานเผยแพร่ไว้ ไฟล์ที่คุณอัปโหลดจากหน้านี้จะ
-        <strong>แสดงผลเฉพาะเครื่องของคุณ</strong> (หากต้องการให้ทุกคนเห็น ให้อัปโหลดผ่านเครื่องในสำนักงาน)</span>`;
+        <span><strong>เว็บสาธารณะ (Vercel):</strong> ทุกคนเห็นข้อมูลล่าสุดที่สำนักงานเผยแพร่ไว้ ไฟล์ที่คุณอัปโหลดจากหน้านี้จะ
+        <strong>แสดงผลเฉพาะเครื่องของคุณ</strong></span>`;
+      if (btnPub) btnPub.style.display = 'none';
+      if (pubStatus) {
+        pubStatus.innerHTML = `<span><strong>วิธีเผยแพร่ข้อมูลขึ้นเว็บให้ทุกคนเห็น:</strong> ให้เปิดแดชบอร์ดบนเครื่องหลักในสำนักงาน (<code style="background:rgba(0,0,0,0.06);padding:2px 5px;border-radius:3px;">start_dashboard.bat</code>) หรือดับเบิลคลิกไฟล์ <code style="background:rgba(0,0,0,0.06);padding:2px 5px;border-radius:3px;">publish_data.bat</code> ในเครื่องของคุณ</span>`;
+      }
     }
-    document.getElementById('publishPanel').style.display = serverMode ? 'flex' : 'none';
     lucide.createIcons({ root: modal });
 
     renderUploadHistory(serverMode);
