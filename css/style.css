@@ -567,6 +567,36 @@ body {
   transform: translateY(-1px);
 }
 
+.btn-publish-header {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.5rem 0.95rem;
+  background: linear-gradient(135deg, #059669 0%, #10b981 100%);
+  color: #ffffff !important;
+  font-family: var(--font-family);
+  font-size: 0.85rem;
+  font-weight: 600;
+  border-radius: var(--radius-md);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.35);
+  transition: all var(--transition-fast);
+}
+
+.btn-publish-header:hover {
+  background: linear-gradient(135deg, #047857 0%, #059669 100%);
+  box-shadow: 0 4px 14px rgba(16, 185, 129, 0.5);
+  transform: translateY(-1px);
+}
+
+.btn-publish-header[disabled] {
+  opacity: 0.6;
+  cursor: wait;
+  transform: none;
+  box-shadow: none;
+}
+
 /* Upload Dropzone Section */
 .upload-panel {
   background: var(--bg-surface);
@@ -1916,6 +1946,7 @@ body {
   .gantt-view-switch-row,
   .btn-primary,
   .btn-secondary,
+  .btn-publish-header,
   .btn-history,
   .btn-banner-action,
   .btn-banner-dismiss,

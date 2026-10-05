@@ -251,8 +251,19 @@ window.DashboardStorage = (function () {
     return postJson(`/api/restore?id=${encodeURIComponent(id)}`);
   }
 
-  async function publish() {
-    return postJson('/api/publish');
+  async function publish(passcode) {
+    const effectivePasscode = passcode || getStoredPasscode();
+    const serverMode = await isServerMode();
+    if (serverMode) {
+      return postJson('/api/publish');
+    }
+    // Vercel serverless publish mode
+    const latestLocal = await loadFromLocal();
+    const body = {
+      passcode: effectivePasscode,
+      dataset: latestLocal || (window.appState && window.appState.data) || null
+    };
+    return postJson('/api/publish', JSON.stringify(body));
   }
 
   async function clearLatestData() {

@@ -407,8 +407,46 @@
     }
     const btnPublish = document.getElementById('btnPublishWeb');
     if (btnPublish) {
-      btnPublish.addEventListener('click', () => publishToWeb(btnPublish));
+      btnPublish.addEventListener('click', () => openPublishModal());
     }
+
+    // Top Header Publish Button
+    const btnHeaderPublish = document.getElementById('btnHeaderPublishWeb');
+    if (btnHeaderPublish) {
+      btnHeaderPublish.addEventListener('click', () => openPublishModal());
+    }
+
+    // Publish Modal Controls
+    const btnClosePublishModal = document.getElementById('btnClosePublishModal');
+    const btnCancelPublishModal = document.getElementById('btnCancelPublishModal');
+    [btnClosePublishModal, btnCancelPublishModal].forEach(btn => {
+      btn?.addEventListener('click', () => {
+        document.getElementById('publishModal')?.classList.remove('active');
+      });
+    });
+
+    const btnTogglePubPasscode = document.getElementById('btnTogglePubPasscode');
+    if (btnTogglePubPasscode) {
+      btnTogglePubPasscode.addEventListener('click', () => {
+        const input = document.getElementById('pubModalPasscode');
+        const icon = document.getElementById('iconPubPasscode');
+        if (!input) return;
+        if (input.type === 'password') {
+          input.type = 'text';
+          if (icon) icon.setAttribute('data-lucide', 'eye-off');
+        } else {
+          input.type = 'password';
+          if (icon) icon.setAttribute('data-lucide', 'eye');
+        }
+        lucide.createIcons({ root: btnTogglePubPasscode });
+      });
+    }
+
+    const btnExecutePublish = document.getElementById('btnExecutePublishWeb');
+    if (btnExecutePublish) {
+      btnExecutePublish.addEventListener('click', () => executePublishWeb(btnExecutePublish));
+    }
+
     const btnExitHistory = document.getElementById('btnExitHistoryView');
     if (btnExitHistory) {
       btnExitHistory.addEventListener('click', () => reloadLatestData(true));
@@ -476,6 +514,10 @@
       const printModal = document.getElementById('printOptionsModal');
       if (printModal && e.target === printModal) {
         printModal.classList.remove('active');
+      }
+      const pubModal = document.getElementById('publishModal');
+      if (pubModal && e.target === pubModal) {
+        pubModal.classList.remove('active');
       }
     });
 
@@ -2462,24 +2504,89 @@
     }
   }
 
-  async function publishToWeb(btn) {
-    if (!validatePasscode(true)) return;
-    const statusText = document.getElementById('publishStatusText');
-    const original = btn.innerHTML;
+  function openPublishModal() {
+    const modal = document.getElementById('publishModal');
+    if (!modal) return;
+
+    const d = appState.data || {};
+    const fnEl = document.getElementById('pubModalFileName');
+    const luEl = document.getElementById('pubModalLastUpdated');
+    const passInput = document.getElementById('pubModalPasscode');
+    const statusBox = document.getElementById('pubStatusBox');
+
+    if (fnEl) fnEl.textContent = d.fileName || 'สถานะงานก่อสร้าง.xlsx';
+    if (luEl) luEl.textContent = d.lastUpdated || '-';
+    if (passInput) passInput.value = (window.DashboardStorage ? window.DashboardStorage.getStoredPasscode() : '') || '1212312121';
+    if (statusBox) {
+      statusBox.style.display = 'none';
+      statusBox.innerHTML = '';
+    }
+
+    modal.classList.add('active');
+    lucide.createIcons({ root: modal });
+  }
+
+  async function executePublishWeb(btn) {
+    const passInput = document.getElementById('pubModalPasscode');
+    const passcode = passInput ? passInput.value.trim() : '';
+    const statusBox = document.getElementById('pubStatusBox');
+
+    if (passcode !== '1212312121') {
+      if (statusBox) {
+        statusBox.style.display = 'block';
+        statusBox.style.background = 'var(--color-danger-bg)';
+        statusBox.style.color = 'var(--color-danger)';
+        statusBox.style.border = '1px solid var(--color-danger-border)';
+        statusBox.innerHTML = '❌ รหัสผ่านไม่ถูกต้อง กรุณาใส่ 1212312121';
+      }
+      return;
+    }
+
+    if (window.DashboardStorage) {
+      window.DashboardStorage.setStoredPasscode(passcode);
+    }
+
+    const originalText = btn.innerHTML;
     btn.disabled = true;
-    btn.innerHTML = `<i data-lucide="loader" style="width:15px;height:15px;"></i> กำลังเผยแพร่...`;
+    btn.innerHTML = `<i data-lucide="loader" style="width:15px;height:15px;"></i> กำลังส่งขึ้น GitHub...`;
     lucide.createIcons({ root: btn });
-    statusText.textContent = 'กำลังส่งข้อมูลขึ้น GitHub กรุณารอสักครู่...';
+
+    if (statusBox) {
+      statusBox.style.display = 'block';
+      statusBox.style.background = 'var(--pea-gradient-subtle)';
+      statusBox.style.color = 'var(--text-primary)';
+      statusBox.style.border = '1px solid var(--pea-purple-glow)';
+      statusBox.innerHTML = '⏳ กำลังเชื่อมต่อ GitHub และบันทึกข้อมูล กรุณารอสักครู่ (ประมาณ 5-10 วินาที)...';
+    }
+
     try {
-      const res = await window.DashboardStorage.publish();
-      statusText.textContent = `✅ ${res.message} (${new Date().toLocaleTimeString('th-TH')})`;
-      showToast(res.message, 'success');
+      const res = await window.DashboardStorage.publish(passcode);
+      if (res && res.success !== false) {
+        if (statusBox) {
+          statusBox.style.background = 'var(--color-success-bg)';
+          statusBox.style.color = 'var(--color-success)';
+          statusBox.style.border = '1px solid var(--color-success-border)';
+          statusBox.innerHTML = `<strong>✅ เผยแพร่ขึ้น GitHub สำเร็จ!</strong><br>${res.message || 'ระบบ Vercel กำลัง Build และอัปเดตเว็บให้อัตโนมัติ ทุกคนจะเห็นข้อมูลชุดนี้ภายใน 1-2 นาที'}`;
+        }
+        showToast('เผยแพร่ข้อมูลขึ้นเว็บสาธารณะสำเร็จ!', 'success');
+        setTimeout(() => {
+          document.getElementById('publishModal')?.classList.remove('active');
+          document.getElementById('uploadHistoryModal')?.classList.remove('active');
+        }, 2200);
+      } else {
+        throw new Error(res.message || res.error || 'การเผยแพร่ไม่สำเร็จ');
+      }
     } catch (err) {
-      statusText.textContent = `❌ ${err.message}`;
+      if (statusBox) {
+        statusBox.style.background = 'var(--color-danger-bg)';
+        statusBox.style.color = 'var(--color-danger)';
+        statusBox.style.border = '1px solid var(--color-danger-border)';
+        statusBox.innerHTML = `<strong>❌ ไม่สามารถเผยแพร่ได้:</strong> ${err.message}`;
+      }
       showToast('เผยแพร่ไม่สำเร็จ: ' + err.message, 'error');
     } finally {
       btn.disabled = false;
-      btn.innerHTML = original;
+      btn.innerHTML = originalText;
       lucide.createIcons({ root: btn });
     }
   }
