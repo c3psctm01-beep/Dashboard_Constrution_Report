@@ -1,6 +1,6 @@
 {
-  "fileName": "สถานะงานก่อสร้างสายส่งและสถานีไฟฟ้า03082026.xlsx",
-  "lastUpdated": "5 ตุลาคม 2569 เวลา 15:46",
+  "fileName": "สถานะงานก่อสร้างสายส่งและสถานีไฟฟ้า_05102026.xlsx",
+  "lastUpdated": "5 ตุลาคม 2569 เวลา 15:58",
   "transmissionLines": [
     {
       "no": 1,
@@ -17,14 +17,14 @@
         "พ.ค.": 4,
         "มิ.ย.": 7,
         "ก.ค.": 3,
-        "ส.ค.": 0,
+        "ส.ค.": 1,
         "ก.ย.": 0,
         "ต.ค.": 0,
         "พ.ย.": 0,
         "ธ.ค.": 0
       },
-      "totalProgress": 99,
-      "remarks": "งานก่อสร้างฐานรากเสาและสมอบกคอนกรีต ดำเนินการแล้ว 305 ฐาน\r\nงานปักเสา คอร. 22 เมตร ดำเนินการแล้ว 313 ต้น\r\nงานพาดสายไฟฟ้าและติดตั้งอุปกรณ์ ดำเนินการแล้ว 53,823/54,063 เมตร\r\nคาดการณ์แล้วเสร็จ วันที่ 16 สิงหาคม 2569 เนื่องด้วยดับไฟผู้ใช้ไฟรายใหญ่ได้"
+      "totalProgress": 100,
+      "remarks": "งานก่อสร้างฐานรากเสาและสมอบกคอนกรีต ดำเนินการแล้ว 305 ฐาน\r\nงานปักเสา คอร. 22 เมตร ดำเนินการแล้ว 313 ต้น\r\nงานพาดสายไฟฟ้าและติดตั้งอุปกรณ์ ดำเนินการแล้ว 54,063/54,063 เมตร\r\nดำเนินการแล้วเสร็จ"
     },
     {
       "no": 2,
@@ -113,14 +113,14 @@
         "พ.ค.": 0,
         "มิ.ย.": 0,
         "ก.ค.": 25,
-        "ส.ค.": 0,
+        "ส.ค.": 8,
         "ก.ย.": 0,
         "ต.ค.": 0,
         "พ.ย.": 0,
         "ธ.ค.": 0
       },
-      "totalProgress": 25,
-      "remarks": "งานปักเสา คอร. 22 เมตร ดำเนินการแล้ว 25/73 ต้น\r\nงานปักเสา Monopole 20 เมตร ดำเนินการแล้ว 0/4 ต้น\r\nฐานราก ดำเนินการแล้ว 66/69 ฐาน (ฐานเดี่ยว 65 ฐาน/คู่ 4 ฐาน)\r\nติดตั้ง ABS ขนาด 2000 A ใหม่ จำนวน 1 ชุด"
+      "totalProgress": 33,
+      "remarks": "งานปักเสา คอร. 22 เมตร ดำเนินการแล้ว 45/73 ต้น\r\nงานปักเสา Monopole 20 เมตร ดำเนินการแล้ว 0/4 ต้น\r\nฐานราก ดำเนินการแล้ว 68/69 ฐาน (ฐานเดี่ยว 65 ฐาน/คู่ 4 ฐาน)\r\nติดตั้ง ABS ขนาด 2000 A ใหม่ ดำเนินการแล้ว 0/1 ชุด"
     }
   ],
   "substationsSummary": {
@@ -452,10 +452,10 @@
       "contract": "-",
       "duration": "-",
       "admin": "กรย.(ก3)",
-      "progress": 16,
+      "progress": 46.25,
       "supervisor": "นายจักรพันธ์ นรเหรียญ\r\nพชง.6 ผจส.กรย.(ก3)",
       "committee": "",
-      "statusText": "รื้อถอนอุปกรณ์ป้องกัน 22,115 kV และหม้อแปลงกำลัง จากสถานีไฟฟ้าสมุทรสาคร 16 (ชั่วคราว)เรียบร้อย เตรียมขนย้ายไปติดตั้งและส่งคืนเศษวัสดุ ขณะนี้สถานีไฟฟ้าสมุทรสาคร 18 (ชั่วคราว) ปรับปรุงที่ดินแล้วเสร็จ"
+      "statusText": "รื้อถอนสถานีไฟฟ้าสมุทรสาคร 16 (ชั่วคราว) งานรื้อถอนดำเนินการส่งคืนผลิตภัณฑ์คอนกรีต 100% เหลืองานรื้อถอนสายกราวด์กริดภายในสถานีไฟฟ้าฯ \r\nสถานีไฟฟ้าสมุทรสาคร 18 (ชั่วคราว) อยู่ระหว่าง กกฟ.2 ทำฐานรากสำหรับเสา 115 kV ขั้นตอนปักเสาภายในสถานีได้ 45% ของงานปักเสาภายในสถานีไฟฟ้า"
     },
     {
       "no": 5,
@@ -466,10 +466,10 @@
       "contract": "-",
       "duration": "-",
       "admin": "กรย.(ก3)",
-      "progress": 9,
+      "progress": 35.5,
       "supervisor": "นายพลากร จงอมรสิริเกษม\r\nพชง.3 ผจร.กรย.(ก3)",
       "committee": "",
-      "statusText": "รื้อย้ายอุปกรณ์ป้องกัน 22,115 kV และหม้อแปลงกำลัง จากสถานีไฟฟ้าสมุทรสาคร 10 (ชั่วคราว) ได้ประมาณ 80% ของงานรื้อถอน\r\nขณะนี้อยู่ระหว่างปรับปรุงที่ดิน (ถมดินให้ได้ตามระดับ)"
+      "statusText": "รื้อย้ายอุปกรณ์ป้องกัน 22,115 kV และหม้อแปลงกำลัง จากสถานีไฟฟ้าสมุทรสาคร 10 (ชั่วคราว) ได้ประมาณ 90% ของงานรื้อถอน เหลืองานรื้อถอนสายกราวด์กริดภายในสถานีไฟฟ้าฯ และส่งคืนผลิตภัณฑ์คอนกรีต\r\nสถานีไฟฟ้ากาญจนบุรี 5 (ชั่วคราว) งานขนย้ายอุปกรณ์และหม้อแปลงไฟฟ้ากำลังจากสถานีไฟฟ้าสมุทรสาคร 10 (ชั่วคราว) ไปติดตั้งสถานีไฟฟ้ากาญจนบุรี 5 (ชั่วคราว) แล้วเสร็จ อยู่ระหว่างขั้นตอนปักเสาภายในสถานีไฟฟ้า"
     }
   ],
   "permits": [
@@ -569,7 +569,7 @@
       "projectName": "งานก่อสร้างสายส่ง รองรับสถานีไฟฟ้ากาญจนบุรี 5 (ชั่วคราว)",
       "permitDetail": "ขอปักเสาพาดสาย",
       "authority": "แขวงทางหลวงกาญจนบุรี",
-      "statusText": "อยู่ระหว่างแขวงทางหลวงกาญจนบุรี พิจารณา",
+      "statusText": "หมวดทางหลวงแกแพรก พิจารณาแล้ว\r\nอยู่ระหว่างแขวงทางหลวงกาญจนบุรี พิจารณาต่อไป",
       "statusGroup": "pending",
       "statusLabel": "อยู่ระหว่างพิจารณา"
     },
@@ -625,15 +625,15 @@
         "level": 4,
         "origBudget": 28208212.72,
         "currBudget": 29358372.72,
-        "allocated": 29093136.18,
-        "distributable": 265236.54,
+        "allocated": 29073136.18,
+        "distributable": 285236.54,
         "prPo": 0,
         "actMaterial": 0,
         "actContracting": 0,
         "actCoordination": 0,
         "actSiteOther": 0,
         "actTotal": 0,
-        "remBudget": 265236.54
+        "remBudget": 285236.54
       },
       "wbsItems": [
         {
@@ -710,16 +710,16 @@
           "status": "TECO  AVAC SETC BUDG ISBD NTUP  // D2",
           "level": 5,
           "origBudget": 200000,
-          "currBudget": 200000,
+          "currBudget": 180000,
           "allocated": 0,
-          "distributable": 200000,
+          "distributable": 180000,
           "prPo": 0,
           "actMaterial": 0,
           "actContracting": 180000,
           "actCoordination": 0,
           "actSiteOther": 0,
           "actTotal": 180000,
-          "remBudget": 20000
+          "remBudget": 0
         },
         {
           "wbs": "I-68-I-KKHXX.IS.1007",
@@ -734,9 +734,9 @@
           "actMaterial": 0,
           "actContracting": 0,
           "actCoordination": 0,
-          "actSiteOther": 2607880.68,
-          "actTotal": 2640380.68,
-          "remBudget": 3440329.04
+          "actSiteOther": 3117980.4,
+          "actTotal": 3150480.4,
+          "remBudget": 2930229.32
         },
         {
           "wbs": "I-68-I-KKHXX.IS.1009",
@@ -775,7 +775,7 @@
         {
           "wbs": "I-68-I-KKHXX.IS.1011",
           "desc": "ก่อสร้างสายส่ง 115kV",
-          "status": "REL AVAC SETC BUDG NTUP  // C1",
+          "status": "TECO  AVAC SETC BUDG NTUP  // D2",
           "level": 5,
           "origBudget": 17104586.85,
           "currBudget": 17104586.85,
@@ -785,9 +785,9 @@
           "actMaterial": 0,
           "actContracting": 0,
           "actCoordination": 0,
-          "actSiteOther": 5558741.61,
-          "actTotal": 5944216.61,
-          "remBudget": 11160370.24
+          "actSiteOther": 5933423.97,
+          "actTotal": 6318898.97,
+          "remBudget": 10785687.88
         },
         {
           "wbs": "I-68-I-KKHXX.IS.1012",
@@ -944,11 +944,11 @@
         }
       ],
       "totalBudget": 29358372.72,
-      "totalActual": 13671089.650000002,
+      "totalActual": 14555871.73,
       "totalPrPo": 61080,
-      "totalRemaining": 15626203.069999997,
-      "percentDisbursed": 46.57,
-      "percentCommitted": 46.77
+      "totalRemaining": 14741420.989999998,
+      "percentDisbursed": 49.58,
+      "percentCommitted": 49.79
     },
     {
       "sheetName": "สาคร18",
@@ -960,15 +960,15 @@
         "level": 4,
         "origBudget": 10008111.96,
         "currBudget": 10008111.96,
-        "allocated": 10008111.96,
-        "distributable": 0,
+        "allocated": 9908274.91,
+        "distributable": 99837.05,
         "prPo": 0,
         "actMaterial": 0,
         "actContracting": 0,
         "actCoordination": 0,
         "actSiteOther": 0,
         "actTotal": 0,
-        "remBudget": 0
+        "remBudget": 99837.05
       },
       "wbsItems": [
         {
@@ -980,18 +980,18 @@
           "currBudget": 7131005.88,
           "allocated": 0,
           "distributable": 7131005.88,
-          "prPo": 128400,
+          "prPo": 362.62,
           "actMaterial": 0,
-          "actContracting": 0,
+          "actContracting": 128037.38,
           "actCoordination": 0,
-          "actSiteOther": 131733.99,
-          "actTotal": 455133.99,
-          "remBudget": 6675871.89
+          "actSiteOther": 1714677.09,
+          "actTotal": 1842714.47,
+          "remBudget": 5288291.41
         },
         {
           "wbs": "I-69-I-BNCXX.19.3904.B",
           "desc": "กส.สายส่ง 115kV รองรับ สฟฟ.สค.18(ช)",
-          "status": "CRTD AVAC SETC BUDG NTUP  // B2",
+          "status": "REL AVAC SETC BUDG NTUP  // C1",
           "level": 5,
           "origBudget": 1277889.2,
           "currBudget": 1277889.2,
@@ -1002,13 +1002,13 @@
           "actContracting": 0,
           "actCoordination": 0,
           "actSiteOther": 0,
-          "actTotal": 0,
-          "remBudget": 1277889.2
+          "actTotal": 18240,
+          "remBudget": 1259649.2
         },
         {
           "wbs": "I-69-I-BNCXX.19.3904.C",
           "desc": "กส.ระบบจำหน่าย 22kV รองรับ สฟฟ.สค.18(ช)",
-          "status": "CRTD AVAC SETC BUDG NTUP  // B2",
+          "status": "REL AVAC SETC BUDG NTUP  // C1",
           "level": 5,
           "origBudget": 1196310.2,
           "currBudget": 1196310.2,
@@ -1025,7 +1025,7 @@
         {
           "wbs": "I-69-I-BNCXX.19.3904.D",
           "desc": "กส.ระบบสื่อสาร รองรับ สฟฟ.สค.18(ช)",
-          "status": "CRTD AVAC SETC BUDG  // B2",
+          "status": "REL AVAC SETC BUDG ISBD NTUP  // C1",
           "level": 5,
           "origBudget": 103286.04,
           "currBudget": 103286.04,
@@ -1052,9 +1052,9 @@
           "actMaterial": 0,
           "actContracting": 0,
           "actCoordination": 0,
-          "actSiteOther": 4.85,
-          "actTotal": 4.85,
-          "remBudget": 27130.15
+          "actSiteOther": 32.13,
+          "actTotal": 32.13,
+          "remBudget": 27102.87
         },
         {
           "wbs": "I-69-I-BNCXX.19.3904.F",
@@ -1069,9 +1069,9 @@
           "actMaterial": 0,
           "actContracting": 0,
           "actCoordination": 0,
-          "actSiteOther": 2.7,
-          "actTotal": 2.7,
-          "remBudget": 10688.42
+          "actSiteOther": 17.87,
+          "actTotal": 17.87,
+          "remBudget": 10673.25
         },
         {
           "wbs": "I-69-I-BNCXX.19.3904.G",
@@ -1086,9 +1086,9 @@
           "actMaterial": 0,
           "actContracting": 0,
           "actCoordination": 0,
-          "actSiteOther": 16.51,
-          "actTotal": 16.51,
-          "remBudget": 44667.97
+          "actSiteOther": 109.38,
+          "actTotal": 109.38,
+          "remBudget": 44575.1
         },
         {
           "wbs": "I-69-I-BNCXX.19.3904.H",
@@ -1103,9 +1103,9 @@
           "actMaterial": 0,
           "actContracting": 0,
           "actCoordination": 0,
-          "actSiteOther": 4753.89,
-          "actTotal": 4753.89,
-          "remBudget": 39930.59
+          "actSiteOther": 6039.08,
+          "actTotal": 6039.08,
+          "remBudget": 38645.4
         },
         {
           "wbs": "I-69-I-BNCXX.19.3904.I",
@@ -1120,68 +1120,68 @@
           "actMaterial": 0,
           "actContracting": 0,
           "actCoordination": 0,
-          "actSiteOther": 2.58,
-          "actTotal": 2.58,
-          "remBudget": 9783.54
+          "actSiteOther": 17.1,
+          "actTotal": 17.1,
+          "remBudget": 9769.02
         },
         {
           "wbs": "I-69-I-BNCXX.19.3904.J",
           "desc": "จุด F ติดตั้ง SF6 แทน DIS (KTB04S-07) บร",
-          "status": "REL AVAC SETC BUDG NTUP  // C1",
+          "status": "TECO  AVAC SETC BUDG ISBD NTUP  // D2",
           "level": 5,
           "origBudget": 49945.48,
-          "currBudget": 49945.48,
+          "currBudget": 26264.03,
           "allocated": 0,
-          "distributable": 49945.48,
+          "distributable": 26264.03,
           "prPo": 0,
           "actMaterial": 0,
           "actContracting": 0,
           "actCoordination": 0,
-          "actSiteOther": 26165.47,
-          "actTotal": 26165.47,
-          "remBudget": 23780.01
+          "actSiteOther": 26264.03,
+          "actTotal": 26264.03,
+          "remBudget": 0
         },
         {
           "wbs": "I-69-I-BNCXX.19.3904.K",
           "desc": "จุด G ติดตั้ง SF6 ตัดไลน์ วงจร SMI05 บริ",
-          "status": "REL AVAC SETC BUDG NTUP  // C1",
+          "status": "TECO  AVAC SETC BUDG ISBD NTUP  // D3",
           "level": 5,
           "origBudget": 59444.48,
-          "currBudget": 59444.48,
+          "currBudget": 22639.7,
           "allocated": 0,
-          "distributable": 59444.48,
+          "distributable": 22639.7,
           "prPo": 0,
           "actMaterial": 0,
           "actContracting": 0,
           "actCoordination": 0,
-          "actSiteOther": 16626.18,
-          "actTotal": 16626.18,
-          "remBudget": 42818.3
+          "actSiteOther": 22639.7,
+          "actTotal": 22639.7,
+          "remBudget": 0
         },
         {
           "wbs": "I-69-I-BNCXX.19.3904.L",
           "desc": "จุด H ติดตั้ง SF6 ตัดไลน์ วงจร SMI05 บริ",
-          "status": "REL AVAC SETC BUDG NTUP  // C1",
+          "status": "CLSD  AVAC SETC BUDG ISBD NTUP  // F4",
           "level": 5,
           "origBudget": 53249.48,
-          "currBudget": 53249.48,
+          "currBudget": 13898.66,
           "allocated": 0,
-          "distributable": 53249.48,
+          "distributable": 13898.66,
           "prPo": 0,
           "actMaterial": 0,
           "actContracting": 0,
           "actCoordination": 0,
-          "actSiteOther": 12998.26,
-          "actTotal": 12998.26,
-          "remBudget": 40251.22
+          "actSiteOther": 13898.66,
+          "actTotal": 13898.66,
+          "remBudget": 0
         }
       ],
       "totalBudget": 10008111.96,
-      "totalActual": 515704.43,
-      "totalPrPo": 128400,
-      "totalRemaining": 9364007.530000001,
-      "percentDisbursed": 5.15,
-      "percentCommitted": 6.44
+      "totalActual": 1929972.42,
+      "totalPrPo": 362.62,
+      "totalRemaining": 8077776.920000001,
+      "percentDisbursed": 19.28,
+      "percentCommitted": 19.29
     },
     {
       "sheetName": "กาญ5",
@@ -1195,19 +1195,19 @@
         "currBudget": 9894069.92,
         "allocated": 0,
         "distributable": 9894069.92,
-        "prPo": 422500,
+        "prPo": 246439.25,
         "actMaterial": 0,
-        "actContracting": 439000,
+        "actContracting": 859560.75,
         "actCoordination": 0,
-        "actSiteOther": 861.33,
-        "actTotal": 513261.33,
-        "remBudget": 9380808.59
+        "actSiteOther": 204312.65,
+        "actTotal": 1187973.4,
+        "remBudget": 8706096.52
       },
       "wbsItems": [
         {
           "wbs": "I-69-I-SMN01.19.3907",
           "desc": "รื้อถอนสถานีไฟฟ้าสมุทรสาคร 10(คืนคลัง)",
-          "status": "CRTD AVAC SETC BUDG NTUP  // C1",
+          "status": "REL AVAC SETC BUDG NTUP  // C1",
           "level": 4,
           "origBudget": 0,
           "currBudget": 0,
@@ -1224,7 +1224,7 @@
         {
           "wbs": "I-69-I-SMN02.19.3907",
           "desc": "ปป. 22kV บริเวณหน้า สฟฟ.สมุทรสาคร 10(ชค)",
-          "status": "REL AVAC SETC BUDG NTUP  // C1",
+          "status": "REL AVAC SETC BUDG NTUP  // D1",
           "level": 4,
           "origBudget": 99202,
           "currBudget": 99202,
@@ -1234,9 +1234,9 @@
           "actMaterial": 0,
           "actContracting": 0,
           "actCoordination": 0,
-          "actSiteOther": 8.79,
-          "actTotal": 8.79,
-          "remBudget": 99193.21
+          "actSiteOther": 57368.52,
+          "actTotal": 57368.52,
+          "remBudget": 41833.48
         },
         {
           "wbs": "I-69-I-KCI02.19.3907",
@@ -1247,13 +1247,13 @@
           "currBudget": 7982957.37,
           "allocated": 0,
           "distributable": 7982957.37,
-          "prPo": 466627.59,
+          "prPo": 255033.6,
           "actMaterial": 0,
-          "actContracting": 0,
+          "actContracting": 466627.59,
           "actCoordination": 0,
-          "actSiteOther": 154890.6,
-          "actTotal": 154890.6,
-          "remBudget": 7828066.77
+          "actSiteOther": 518995.45,
+          "actTotal": 985623.04,
+          "remBudget": 6997334.33
         },
         {
           "wbs": "I-69-I-KCI03.19.3907",
@@ -1515,84 +1515,84 @@
           "desc": "จัดซื้อพัสดุงานก่อสร้าง สฟฟ.กจ.5 (ชค)",
           "status": "REL AVAC BUDG  // B2",
           "level": 3,
-          "origBudget": 16907216.21,
-          "currBudget": 16515514.21,
+          "origBudget": 16864796.21,
+          "currBudget": 13894191.21,
           "allocated": 0,
-          "distributable": 16515514.21,
-          "prPo": 9031170.07,
+          "distributable": 13894191.21,
+          "prPo": 716557.8,
           "actMaterial": 0,
           "actContracting": 0,
           "actCoordination": 0,
           "actSiteOther": 0,
           "actTotal": 0,
-          "remBudget": 16515514.21
+          "remBudget": 13894191.21
         },
         {
           "wbs": "I-69-I-SUBXX.19.B907",
           "desc": "จัดซื้ออุปกรณ์ป้องกัน สฟฟ.กจ.5 (ชค)",
-          "status": "REL AVAC BUDG  // C1",
+          "status": "REL AVAC BUDG ISBD  // C1",
           "level": 3,
-          "origBudget": 1259998,
-          "currBudget": 603798,
+          "origBudget": 1049575.7,
+          "currBudget": 393375.7,
           "allocated": 0,
-          "distributable": 603798,
+          "distributable": 393375.7,
           "prPo": 0,
           "actMaterial": 0,
           "actContracting": 0,
           "actCoordination": 0,
           "actSiteOther": 0,
           "actTotal": 0,
-          "remBudget": 603798
+          "remBudget": 393375.7
         },
         {
           "wbs": "I-69-I-PSCXX.19.B907",
           "desc": "จัดซื้อระบบกราวน์กริด สฟฟ.กจ.5 (ชค)",
           "status": "REL AVAC BUDG  // B2",
           "level": 3,
-          "origBudget": 422130,
-          "currBudget": 422130,
+          "origBudget": 464550,
+          "currBudget": 464550,
           "allocated": 0,
-          "distributable": 422130,
+          "distributable": 464550,
           "prPo": 0,
           "actMaterial": 0,
           "actContracting": 0,
           "actCoordination": 0,
           "actSiteOther": 0,
           "actTotal": 0,
-          "remBudget": 422130
+          "remBudget": 464550
         },
         {
           "wbs": "I-69-I-GMDXX.19.B907",
           "desc": "จัดซื้อ Termination Kit สฟฟ.กจ.5 (ชค)",
-          "status": "REL AVAC BUDG  // B2",
+          "status": "REL AVAC BUDG ISBD  // B2",
           "level": 3,
           "origBudget": 172800,
           "currBudget": 172800,
           "allocated": 0,
           "distributable": 172800,
           "prPo": 0,
-          "actMaterial": 0,
+          "actMaterial": 165600,
           "actContracting": 0,
           "actCoordination": 0,
           "actSiteOther": 0,
-          "actTotal": 0,
-          "remBudget": 172800
+          "actTotal": 165600,
+          "remBudget": 7200
         }
       ],
-      "totalBudget": 40462207.519999996,
-      "totalActual": 668160.72,
-      "totalPrPo": 9920297.66,
-      "totalRemaining": 29873749.139999997,
-      "percentDisbursed": 1.65,
-      "percentCommitted": 26.17
+      "totalBudget": 37672882.22,
+      "totalActual": 2396564.96,
+      "totalPrPo": 1218030.65,
+      "totalRemaining": 34058286.61,
+      "percentDisbursed": 6.36,
+      "percentCommitted": 9.59
     }
   ],
   "ganttPlans": {
     "สมุทรสาคร 18 (ช)": {
       "sheetName": "สมุทรสาคร 18 (ช)",
       "projectName": "สถานีไฟฟ้าสมุทรสาคร 18 (ชั่วคราว)",
-      "totalActual": 28,
-      "totalPlan": 40,
+      "totalActual": 46.25,
+      "totalPlan": 55,
       "totalWeight": 1,
       "timelineColumns": [
         {
@@ -1741,9 +1741,9 @@
           "no": 1,
           "name": "รื้อถอนสถานีไฟฟ้าสมุทรสาคร 16 (ชั่วคราว)",
           "planPerf": 100,
-          "actualPerf": 100,
+          "actualPerf": 90,
           "weight": 0.1,
-          "calcPct": 10,
+          "calcPct": 9,
           "planCalcPct": 10,
           "planWeeks": [
             "ก.ค. W1",
@@ -1757,16 +1757,16 @@
             "ก.ค. W3",
             "ก.ค. W4"
           ],
-          "status": "completed"
+          "status": "in-progress"
         },
         {
           "no": 2,
           "name": "ปรับปรุงที่ดิน",
           "planPerf": 100,
           "actualPerf": 100,
-          "weight": 0.05,
-          "calcPct": 5,
-          "planCalcPct": 5,
+          "weight": 0.1,
+          "calcPct": 10,
+          "planCalcPct": 10,
           "planWeeks": [
             "มิ.ย. W4",
             "ก.ค. W1"
@@ -1804,9 +1804,9 @@
           "name": "ขนย้ายอุปกรณ์ป้องกัน 115 kV และหม้อแปลงไฟฟ้ากำลัง",
           "planPerf": 100,
           "actualPerf": 100,
-          "weight": 0.05,
-          "calcPct": 5,
-          "planCalcPct": 5,
+          "weight": 0.1,
+          "calcPct": 10,
+          "planCalcPct": 10,
           "planWeeks": [
             "ก.ค. W3",
             "ก.ค. W4"
@@ -1818,31 +1818,31 @@
           "no": 5,
           "name": "ติดตั้งอุปกรณ์ป้องกัน 115 kV และหม้อแปลงไฟฟ้ากำลัง",
           "planPerf": 100,
-          "actualPerf": 60,
-          "weight": 0.05,
-          "calcPct": 3,
-          "planCalcPct": 5,
+          "actualPerf": 100,
+          "weight": 0.1,
+          "calcPct": 10,
+          "planCalcPct": 10,
           "planWeeks": [
             "ส.ค. W1",
             "ส.ค. W2"
           ],
           "actualWeeks": [],
-          "status": "in-progress"
+          "status": "completed"
         },
         {
           "no": 6,
           "name": "ปักเสาภายในสถานีไฟฟ้า",
           "planPerf": 100,
-          "actualPerf": 0,
+          "actualPerf": 45,
           "weight": 0.05,
-          "calcPct": 0,
+          "calcPct": 2.25,
           "planCalcPct": 5,
           "planWeeks": [
             "ส.ค. W3",
             "ส.ค. W4"
           ],
           "actualWeeks": [],
-          "status": "delayed"
+          "status": "in-progress"
         },
         {
           "no": 7,
@@ -1892,7 +1892,7 @@
           "name": "ลากสายและติดตั้งสาย Control cable",
           "planPerf": 0,
           "actualPerf": 0,
-          "weight": 0.1,
+          "weight": 0.05,
           "calcPct": 0,
           "planCalcPct": 0,
           "planWeeks": [
@@ -1908,7 +1908,7 @@
           "name": "ลากสายและติดตั้งสาย Power cable",
           "planPerf": 0,
           "actualPerf": 0,
-          "weight": 0.1,
+          "weight": 0.05,
           "calcPct": 0,
           "planCalcPct": 0,
           "planWeeks": [
@@ -1924,7 +1924,7 @@
           "name": "CSCS",
           "planPerf": 0,
           "actualPerf": 0,
-          "weight": 0.1,
+          "weight": 0.05,
           "calcPct": 0,
           "planCalcPct": 0,
           "planWeeks": [
@@ -2012,24 +2012,24 @@
           "no": 1,
           "name": "รื้อถอนสถานีไฟฟ้าสมุทรสาคร 16 (ชั่วคราว)",
           "type": "ผลการดำเนินงาน",
-          "perf": 100,
+          "perf": 90,
           "weight": 0.1,
-          "calcPct": 10,
+          "calcPct": 9,
           "timeline": [
             "ก.ค. W1",
             "ก.ค. W2",
             "ก.ค. W3",
             "ก.ค. W4"
           ],
-          "status": "completed"
+          "status": "in-progress"
         },
         {
           "no": 2,
           "name": "ปรับปรุงที่ดิน",
           "type": "แผนการดำเนินงาน",
           "perf": 100,
-          "weight": 0.05,
-          "calcPct": 5,
+          "weight": 0.1,
+          "calcPct": 10,
           "timeline": [
             "มิ.ย. W4",
             "ก.ค. W1"
@@ -2041,8 +2041,8 @@
           "name": "ปรับปรุงที่ดิน",
           "type": "ผลการดำเนินงาน",
           "perf": 100,
-          "weight": 0.05,
-          "calcPct": 5,
+          "weight": 0.1,
+          "calcPct": 10,
           "timeline": [
             "มิ.ย. W4",
             "ก.ค. W1",
@@ -2084,8 +2084,8 @@
           "name": "ขนย้ายอุปกรณ์ป้องกัน 115 kV และหม้อแปลงไฟฟ้ากำลัง",
           "type": "แผนการดำเนินงาน",
           "perf": 100,
-          "weight": 0.05,
-          "calcPct": 5,
+          "weight": 0.1,
+          "calcPct": 10,
           "timeline": [
             "ก.ค. W3",
             "ก.ค. W4"
@@ -2097,8 +2097,8 @@
           "name": "ขนย้ายอุปกรณ์ป้องกัน 115 kV และหม้อแปลงไฟฟ้ากำลัง",
           "type": "ผลการดำเนินงาน",
           "perf": 100,
-          "weight": 0.05,
-          "calcPct": 5,
+          "weight": 0.1,
+          "calcPct": 10,
           "timeline": [],
           "status": "completed"
         },
@@ -2107,8 +2107,8 @@
           "name": "ติดตั้งอุปกรณ์ป้องกัน 115 kV และหม้อแปลงไฟฟ้ากำลัง",
           "type": "แผนการดำเนินงาน",
           "perf": 100,
-          "weight": 0.05,
-          "calcPct": 5,
+          "weight": 0.1,
+          "calcPct": 10,
           "timeline": [
             "ส.ค. W1",
             "ส.ค. W2"
@@ -2119,11 +2119,11 @@
           "no": 5,
           "name": "ติดตั้งอุปกรณ์ป้องกัน 115 kV และหม้อแปลงไฟฟ้ากำลัง",
           "type": "ผลการดำเนินงาน",
-          "perf": 60,
-          "weight": 0.05,
-          "calcPct": 3,
+          "perf": 100,
+          "weight": 0.1,
+          "calcPct": 10,
           "timeline": [],
-          "status": "in-progress"
+          "status": "completed"
         },
         {
           "no": 6,
@@ -2142,11 +2142,11 @@
           "no": 6,
           "name": "ปักเสาภายในสถานีไฟฟ้า",
           "type": "ผลการดำเนินงาน",
-          "perf": 0,
+          "perf": 45,
           "weight": 0.05,
-          "calcPct": 0,
+          "calcPct": 2.25,
           "timeline": [],
-          "status": "delayed"
+          "status": "in-progress"
         },
         {
           "no": 7,
@@ -2220,7 +2220,7 @@
           "name": "ลากสายและติดตั้งสาย Control cable",
           "type": "แผนการดำเนินงาน",
           "perf": 0,
-          "weight": 0.1,
+          "weight": 0.05,
           "calcPct": 0,
           "timeline": [
             "ต.ค. W1",
@@ -2234,7 +2234,7 @@
           "name": "ลากสายและติดตั้งสาย Control cable",
           "type": "ผลการดำเนินงาน",
           "perf": 0,
-          "weight": 0.1,
+          "weight": 0.05,
           "calcPct": 0,
           "timeline": [],
           "status": "not-started"
@@ -2244,7 +2244,7 @@
           "name": "ลากสายและติดตั้งสาย Power cable",
           "type": "แผนการดำเนินงาน",
           "perf": 0,
-          "weight": 0.1,
+          "weight": 0.05,
           "calcPct": 0,
           "timeline": [
             "ต.ค. W1",
@@ -2258,7 +2258,7 @@
           "name": "ลากสายและติดตั้งสาย Power cable",
           "type": "ผลการดำเนินงาน",
           "perf": 0,
-          "weight": 0.1,
+          "weight": 0.05,
           "calcPct": 0,
           "timeline": [],
           "status": "not-started"
@@ -2268,7 +2268,7 @@
           "name": "CSCS",
           "type": "แผนการดำเนินงาน",
           "perf": 0,
-          "weight": 0.1,
+          "weight": 0.05,
           "calcPct": 0,
           "timeline": [
             "ต.ค. W4",
@@ -2281,7 +2281,7 @@
           "name": "CSCS",
           "type": "ผลการดำเนินงาน",
           "perf": 0,
-          "weight": 0.1,
+          "weight": 0.05,
           "calcPct": 0,
           "timeline": [],
           "status": "not-started"
@@ -2380,8 +2380,8 @@
     "กาญจนบุรี 5 (ช)": {
       "sheetName": "กาญจนบุรี 5 (ช)",
       "projectName": "สถานีไฟฟ้ากาญจนบุรี 5 (ชั่วคราว)",
-      "totalActual": 8.5,
-      "totalPlan": 15,
+      "totalActual": 35.5,
+      "totalPlan": 20,
       "totalWeight": 1,
       "timelineColumns": [
         {
@@ -2590,9 +2590,9 @@
           "no": 1,
           "name": "รื้อถอนสถานีไฟฟ้าสมุทรสาคร 10 (ชั่วคราว)",
           "planPerf": 100,
-          "actualPerf": 80,
+          "actualPerf": 90,
           "weight": 0.1,
-          "calcPct": 8,
+          "calcPct": 9,
           "planCalcPct": 10,
           "planWeeks": [
             "ส.ค. 69 W1",
@@ -2610,10 +2610,10 @@
           "no": 2,
           "name": "ปรับปรุงที่ดิน",
           "planPerf": 100,
-          "actualPerf": 10,
-          "weight": 0.05,
-          "calcPct": 0.5,
-          "planCalcPct": 5,
+          "actualPerf": 100,
+          "weight": 0.1,
+          "calcPct": 10,
+          "planCalcPct": 10,
           "planWeeks": [
             "ก.ค. 69 W3",
             "ก.ค. 69 W4"
@@ -2622,44 +2622,44 @@
             "ก.ค. 69 W4",
             "ส.ค. 69 W1"
           ],
-          "status": "in-progress"
+          "status": "completed"
         },
         {
           "no": 3,
           "name": "ขนย้ายติดตั้งฐานราก",
           "planPerf": 0,
-          "actualPerf": 0,
+          "actualPerf": 100,
           "weight": 0.05,
-          "calcPct": 0,
+          "calcPct": 5,
           "planCalcPct": 0,
           "planWeeks": [
             "ส.ค. 69 W3",
             "ส.ค. 69 W4"
           ],
           "actualWeeks": [],
-          "status": "not-started"
+          "status": "completed"
         },
         {
           "no": 4,
           "name": "ขนย้ายอุปกรณ์ป้องกัน 115 kV และหม้อแปลงไฟฟ้ากำลัง",
           "planPerf": 0,
-          "actualPerf": 0,
-          "weight": 0.05,
-          "calcPct": 0,
+          "actualPerf": 100,
+          "weight": 0.1,
+          "calcPct": 10,
           "planCalcPct": 0,
           "planWeeks": [
             "ส.ค. 69 W3",
             "ส.ค. 69 W4"
           ],
           "actualWeeks": [],
-          "status": "not-started"
+          "status": "completed"
         },
         {
           "no": 5,
           "name": "ติดตั้งอุปกรณ์ป้องกัน 115 kV และหม้อแปลงไฟฟ้ากำลัง",
           "planPerf": 0,
           "actualPerf": 0,
-          "weight": 0.05,
+          "weight": 0.1,
           "calcPct": 0,
           "planCalcPct": 0,
           "planWeeks": [
@@ -2673,16 +2673,16 @@
           "no": 6,
           "name": "ปักเสาภายในสถานีไฟฟ้า",
           "planPerf": 0,
-          "actualPerf": 0,
+          "actualPerf": 30,
           "weight": 0.05,
-          "calcPct": 0,
+          "calcPct": 1.5,
           "planCalcPct": 0,
           "planWeeks": [
             "ก.ย. 69 W3",
             "ก.ย. 69 W4"
           ],
           "actualWeeks": [],
-          "status": "not-started"
+          "status": "in-progress"
         },
         {
           "no": 7,
@@ -2734,7 +2734,7 @@
           "name": "ลากสายและติดตั้งสาย Control cable",
           "planPerf": 0,
           "actualPerf": 0,
-          "weight": 0.1,
+          "weight": 0.05,
           "calcPct": 0,
           "planCalcPct": 0,
           "planWeeks": [
@@ -2751,7 +2751,7 @@
           "name": "ลากสายและติดตั้งสาย Power cable",
           "planPerf": 0,
           "actualPerf": 0,
-          "weight": 0.1,
+          "weight": 0.05,
           "calcPct": 0,
           "planCalcPct": 0,
           "planWeeks": [
@@ -2768,7 +2768,7 @@
           "name": "CSCS",
           "planPerf": 0,
           "actualPerf": 0,
-          "weight": 0.1,
+          "weight": 0.05,
           "calcPct": 0,
           "planCalcPct": 0,
           "planWeeks": [
@@ -2856,9 +2856,9 @@
           "no": 1,
           "name": "รื้อถอนสถานีไฟฟ้าสมุทรสาคร 10 (ชั่วคราว)",
           "type": "ผลการดำเนินงาน",
-          "perf": 80,
+          "perf": 90,
           "weight": 0.1,
-          "calcPct": 8,
+          "calcPct": 9,
           "timeline": [
             "ก.ค. 69 W4",
             "ส.ค. 69 W1"
@@ -2870,8 +2870,8 @@
           "name": "ปรับปรุงที่ดิน",
           "type": "แผนการดำเนินงาน",
           "perf": 100,
-          "weight": 0.05,
-          "calcPct": 5,
+          "weight": 0.1,
+          "calcPct": 10,
           "timeline": [
             "ก.ค. 69 W3",
             "ก.ค. 69 W4"
@@ -2882,14 +2882,14 @@
           "no": 2,
           "name": "ปรับปรุงที่ดิน",
           "type": "ผลการดำเนินงาน",
-          "perf": 10,
-          "weight": 0.05,
-          "calcPct": 0.5,
+          "perf": 100,
+          "weight": 0.1,
+          "calcPct": 10,
           "timeline": [
             "ก.ค. 69 W4",
             "ส.ค. 69 W1"
           ],
-          "status": "in-progress"
+          "status": "completed"
         },
         {
           "no": 3,
@@ -2908,18 +2908,18 @@
           "no": 3,
           "name": "ขนย้ายติดตั้งฐานราก",
           "type": "ผลการดำเนินงาน",
-          "perf": 0,
+          "perf": 100,
           "weight": 0.05,
-          "calcPct": 0,
+          "calcPct": 5,
           "timeline": [],
-          "status": "not-started"
+          "status": "completed"
         },
         {
           "no": 4,
           "name": "ขนย้ายอุปกรณ์ป้องกัน 115 kV และหม้อแปลงไฟฟ้ากำลัง",
           "type": "แผนการดำเนินงาน",
           "perf": 0,
-          "weight": 0.05,
+          "weight": 0.1,
           "calcPct": 0,
           "timeline": [
             "ส.ค. 69 W3",
@@ -2931,18 +2931,18 @@
           "no": 4,
           "name": "ขนย้ายอุปกรณ์ป้องกัน 115 kV และหม้อแปลงไฟฟ้ากำลัง",
           "type": "ผลการดำเนินงาน",
-          "perf": 0,
-          "weight": 0.05,
-          "calcPct": 0,
+          "perf": 100,
+          "weight": 0.1,
+          "calcPct": 10,
           "timeline": [],
-          "status": "not-started"
+          "status": "completed"
         },
         {
           "no": 5,
           "name": "ติดตั้งอุปกรณ์ป้องกัน 115 kV และหม้อแปลงไฟฟ้ากำลัง",
           "type": "แผนการดำเนินงาน",
           "perf": 0,
-          "weight": 0.05,
+          "weight": 0.1,
           "calcPct": 0,
           "timeline": [
             "ก.ย. 69 W1",
@@ -2955,7 +2955,7 @@
           "name": "ติดตั้งอุปกรณ์ป้องกัน 115 kV และหม้อแปลงไฟฟ้ากำลัง",
           "type": "ผลการดำเนินงาน",
           "perf": 0,
-          "weight": 0.05,
+          "weight": 0.1,
           "calcPct": 0,
           "timeline": [],
           "status": "not-started"
@@ -2977,11 +2977,11 @@
           "no": 6,
           "name": "ปักเสาภายในสถานีไฟฟ้า",
           "type": "ผลการดำเนินงาน",
-          "perf": 0,
+          "perf": 30,
           "weight": 0.05,
-          "calcPct": 0,
+          "calcPct": 1.5,
           "timeline": [],
-          "status": "not-started"
+          "status": "in-progress"
         },
         {
           "no": 7,
@@ -3057,7 +3057,7 @@
           "name": "ลากสายและติดตั้งสาย Control cable",
           "type": "แผนการดำเนินงาน",
           "perf": 0,
-          "weight": 0.1,
+          "weight": 0.05,
           "calcPct": 0,
           "timeline": [
             "พ.ย. 69 W3",
@@ -3072,7 +3072,7 @@
           "name": "ลากสายและติดตั้งสาย Control cable",
           "type": "ผลการดำเนินงาน",
           "perf": 0,
-          "weight": 0.1,
+          "weight": 0.05,
           "calcPct": 0,
           "timeline": [],
           "status": "not-started"
@@ -3082,7 +3082,7 @@
           "name": "ลากสายและติดตั้งสาย Power cable",
           "type": "แผนการดำเนินงาน",
           "perf": 0,
-          "weight": 0.1,
+          "weight": 0.05,
           "calcPct": 0,
           "timeline": [
             "พ.ย. 69 W3",
@@ -3097,7 +3097,7 @@
           "name": "ลากสายและติดตั้งสาย Power cable",
           "type": "ผลการดำเนินงาน",
           "perf": 0,
-          "weight": 0.1,
+          "weight": 0.05,
           "calcPct": 0,
           "timeline": [],
           "status": "not-started"
@@ -3107,7 +3107,7 @@
           "name": "CSCS",
           "type": "แผนการดำเนินงาน",
           "perf": 0,
-          "weight": 0.1,
+          "weight": 0.05,
           "calcPct": 0,
           "timeline": [
             "ม.ค. 70 W2",
@@ -3120,7 +3120,7 @@
           "name": "CSCS",
           "type": "ผลการดำเนินงาน",
           "perf": 0,
-          "weight": 0.1,
+          "weight": 0.05,
           "calcPct": 0,
           "timeline": [],
           "status": "not-started"
@@ -3218,7 +3218,7 @@
     }
   },
   "isCustomUpload": true,
-  "savedAt": 1791189974880,
+  "savedAt": 1791190700523,
   "uploadedBy": "",
   "_localOnly": true
 }
