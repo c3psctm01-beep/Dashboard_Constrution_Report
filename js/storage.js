@@ -70,6 +70,34 @@ window.DashboardStorage = (function () {
     }
   }
 
+  async function postJson(url, body, contentType = 'application/json') {
+    if (!isHttp) return null;
+    const passcode = getStoredPasscode() || '1212312121';
+    const res = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': contentType,
+        'X-Upload-Passcode': passcode
+      },
+      body: body
+    });
+    if (!res.ok) {
+      let errText = '';
+      try {
+        const errJson = await res.json();
+        errText = errJson.error || res.statusText;
+      } catch (e) {
+        errText = await res.text();
+      }
+      throw new Error(errText || `Server responded with status ${res.status}`);
+    }
+    const type = res.headers.get('content-type') || '';
+    if (type.includes('json')) {
+      return await res.json();
+    }
+    return { success: true };
+  }
+
   function isDataset(obj) {
     return !!(obj && (obj.transmissionLines || obj.substationsDetail));
   }

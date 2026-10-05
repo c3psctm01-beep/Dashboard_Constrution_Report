@@ -359,6 +359,20 @@
           printDateEl.textContent = `พิมพ์รายงานเมื่อ: ${nowStr}`;
         }
 
+        // Save previous disbursement selection and ensure all WBS rows (52 items) are in DOM
+        appState._prevDisbIndex = appState.disbSelectedProjectIndex;
+        if (isAll || appState.activeTab === 'tab-disbursement') {
+          appState.disbSelectedProjectIndex = 'all';
+          const selectProj = document.getElementById('selectDisbProject');
+          if (selectProj) selectProj.value = 'all';
+          if (typeof appState.updateDisbProjectView === 'function') {
+            appState.updateDisbProjectView();
+          }
+        }
+
+        // Render dedicated print view for Gantt (all projects with full tables & timelines)
+        renderGanttPrintView();
+
         // Apply print class to body
         document.body.classList.remove('print-all-topics', 'print-active-topic');
         if (isAll) {
@@ -372,23 +386,55 @@
 
         setTimeout(() => {
           window.print();
-        }, 150);
+        }, 200);
       });
     }
 
     window.addEventListener('afterprint', () => {
       document.body.classList.remove('print-all-topics', 'print-active-topic');
+      if (appState._prevDisbIndex !== undefined) {
+        appState.disbSelectedProjectIndex = appState._prevDisbIndex;
+        const selectProj = document.getElementById('selectDisbProject');
+        if (selectProj) selectProj.value = appState._prevDisbIndex;
+        if (typeof appState.updateDisbProjectView === 'function') {
+          appState.updateDisbProjectView();
+        }
+      }
     });
 
-    // Download latest uploaded Excel button (static file -> works on LAN server and on Vercel)
+    // Download latest uploaded Excel button (works locally, on LAN server, and on Vercel Cloud)
     const btnDownloadExcel = document.getElementById('btnDownloadExcel');
     if (btnDownloadExcel) {
       btnDownloadExcel.addEventListener('click', () => {
         const d = appState.data || {};
+        const fileName = d.excelFileName || d.fileName || 'สถานะงานก่อสร้างสายส่งและสถานีไฟฟ้า.xlsx';
+
+        // 1. If we have base64 in data (direct from Supabase Cloud or current upload)
+        if (d.excelBase64) {
+          try {
+            const byteChars = window.atob(d.excelBase64);
+            const byteNums = new Array(byteChars.length);
+            for (let i = 0; i < byteChars.length; i++) {
+              byteNums[i] = byteChars.charCodeAt(i);
+            }
+            const byteArray = new Uint8Array(byteNums);
+            const blob = new Blob([byteArray], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+            const blobUrl = URL.createObjectURL(blob);
+            triggerDownload(blobUrl, fileName);
+            setTimeout(() => URL.revokeObjectURL(blobUrl), 10000);
+            showToast(`กำลังดาวน์โหลดไฟล์ Excel ต้นฉบับล่าสุด: "${fileName}"`, 'success');
+            return;
+          } catch (err) {
+            console.warn('Failed to decode excelBase64, falling back to URL:', err);
+          }
+        }
+
+        // 2. Fallback to server or static file
         const url = (appState.viewingHistory && window.DashboardStorage)
           ? window.DashboardStorage.historyExcelUrl(appState.viewingHistory)
           : (window.DashboardStorage ? window.DashboardStorage.latestExcelUrl() : 'data/latest_uploaded.xlsx');
-        triggerDownload(url, d.fileName || 'dashboard.xlsx');
+        triggerDownload(url, fileName);
+        showToast(`กำลังดาวน์โหลดไฟล์ Excel: "${fileName}"`, 'info');
       });
     }
 
@@ -518,6 +564,21 @@
         const parsedData = ExcelParser.parseWorkbook(workbook, validation.matchedSheets, file.name);
         ensureGanttBaseline(parsedData);
         parsedData.isCustomUpload = true;
+
+        // Convert raw Excel file to base64 so any client on Vercel/LAN can download the real original file
+        try {
+          let binaryStr = '';
+          const chunk = 8192;
+          for (let i = 0; i < data.length; i += chunk) {
+            binaryStr += String.fromCharCode.apply(null, data.subarray(i, i + chunk));
+          }
+          parsedData.excelBase64 = window.btoa(binaryStr);
+          parsedData.excelFileName = file.name;
+          parsedData.excelFileSize = file.size;
+        } catch (b64Err) {
+          console.warn('Failed to encode Excel to base64:', b64Err);
+        }
+
         appState.data = parsedData;
 
         // 3. Persist to Storage (Supabase Cloud + Server + Local)
@@ -900,7 +961,7 @@
   function renderTransmissionMonthlyChart() {
     const d = appState.data;
     const ctx = document.getElementById('transMonthlyChart');
-    if (!ctx) return;
+    if (!ctx || !d || !d.transmissionLines || d.transmissionLines.length === 0) return;
     if (appState.charts.transMonthly) appState.charts.transMonthly.destroy();
 
     const isDark = appState.currentTheme === 'dark';
@@ -1515,6 +1576,7 @@
       }
     };
 
+    appState.updateDisbProjectView = updateDisbProjectView;
     updateDisbProjectView();
 
     function updateDisbProjectView() {
@@ -2101,53 +2163,6 @@
       }
     }
 
-    function matchGanttWeek(entryWeekStr, colMonth, colWeek) {
-      if (!entryWeekStr) return false;
-      const cleanEntry = String(entryWeekStr).trim();
-      const cleanColMonth = String(colMonth || '').trim();
-      const cleanColWeek = String(colWeek || '').trim();
-
-      // 1. Match week number: extract digits following 'W', or last digits
-      const entryWMatch = cleanEntry.match(/W(\d+)/i) || cleanEntry.match(/(\d+)$/);
-      const entryWeekNum = entryWMatch ? entryWMatch[1] : '';
-
-      const colWMatch = cleanColWeek.match(/(\d+)/);
-      const colWeekNum = colWMatch ? colWMatch[1] : '';
-
-      if (entryWeekNum && colWeekNum && entryWeekNum !== colWeekNum) {
-        return false;
-      }
-
-      // 2. Match Thai month base (e.g. "ก.ค.", "ส.ค.", "ม.ค.")
-      const months = ['ม.ค.', 'ก.พ.', 'มี.ค.', 'เม.ย.', 'พ.ค.', 'มิ.ย.', 'ก.ค.', 'ส.ค.', 'ก.ย.', 'ต.ค.', 'พ.ย.', 'ธ.ค.'];
-      let baseEntry = '';
-      let baseCol = '';
-      for (const mo of months) {
-        if (!baseEntry && cleanEntry.includes(mo)) baseEntry = mo;
-        if (!baseCol && cleanColMonth.includes(mo)) baseCol = mo;
-        if (baseEntry && baseCol) break;
-      }
-
-      if (baseEntry && baseCol) {
-        if (baseEntry !== baseCol) {
-          return false;
-        }
-        // If year is present in both, compare years
-        const yrEntry = cleanEntry.match(/(69|70|2569|2570)/);
-        const yrCol = cleanColMonth.match(/(69|70|2569|2570)/);
-        if (yrEntry && yrCol) {
-          const y1 = yrEntry[1].replace('25', '');
-          const y2 = yrCol[1].replace('25', '');
-          if (y1 !== y2) {
-            return false;
-          }
-        }
-        return true;
-      }
-
-      return cleanColMonth.includes(cleanEntry) || cleanEntry.includes(cleanColMonth);
-    }
-
     function renderTimelineView(plan) {
       const table = document.getElementById('ganttTimelineTable');
       if (!table) return;
@@ -2230,11 +2245,260 @@
       table.innerHTML = theadHtml + tbodyHtml;
     }
 
-    function formatTimelineRange(weeksArray) {
-      if (!weeksArray || weeksArray.length === 0) return '-';
-      if (weeksArray.length === 1) return weeksArray[0];
-      return `${weeksArray[0]} - ${weeksArray[weeksArray.length - 1]}`;
+  }
+
+  function formatTimelineRange(weeksArray) {
+    if (!weeksArray || weeksArray.length === 0) return '-';
+    if (weeksArray.length === 1) return weeksArray[0];
+    return `${weeksArray[0]} - ${weeksArray[weeksArray.length - 1]}`;
+  }
+
+  function matchGanttWeek(entryWeekStr, colMonth, colWeek) {
+    if (!entryWeekStr) return false;
+    const cleanEntry = String(entryWeekStr).trim();
+    const cleanColMonth = String(colMonth || '').trim();
+    const cleanColWeek = String(colWeek || '').trim();
+
+    // 1. Match week number: extract digits following 'W', or last digits
+    const entryWMatch = cleanEntry.match(/W(\d+)/i) || cleanEntry.match(/(\d+)$/);
+    const entryWeekNum = entryWMatch ? entryWMatch[1] : '';
+
+    const colWMatch = cleanColWeek.match(/(\d+)/);
+    const colWeekNum = colWMatch ? colWMatch[1] : '';
+
+    if (entryWeekNum && colWeekNum && entryWeekNum !== colWeekNum) {
+      return false;
     }
+
+    // 2. Match Thai month base (e.g. "ก.ค.", "ส.ค.", "ม.ค.")
+    const months = ['ม.ค.', 'ก.พ.', 'มี.ค.', 'เม.ย.', 'พ.ค.', 'มิ.ย.', 'ก.ค.', 'ส.ค.', 'ก.ย.', 'ต.ค.', 'พ.ย.', 'ธ.ค.'];
+    let baseEntry = '';
+    let baseCol = '';
+    for (const mo of months) {
+      if (!baseEntry && cleanEntry.includes(mo)) baseEntry = mo;
+      if (!baseCol && cleanColMonth.includes(mo)) baseCol = mo;
+      if (baseEntry && baseCol) break;
+    }
+
+    if (baseEntry && baseCol) {
+      if (baseEntry !== baseCol) {
+        return false;
+      }
+      // If year is present in both, compare years
+      const yrEntry = cleanEntry.match(/(69|70|2569|2570)/);
+      const yrCol = cleanColMonth.match(/(69|70|2569|2570)/);
+      if (yrEntry && yrCol) {
+        const y1 = yrEntry[1].replace('25', '');
+        const y2 = yrCol[1].replace('25', '');
+        if (y1 !== y2) {
+          return false;
+        }
+      }
+      return true;
+    }
+
+    return cleanColMonth.includes(cleanEntry) || cleanEntry.includes(cleanColMonth);
+  }
+
+  // Dedicated Print View for Gantt: renders ALL projects with full tables & timeline charts
+  function renderGanttPrintView() {
+    const printContainer = document.getElementById('ganttPrintContainer');
+    if (!printContainer) return;
+    const d = appState.data;
+    if (!d || !d.ganttPlans) {
+      printContainer.innerHTML = '<div style="padding: 1rem; color: #64748b;">ไม่มีข้อมูลแผนงาน Gantt</div>';
+      return;
+    }
+
+    const sheetKeys = Object.keys(d.ganttPlans);
+    if (sheetKeys.length === 0) {
+      printContainer.innerHTML = '<div style="padding: 1rem; color: #64748b;">ไม่มีข้อมูลแผนงาน Gantt</div>';
+      return;
+    }
+
+    let html = '';
+    sheetKeys.forEach((sheetKey, index) => {
+      const plan = d.ganttPlans[sheetKey];
+      if (!plan) return;
+
+      const isKanSheet = sheetKey.includes('กาญ') || sheetKey.includes('5') ||
+        (plan.projectName && (plan.projectName.includes('กาญ') || plan.projectName.includes('5')));
+      const baseKey = isKanSheet ? 'กาญจนบุรี' : 'สมุทรสาคร';
+      const baseSched = (window.BASELINE_GANTT_SCHEDULES && window.BASELINE_GANTT_SCHEDULES[baseKey]) || null;
+
+      const items = plan.items || [];
+      const totalActual = typeof plan.totalActual === 'number' ? plan.totalActual : (items.reduce((s, it) => s + (it.calcPct || 0), 0));
+      const totalPlan = typeof plan.totalPlan === 'number' ? plan.totalPlan : (items.reduce((s, it) => s + (it.planCalcPct || 0), 0));
+      const totalWeight = typeof plan.totalWeight === 'number' ? plan.totalWeight : (items.reduce((s, it) => s + (it.weight || 0), 0));
+      const diff = Math.round((totalActual - totalPlan) * 100) / 100;
+      const statusText = diff >= 0 ? (diff === 0 ? 'เป็นไปตามแผน' : 'เร็วกว่าแผนงาน') : 'ล่าช้ากว่าแผนงาน';
+      const statusColor = diff >= 0 ? '#10b981' : '#ef4444';
+
+      const timelineCols = plan.timelineColumns || [];
+
+      // Group timeline columns by month
+      const monthGroups = [];
+      timelineCols.forEach(tc => {
+        let lastG = monthGroups[monthGroups.length - 1];
+        if (!lastG || lastG.month !== tc.month) {
+          monthGroups.push({ month: tc.month, count: 1 });
+        } else {
+          lastG.count++;
+        }
+      });
+
+      const isLastProject = index === sheetKeys.length - 1;
+
+      html += `
+        <div class="gantt-print-project-block" style="${!isLastProject ? 'page-break-after: always; break-after: page;' : ''} margin-bottom: 24px;">
+          <div class="print-project-header" style="border-left: 4px solid #7c3aed; padding-left: 10px; margin-bottom: 10px;">
+            <h3 style="font-size: 11pt; font-weight: 700; color: #0f172a; margin: 0;">
+              ${plan.projectName || sheetKey}
+            </h3>
+            <p style="font-size: 7.8pt; color: #64748b; margin: 2px 0 0 0;">
+              แผนงานและผลงานการดำเนินงาน (Gantt Schedule ประจำปี 2569) · ชีตอ้างอิง: ${sheetKey}
+            </p>
+          </div>
+
+          <!-- Mini KPIs -->
+          <div class="kpi-grid gantt-kpi-grid" style="grid-template-columns: repeat(4, 1fr) !important; margin-bottom: 10px;">
+            <div class="kpi-card purple" style="padding: 6px 10px !important;">
+              <span class="kpi-title" style="font-size: 7.5pt !important;">ผลงานสะสมรวม</span>
+              <span class="kpi-value" style="font-size: 13pt !important; color: #7c3aed !important;">${totalActual.toFixed(2)}%</span>
+              <span class="kpi-subtext" style="font-size: 6.8pt !important;">ตรงกับสูตรใน Excel</span>
+            </div>
+            <div class="kpi-card red" style="padding: 6px 10px !important;">
+              <span class="kpi-title" style="font-size: 7.5pt !important;">แผนงานสะสมรวม</span>
+              <span class="kpi-value" style="font-size: 13pt !important; color: #ef4444 !important;">${totalPlan.toFixed(2)}%</span>
+              <span class="kpi-subtext" style="font-size: 6.8pt !important;">แผนงานตามกรอบเวลา</span>
+            </div>
+            <div class="kpi-card green" style="padding: 6px 10px !important;">
+              <span class="kpi-title" style="font-size: 7.5pt !important;">น้ำหนักงานรวม</span>
+              <span class="kpi-value" style="font-size: 13pt !important; color: #10b981 !important;">${(totalWeight * 100).toFixed(0)}%</span>
+              <span class="kpi-subtext" style="font-size: 6.8pt !important;">${items.length} รายการงาน</span>
+            </div>
+            <div class="kpi-card amber" style="padding: 6px 10px !important;">
+              <span class="kpi-title" style="font-size: 7.5pt !important;">สถานะเทียบแผนงาน</span>
+              <span class="kpi-value" style="font-size: 13pt !important; color: ${statusColor} !important;">${Math.abs(diff).toFixed(2)}%</span>
+              <span class="kpi-subtext" style="font-size: 6.8pt !important; color: ${statusColor} !important;">${statusText}</span>
+            </div>
+          </div>
+
+          <!-- Summary Table -->
+          <div class="dashboard-card" style="margin-bottom: 10px !important; padding: 6px 8px !important;">
+            <div style="font-size: 8.5pt; font-weight: 700; margin-bottom: 5px; color: #0f172a;">
+              ตารางสรุปความก้าวหน้ารายการงาน (Plan vs Actual)
+            </div>
+            <table class="modern-table" style="font-size: 7pt !important;">
+              <thead>
+                <tr>
+                  <th style="width: 32px; text-align: center;">ที่</th>
+                  <th>รายการงาน</th>
+                  <th class="cell-num" style="width: 55px;">น้ำหนัก</th>
+                  <th class="cell-num" style="width: 55px;">แผน (%)</th>
+                  <th class="cell-num" style="width: 55px;">ผล (%)</th>
+                  <th class="cell-num" style="width: 60px;">คิดเป็น %</th>
+                  <th style="width: 75px; text-align: center;">สถานะ</th>
+                  <th style="width: 105px;">ช่วงเวลาตามแผน</th>
+                  <th style="width: 105px;">ช่วงเวลาที่ทำจริง</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${items.map(it => {
+                  const planWeeksStr = (it.planWeeks && it.planWeeks.length > 0) ? formatTimelineRange(it.planWeeks) : '-';
+                  const actWeeksStr = (it.actualWeeks && it.actualWeeks.length > 0) ? formatTimelineRange(it.actualWeeks) : '-';
+                  let statusBadge = it.actualPerf >= 100 ? 'เสร็จ 100%' : it.actualPerf > 0 ? `ทำได้ ${it.actualPerf.toFixed(0)}%` : it.planPerf > 0 ? 'ล่าช้า' : 'ยังไม่เริ่ม';
+                  return `
+                    <tr>
+                      <td style="text-align: center; font-weight: 600;">${it.no}</td>
+                      <td style="font-weight: 600;">${escapeHtml(it.name)}</td>
+                      <td class="cell-num">${it.weight.toFixed(2)}</td>
+                      <td class="cell-num" style="color: #ef4444; font-weight: 700;">${it.planPerf.toFixed(0)}%</td>
+                      <td class="cell-num" style="color: #16a34a; font-weight: 700;">${it.actualPerf.toFixed(0)}%</td>
+                      <td class="cell-num" style="color: #7c3aed; font-weight: 700;">${it.calcPct.toFixed(2)}%</td>
+                      <td style="text-align: center; font-size: 6.8pt;">${statusBadge}</td>
+                      <td style="font-size: 6.8pt;">${planWeeksStr}</td>
+                      <td style="font-size: 6.8pt; color: #16a34a;">${actWeeksStr}</td>
+                    </tr>
+                  `;
+                }).join('')}
+              </tbody>
+              <tfoot>
+                <tr style="background: #f1f5f9; font-weight: 700;">
+                  <td colspan="2" style="text-align: right;">%งานก่อสร้างรวม:</td>
+                  <td class="cell-num">${totalWeight.toFixed(2)}</td>
+                  <td class="cell-num" style="color: #ef4444;">${totalPlan.toFixed(2)}%</td>
+                  <td class="cell-num">-</td>
+                  <td class="cell-num" style="color: #7c3aed; font-weight: 800;">${totalActual.toFixed(2)}%</td>
+                  <td colspan="3" style="font-size: 6.8pt; color: #475569;">ผลงานสะสมรวมคิดเป็น ${totalActual.toFixed(2)}% (ตรงกับสูตรใน Excel)</td>
+                </tr>
+              </tfoot>
+            </table>
+          </div>
+
+          <!-- Timeline Schedule Chart -->
+          ${timelineCols.length > 0 ? `
+            <div class="dashboard-card" style="margin-bottom: 0 !important; padding: 6px 8px !important;">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+                <div style="font-size: 8.5pt; font-weight: 700; color: #0f172a;">
+                  ไทม์ไลน์กำหนดการดำเนินงาน (Gantt Timeline Schedule)
+                </div>
+                <div style="font-size: 6.8pt; display: flex; gap: 8px;">
+                  <span><span style="display:inline-block;width:10px;height:7px;background:#ef4444;border-radius:2px;margin-right:3px;"></span> แผน (Plan)</span>
+                  <span><span style="display:inline-block;width:10px;height:7px;background:#22c55e;border-radius:2px;margin-right:3px;"></span> ผล (Actual)</span>
+                </div>
+              </div>
+              <div class="gantt-timeline-scroll" style="overflow: visible !important;">
+                <table class="gantt-timeline-table" style="min-width: 100% !important; font-size: 6pt !important;">
+                  <thead>
+                    <tr>
+                      <th class="sticky-task-col" rowspan="2" style="position: static !important; width: 140px; text-align: left; padding: 2px 4px !important;">รายการงาน</th>
+                      <th class="sticky-type-col" rowspan="2" style="position: static !important; width: 35px; text-align: center; padding: 2px 2px !important;">ประเภท</th>
+                      ${monthGroups.map(g => `<th class="month-header" colspan="${g.count}" style="padding: 2px !important; font-size: 6.2pt !important;">${g.month}</th>`).join('')}
+                      <th rowspan="2" style="width: 45px; text-align: center; padding: 2px !important;">ผลงาน (%)</th>
+                    </tr>
+                    <tr>
+                      ${timelineCols.map(tc => `<th class="week-header" style="padding: 1px !important; font-size: 5.5pt !important; width: 14px; min-width: 14px;">W${tc.week}</th>`).join('')}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    ${items.map(it => {
+                      const baseItem = baseSched && baseSched[it.no];
+                      const planWeeks = (it.planWeeks && it.planWeeks.length > 0) ? it.planWeeks : (baseItem ? baseItem.plan : []);
+                      const actWeeks = (it.actualWeeks && it.actualWeeks.length > 0) ? it.actualWeeks : ((baseItem && (it.actualPerf > 0 || baseItem.act.length > 0)) ? baseItem.act : []);
+                      return `
+                        <tr class="timeline-row-plan">
+                          <td class="sticky-task-col" rowspan="2" style="position: static !important; padding: 2px 4px !important; font-weight: 600; font-size: 6.2pt !important; max-width: 160px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                            ${it.no}. ${escapeHtml(it.name)}
+                          </td>
+                          <td class="sticky-type-col" style="position: static !important; color: #ef4444; font-weight: 700; padding: 1px !important; text-align: center;">แผน</td>
+                          ${timelineCols.map(tc => {
+                            const isMatch = planWeeks && planWeeks.some(pw => matchGanttWeek(pw, tc.month, tc.week));
+                            return `<td style="padding: 1px !important;">${isMatch ? '<span class="gantt-cell-bar plan" style="height: 8px !important; min-height: 8px !important;"></span>' : ''}</td>`;
+                          }).join('')}
+                          <td rowspan="2" class="cell-num font-bold" style="vertical-align: middle; text-align: center; color: #16a34a; font-size: 7pt !important; padding: 1px !important;">
+                            ${it.actualPerf.toFixed(0)}%
+                          </td>
+                        </tr>
+                        <tr class="timeline-row-actual">
+                          <td class="sticky-type-col" style="position: static !important; color: #16a34a; font-weight: 700; padding: 1px !important; text-align: center; border-bottom: 1px solid #cbd5e1 !important;">ผล</td>
+                          ${timelineCols.map(tc => {
+                            const isMatch = actWeeks && actWeeks.some(aw => matchGanttWeek(aw, tc.month, tc.week));
+                            return `<td style="padding: 1px !important; border-bottom: 1px solid #cbd5e1 !important;">${isMatch ? '<span class="gantt-cell-bar actual" style="height: 8px !important; min-height: 8px !important;"></span>' : ''}</td>`;
+                          }).join('')}
+                        </tr>
+                      `;
+                    }).join('')}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          ` : ''}
+        </div>
+      `;
+    });
+
+    printContainer.innerHTML = html;
   }
 
   function updateAllCharts() {
