@@ -1,0 +1,17 @@
+[
+  {
+    "id": "20261005_151805_215",
+    "fileName": "สถานะงานก่อสร้างสายส่งและสถานีไฟฟ้า_05102026.xlsx",
+    "lastUpdated": "5 ตุลาคม 2569 เวลา 15:18",
+    "savedAt": 1791188285215,
+    "savedAtText": "05/10/2026 15:18:05",
+    "uploadedBy": "กบส.",
+    "clientIp": "127.0.0.1",
+    "hasExcel": true,
+    "stats": {
+      "transmissionLines": 5,
+      "substations": 5,
+      "permits": 14
+    }
+  }
+]
