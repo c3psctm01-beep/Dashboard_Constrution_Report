@@ -24,6 +24,7 @@
       disbDetail: null
     }
   };
+  window.appState = appState;
 
   // Formatters
   function formatNumber(num) {
@@ -370,10 +371,7 @@
           }
         }
 
-        // Render dedicated print view for Gantt (all projects with full tables & timelines)
-        renderGanttPrintView();
-
-        // Apply print class to body
+        // Apply print class to body FIRST so all tab panels become visible for chart sizing
         document.body.classList.remove('print-all-topics', 'print-active-topic');
         if (isAll) {
           document.body.classList.add('print-all-topics');
@@ -381,17 +379,21 @@
           document.body.classList.add('print-active-topic');
         }
 
+        // Render dedicated print view for Gantt (all projects with full tables & timelines)
+        renderGanttPrintView();
+
         // Update all charts so canvases are sharp
         updateAllCharts();
 
         setTimeout(() => {
           window.print();
-        }, 200);
+        }, 250);
       });
     }
 
     window.addEventListener('afterprint', () => {
       document.body.classList.remove('print-all-topics', 'print-active-topic');
+      if (window.Chart) window.Chart.defaults.animation = true;
       if (appState._prevDisbIndex !== undefined) {
         appState.disbSelectedProjectIndex = appState._prevDisbIndex;
         const selectProj = document.getElementById('selectDisbProject');
@@ -549,7 +551,8 @@
     reader.onload = async function (e) {
       try {
         const data = new Uint8Array(e.target.result);
-        const workbook = XLSX.read(data, { type: 'array' });
+        // cellStyles + sheetStubs are required to read Gantt bar colors from empty colored cells
+        const workbook = XLSX.read(data, { type: 'array', cellStyles: true, sheetStubs: true });
 
         // 1. Strict Validation
         const validation = ExcelValidator.validateWorkbook(workbook);
@@ -2178,7 +2181,7 @@
       const isKanSheet = (appState.ganttSelectedSheet && (appState.ganttSelectedSheet.includes('กาญ') || appState.ganttSelectedSheet.includes('5'))) ||
                          (plan.projectName && (plan.projectName.includes('กาญ') || plan.projectName.includes('5')));
       const baseKey = isKanSheet ? 'กาญจนบุรี' : 'สมุทรสาคร';
-      const baseSched = (window.BASELINE_GANTT_SCHEDULES && window.BASELINE_GANTT_SCHEDULES[baseKey]) || null;
+      const baseSched = (!plan.weeksFromStyles && window.BASELINE_GANTT_SCHEDULES && window.BASELINE_GANTT_SCHEDULES[baseKey]) || null;
 
       // Group timelineCols by month
       const monthGroups = [];
@@ -2324,7 +2327,7 @@
       const isKanSheet = sheetKey.includes('กาญ') || sheetKey.includes('5') ||
         (plan.projectName && (plan.projectName.includes('กาญ') || plan.projectName.includes('5')));
       const baseKey = isKanSheet ? 'กาญจนบุรี' : 'สมุทรสาคร';
-      const baseSched = (window.BASELINE_GANTT_SCHEDULES && window.BASELINE_GANTT_SCHEDULES[baseKey]) || null;
+      const baseSched = (!plan.weeksFromStyles && window.BASELINE_GANTT_SCHEDULES && window.BASELINE_GANTT_SCHEDULES[baseKey]) || null;
 
       const items = plan.items || [];
       const totalActual = typeof plan.totalActual === 'number' ? plan.totalActual : (items.reduce((s, it) => s + (it.calcPct || 0), 0));
@@ -2436,9 +2439,17 @@
             </table>
           </div>
 
-          <!-- Timeline Schedule Chart -->
+          <!-- Timeline Schedule Chart (Separate dedicated page) -->
           ${timelineCols.length > 0 ? `
-            <div class="dashboard-card" style="margin-bottom: 0 !important; padding: 6px 8px !important;">
+            <div class="dashboard-card" style="page-break-before: always; break-before: page; margin-bottom: 0 !important; padding: 6px 8px !important;">
+              <div class="print-project-header" style="border-left: 4px solid #7c3aed; padding-left: 10px; margin-bottom: 8px;">
+                <h3 style="font-size: 10.5pt; font-weight: 700; color: #0f172a; margin: 0;">
+                  ${plan.projectName || sheetKey} (ไทม์ไลน์กำหนดการดำเนินงาน Gantt Timeline)
+                </h3>
+                <p style="font-size: 7.5pt; color: #64748b; margin: 2px 0 0 0;">
+                  แผนงานและผลงานการดำเนินงานรายสัปดาห์ตลอดปี 2569 · ชีตอ้างอิง: ${sheetKey}
+                </p>
+              </div>
               <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
                 <div style="font-size: 8.5pt; font-weight: 700; color: #0f172a;">
                   ไทม์ไลน์กำหนดการดำเนินงาน (Gantt Timeline Schedule)
@@ -2502,18 +2513,29 @@
   }
 
   function updateAllCharts() {
+    if (window.Chart) window.Chart.defaults.animation = false;
     renderOverviewCharts();
     renderTransmissionMonthlyChart();
     if (appState.renderDisbChart) {
       appState.renderDisbChart(true);
     }
+    if (appState.charts) {
+      Object.values(appState.charts).forEach(ch => {
+        if (ch && typeof ch.resize === 'function') {
+          ch.resize();
+          ch.update('none');
+        }
+      });
+    }
   }
+  window.renderGanttPrintView = renderGanttPrintView;
+  window.updateAllCharts = updateAllCharts;
 
   function ensureGanttBaseline(dataObj) {
     if (!dataObj || !dataObj.ganttPlans || !window.BASELINE_GANTT_SCHEDULES) return;
     Object.keys(dataObj.ganttPlans).forEach(sheetKey => {
       const plan = dataObj.ganttPlans[sheetKey];
-      if (!plan || !plan.items) return;
+      if (!plan || !plan.items || plan.weeksFromStyles) return;
       const isKan = sheetKey.includes('กาญ') || sheetKey.includes('5') || (plan.projectName && (plan.projectName.includes('กาญ') || plan.projectName.includes('5')));
       const baseSched = isKan ? window.BASELINE_GANTT_SCHEDULES['กาญจนบุรี'] : window.BASELINE_GANTT_SCHEDULES['สมุทรสาคร'];
       if (baseSched) {

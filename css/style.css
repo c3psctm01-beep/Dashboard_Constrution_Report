@@ -843,8 +843,12 @@ body {
   animation: fadeIn 0.3s ease;
 }
 
-.tab-content-panel.active {
+.tab-content-panel.active,
+body.print-all-topics .tab-content-panel {
   display: block;
+  animation: none;
+  opacity: 1;
+  transform: none;
 }
 
 @keyframes fadeIn {
@@ -1968,7 +1972,8 @@ body {
   .btn-banner-action,
   .btn-banner-dismiss,
   .theme-toggle-btn,
-  .file-input-hidden {
+  .file-input-hidden,
+  .app-footer {
     display: none !important;
   }
 
@@ -2053,12 +2058,21 @@ body {
   }
 
   /* Tab content panel display & page breaks */
+  .tab-content-panel {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+
   body.print-active-topic .tab-content-panel {
     display: none !important;
   }
 
   body.print-active-topic .tab-content-panel.active {
     display: block !important;
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
     page-break-after: auto !important;
     break-after: auto !important;
   }
@@ -2066,6 +2080,9 @@ body {
   /* Default or print-all-topics: show each section on a new landscape A4 page */
   body:not(.print-active-topic) .tab-content-panel {
     display: block !important;
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
     page-break-after: always !important;
     break-after: page !important;
     margin-bottom: 0 !important;
@@ -2219,10 +2236,15 @@ body {
   }
 
   #transTableBody td,
-  #subDetailTableBody td,
-  #wbsTableBody td {
+  #subDetailTableBody td {
     font-size: 6.8pt !important;
     padding: 2.5px 3.5px !important;
+  }
+
+  #wbsTableBody td {
+    font-size: 6.1pt !important;
+    padding: 1.5px 3px !important;
+    line-height: 1.15 !important;
   }
 
   /* Gantt Schedule & Print View Container */
@@ -2281,13 +2303,91 @@ body {
   /* Charts in Print */
   .chart-canvas-wrapper {
     min-height: auto !important;
-    height: 220px !important;
-    max-height: 220px !important;
+    height: 180px !important;
+    max-height: 180px !important;
   }
 
   .chart-canvas-wrapper canvas {
-    max-height: 220px !important;
+    max-height: 180px !important;
+    height: 180px !important;
     width: 100% !important;
+  }
+
+  /* Specific section compact layout adjustments for A4 Landscape */
+  #tab-overview .chart-card {
+    margin-bottom: 0 !important;
+    padding: 8px 12px !important;
+  }
+
+  #tab-overview .chart-canvas-wrapper {
+    min-height: 270px !important;
+    height: 270px !important;
+    max-height: 270px !important;
+  }
+
+  #tab-overview .chart-canvas-wrapper canvas {
+    max-height: 270px !important;
+    height: 270px !important;
+  }
+
+  #tab-overview .dashboard-card {
+    page-break-before: always !important;
+    break-before: page !important;
+    margin-bottom: 0 !important;
+    padding: 6px 10px !important;
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+  }
+
+  #overviewActiveTableBody td {
+    font-size: 6.8pt !important;
+    padding: 2px 4px !important;
+    line-height: 1.2 !important;
+  }
+
+  #tab-transmission .chart-canvas-wrapper {
+    min-height: 160px !important;
+    height: 160px !important;
+    max-height: 160px !important;
+  }
+
+  #tab-transmission .chart-canvas-wrapper canvas {
+    max-height: 160px !important;
+    height: 160px !important;
+  }
+
+  #tab-transmission .chart-card {
+    margin-bottom: 0 !important;
+  }
+
+  #tab-disbursement .chart-canvas-wrapper {
+    min-height: 150px !important;
+    height: 150px !important;
+    max-height: 150px !important;
+  }
+
+  #tab-disbursement .chart-canvas-wrapper canvas {
+    max-height: 150px !important;
+    height: 150px !important;
+  }
+
+  #tab-disbursement .kpi-grid {
+    margin-bottom: 6px !important;
+  }
+
+  #tab-disbursement .dashboard-card:last-of-type {
+    page-break-before: always !important;
+    break-before: page !important;
+    margin-bottom: 0 !important;
+  }
+
+  #tab-permits .dashboard-card {
+    margin-bottom: 0 !important;
+  }
+
+  .gantt-print-project-block {
+    page-break-inside: auto !important;
+    break-inside: auto !important;
   }
 }
 
