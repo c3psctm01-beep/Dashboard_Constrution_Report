@@ -17,6 +17,24 @@
 <body>
   <div class="app-container">
     
+    <!-- Dedicated Print Report Header (Visible only in print & PDF export) -->
+    <div id="printReportHeader" class="print-only print-report-header">
+      <div class="print-header-top">
+        <div class="print-brand">
+          <div class="print-logo-badge">PEA</div>
+          <div class="print-brand-text">
+            <h1>การไฟฟ้าส่วนภูมิภาค (PROVINCIAL ELECTRICITY AUTHORITY)</h1>
+            <p>ฝ่ายก่อสร้างและบริหารโครงการ (กบส.) · ระบบติดตามสถานะงานก่อสร้างสายส่ง 115 kV สถานีไฟฟ้า และการเบิกจ่าย</p>
+          </div>
+        </div>
+        <div class="print-doc-meta">
+          <div class="print-doc-title">รายงานสรุปผลการดำเนินงาน (Landscape A4)</div>
+          <div class="print-meta-item" id="printReportFileDate">ข้อมูล ณ วันที่: -</div>
+          <div class="print-meta-item" id="printReportPrintDate">พิมพ์รายงานเมื่อ: -</div>
+        </div>
+      </div>
+    </div>
+
     <!-- Top Header -->
     <header class="app-header">
       <div class="header-brand">
@@ -164,6 +182,9 @@
 
     <!-- Tab 1: Executive Overview -->
     <section class="tab-content-panel active" id="tab-overview">
+      <div class="print-only print-section-banner">
+        <h2>ส่วนที่ 1: ภาพรวมความก้าวหน้าโครงการ (Executive Summary & Overview)</h2>
+      </div>
       <!-- Chart 1: Progress comparison -->
       <div class="chart-card" style="margin-bottom: 1.5rem;">
         <div class="chart-title">
@@ -204,6 +225,9 @@
 
     <!-- Tab 2: Transmission Lines -->
     <section class="tab-content-panel" id="tab-transmission">
+      <div class="print-only print-section-banner">
+        <h2>ส่วนที่ 2: รายละเอียดสถานะงานก่อสร้างสายส่ง 115 kV (Transmission Lines)</h2>
+      </div>
       <div class="dashboard-card">
         <div class="card-header-row">
           <div class="card-title-group">
@@ -257,6 +281,9 @@
 
     <!-- Tab 3: Substations -->
     <section class="tab-content-panel" id="tab-substations">
+      <div class="print-only print-section-banner">
+        <h2>ส่วนที่ 3: รายละเอียดสถานะงานก่อสร้างสถานีไฟฟ้า (Substations)</h2>
+      </div>
       <!-- Macro Substation Overview Summary -->
       <div class="dashboard-card">
         <div class="card-header-row">
@@ -333,6 +360,9 @@
 
     <!-- Tab 4: Disbursement & WBS -->
     <section class="tab-content-panel" id="tab-disbursement">
+      <div class="print-only print-section-banner">
+        <h2>ส่วนที่ 4: รายละเอียดการเบิกจ่ายงบประมาณ (WBS Budget & Actuals)</h2>
+      </div>
       <!-- Project Selector & Budget KPI Row -->
       <div class="dashboard-card">
         <div class="card-header-row">
@@ -461,6 +491,9 @@
 
     <!-- Tab 5: Permits Tracking -->
     <section class="tab-content-panel" id="tab-permits">
+      <div class="print-only print-section-banner">
+        <h2>ส่วนที่ 5: สถานะการขออนุญาตเข้าทำประโยชน์ในพื้นที่ (Permits Tracking)</h2>
+      </div>
       <div class="dashboard-card">
         <div class="card-header-row">
           <div class="card-title-group">
@@ -507,6 +540,9 @@
 
     <!-- Tab 6: Gantt Schedule -->
     <section class="tab-content-panel" id="tab-gantt">
+      <div class="print-only print-section-banner">
+        <h2>ส่วนที่ 6: แผนงานและผลงานการดำเนินงาน (Gantt Schedule)</h2>
+      </div>
       <!-- Gantt KPI Summary Cards -->
       <section class="kpi-grid gantt-kpi-grid" id="ganttStatsGrid">
         <div class="kpi-card purple">
@@ -811,6 +847,74 @@
           <button type="button" class="btn-secondary" id="btnDismissUploadModal">
             <i data-lucide="check" style="width: 15px; height: 15px;"></i>
             เสร็จสิ้น / ปิดหน้าต่าง
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Print Options Modal -->
+  <div class="modal-overlay" id="printOptionsModal">
+    <div class="modal-dialog modal-dialog-md">
+      <div class="modal-header">
+        <div class="modal-title-wrap">
+          <h3>
+            <i data-lucide="printer" style="width: 20px; height: 20px; color: var(--pea-purple);"></i>
+            พิมพ์รายงาน / บันทึกเป็น PDF
+          </h3>
+          <span class="modal-subtitle">จัดรูปแบบพอดีหน้ากระดาษ A4 แนวนอน (Landscape) สวยงาม แบ่งหน้าตามหัวข้ออัตโนมัติ</span>
+        </div>
+        <button type="button" class="modal-close-btn" id="btnClosePrintOptionsModal" title="ปิดหน้าต่าง">
+          <i data-lucide="x" style="width: 18px; height: 18px;"></i>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div style="margin-bottom: 1.15rem;">
+          <p style="font-size: 0.88rem; color: var(--text-secondary); margin-bottom: 0.85rem;">
+            เลือกรูปแบบรายงานที่ต้องการพิมพ์หรือบันทึกเป็น PDF:
+          </p>
+
+          <div class="print-option-cards" style="display: flex; flex-direction: column; gap: 0.75rem;">
+            <label class="print-option-card selected" id="optPrintAllWrap" style="display: flex; align-items: flex-start; gap: 0.85rem; padding: 0.85rem 1rem; border-radius: var(--radius-md); border: 2px solid var(--pea-purple); background: var(--bg-secondary); cursor: pointer; transition: all var(--transition-fast);">
+              <input type="radio" name="printScope" id="optPrintAll" value="all" checked style="margin-top: 3px; accent-color: var(--pea-purple);">
+              <div style="flex: 1;">
+                <div style="font-weight: 600; font-size: 0.92rem; color: var(--text-primary); display: flex; align-items: center; gap: 0.4rem;">
+                  <span>พิมพ์รายงานฉบับสมบูรณ์ (ทุกหัวข้อ แยกหน้า A4 แนวนอน)</span>
+                  <span class="badge" style="background: var(--pea-purple-glow); color: var(--pea-purple); font-size: 0.72rem; padding: 2px 7px; border-radius: 4px; font-weight: 600;">แนะนำ</span>
+                </div>
+                <div style="font-size: 0.8rem; color: var(--text-muted); margin-top: 2px;">
+                  รวบรวมข้อมูลครบทั้ง 6 หัวข้อ (ภาพรวม, สายส่ง 115 kV, สถานีไฟฟ้า, WBS เบิกจ่าย, ขออนุญาตพื้นที่, และ Gantt) โดยแต่ละหัวข้อจัดพอดี 1 หน้ากระดาษ A4 แนวนอน
+                </div>
+              </div>
+            </label>
+
+            <label class="print-option-card" id="optPrintActiveWrap" style="display: flex; align-items: flex-start; gap: 0.85rem; padding: 0.85rem 1rem; border-radius: var(--radius-md); border: 1px solid var(--border-subtle); background: var(--bg-secondary); cursor: pointer; transition: all var(--transition-fast);">
+              <input type="radio" name="printScope" id="optPrintActive" value="active" style="margin-top: 3px; accent-color: var(--pea-purple);">
+              <div style="flex: 1;">
+                <div style="font-weight: 600; font-size: 0.92rem; color: var(--text-primary);">
+                  พิมพ์เฉพาะหัวข้อปัจจุบัน (<span id="printCurrentTabName" style="color: var(--pea-purple);">ภาพรวมโครงการ</span>)
+                </div>
+                <div style="font-size: 0.8rem; color: var(--text-muted); margin-top: 2px;">
+                  พิมพ์เฉพาะข้อมูลในแท็บที่กำลังเปิดดูอยู่ขณะนี้ พอดีหน้ากระดาษ A4 แนวนอน
+                </div>
+              </div>
+            </label>
+          </div>
+        </div>
+
+        <div style="background: var(--pea-gradient-subtle); border: 1px solid var(--pea-purple-glow); border-radius: var(--radius-md); padding: 0.75rem 1rem; font-size: 0.82rem; color: var(--text-secondary); line-height: 1.5; margin-bottom: 1.25rem;">
+          <strong style="color: var(--text-primary); display: flex; align-items: center; gap: 0.35rem; margin-bottom: 2px;">
+            <i data-lucide="info" style="width: 14px; height: 14px; color: var(--pea-purple);"></i>
+            คำแนะนำสำหรับการบันทึกเป็น PDF:
+          </strong>
+          ในหน้าต่างพิมพ์ของเบราว์เซอร์ ให้เลือก <strong>Destination: "Save as PDF"</strong> (บันทึกเป็น PDF) และเลือก <strong>Layout: "Landscape"</strong> (แนวนอน) เพื่อให้เนื้อหาแสดงผลสวยงามและลงตัวที่สุด
+        </div>
+
+        <div style="display: flex; justify-content: flex-end; gap: 0.6rem;">
+          <button type="button" class="btn-secondary" id="btnCancelPrintOptions">ยกเลิก</button>
+          <button type="button" class="btn-primary" id="btnExecutePrint">
+            <i data-lucide="printer" style="width: 15px; height: 15px;"></i>
+            เริ่มพิมพ์ / ส่งออก PDF
           </button>
         </div>
       </div>

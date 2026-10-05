@@ -285,11 +285,100 @@
       }
     });
 
-    // Print button
+    // Print Report Modal & Landscape A4 Execution
+    const tabNameMap = {
+      'tab-overview': 'ภาพรวมโครงการ (Overview)',
+      'tab-transmission': 'สถานะงานสายส่ง 115 kV',
+      'tab-substations': 'สถานะงานสถานีไฟฟ้า',
+      'tab-disbursement': 'รายละเอียดการเบิกจ่าย (WBS)',
+      'tab-permits': 'สถานะการขออนุญาตพื้นที่',
+      'tab-gantt': 'แผนงานและผลงาน (Gantt Schedule)'
+    };
+
+    function openPrintModal() {
+      const modal = document.getElementById('printOptionsModal');
+      if (!modal) {
+        window.print();
+        return;
+      }
+      const curTabNameEl = document.getElementById('printCurrentTabName');
+      if (curTabNameEl) {
+        curTabNameEl.textContent = tabNameMap[appState.activeTab] || 'หัวข้อปัจจุบัน';
+      }
+      modal.classList.add('active');
+      lucide.createIcons({ root: modal });
+    }
+
     const btnPrint = document.getElementById('btnPrintReport');
     if (btnPrint) {
-      btnPrint.addEventListener('click', () => window.print());
+      btnPrint.addEventListener('click', () => openPrintModal());
     }
+
+    const optAllWrap = document.getElementById('optPrintAllWrap');
+    const optActiveWrap = document.getElementById('optPrintActiveWrap');
+    const optAllRadio = document.getElementById('optPrintAll');
+    const optActiveRadio = document.getElementById('optPrintActive');
+
+    function syncPrintOptionStyles() {
+      if (optAllRadio && optAllRadio.checked) {
+        if (optAllWrap) optAllWrap.className = 'print-option-card selected';
+        if (optActiveWrap) optActiveWrap.className = 'print-option-card';
+      } else {
+        if (optAllWrap) optAllWrap.className = 'print-option-card';
+        if (optActiveWrap) optActiveWrap.className = 'print-option-card selected';
+      }
+    }
+    optAllRadio?.addEventListener('change', syncPrintOptionStyles);
+    optActiveRadio?.addEventListener('change', syncPrintOptionStyles);
+
+    const btnClosePrintModal = document.getElementById('btnClosePrintOptionsModal');
+    const btnCancelPrint = document.getElementById('btnCancelPrintOptions');
+    [btnClosePrintModal, btnCancelPrint].forEach(btn => {
+      btn?.addEventListener('click', () => {
+        document.getElementById('printOptionsModal')?.classList.remove('active');
+      });
+    });
+
+    const btnExecutePrint = document.getElementById('btnExecutePrint');
+    if (btnExecutePrint) {
+      btnExecutePrint.addEventListener('click', () => {
+        const isAll = optAllRadio ? optAllRadio.checked : true;
+        document.getElementById('printOptionsModal')?.classList.remove('active');
+
+        // Populate print report header meta
+        const d = appState.data || {};
+        const fileDateEl = document.getElementById('printReportFileDate');
+        if (fileDateEl) fileDateEl.textContent = `ข้อมูล: ${d.fileName || '-'} (${d.lastUpdated || '-'})`;
+
+        const printDateEl = document.getElementById('printReportPrintDate');
+        if (printDateEl) {
+          const nowStr = new Date().toLocaleString('th-TH', {
+            year: 'numeric', month: 'short', day: 'numeric',
+            hour: '2-digit', minute: '2-digit'
+          });
+          printDateEl.textContent = `พิมพ์รายงานเมื่อ: ${nowStr}`;
+        }
+
+        // Apply print class to body
+        document.body.classList.remove('print-all-topics', 'print-active-topic');
+        if (isAll) {
+          document.body.classList.add('print-all-topics');
+        } else {
+          document.body.classList.add('print-active-topic');
+        }
+
+        // Update all charts so canvases are sharp
+        updateAllCharts();
+
+        setTimeout(() => {
+          window.print();
+        }, 150);
+      });
+    }
+
+    window.addEventListener('afterprint', () => {
+      document.body.classList.remove('print-all-topics', 'print-active-topic');
+    });
 
     // Download latest uploaded Excel button (static file -> works on LAN server and on Vercel)
     const btnDownloadExcel = document.getElementById('btnDownloadExcel');
@@ -383,6 +472,10 @@
       const valModal = document.getElementById('validationModal');
       if (valModal && e.target === valModal) {
         valModal.classList.remove('active');
+      }
+      const printModal = document.getElementById('printOptionsModal');
+      if (printModal && e.target === printModal) {
+        printModal.classList.remove('active');
       }
     });
 
@@ -1544,6 +1637,7 @@
     }
 
     function renderDisbChart(isAll) {
+      appState.renderDisbChart = renderDisbChart;
       const ctx = document.getElementById('disbDetailChart');
       if (!ctx) return;
       if (appState.charts.disbDetail) appState.charts.disbDetail.destroy();
@@ -2160,11 +2254,8 @@
   function updateAllCharts() {
     renderOverviewCharts();
     renderTransmissionMonthlyChart();
-    if (appState.data && appState.data.disbursements) {
-      const proj = appState.data.disbursements[appState.disbSelectedProjectIndex] || appState.data.disbursements[0];
-      if (proj && appState.charts.disbDetail) {
-        // Will be updated if tab is active
-      }
+    if (appState.renderDisbChart) {
+      appState.renderDisbChart(true);
     }
   }
 

@@ -188,11 +188,6 @@ window.DashboardStorage = (function () {
     return { success: true, serverSaved: false, savedAt: payload.savedAt };
   }
 
-    payload._localOnly = true;
-    await saveToLocal(payload);
-    return { success: true, serverSaved: false, savedAt: payload.savedAt };
-  }
-
   /**
    * Load the dataset to display.
    * Central data (data/latest_data.json) wins, unless this browser has a newer personal upload.
