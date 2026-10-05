@@ -174,43 +174,10 @@
       }
     });
 
-    // Reset default button
-    const btnReset = document.getElementById('btnResetDefault');
-    if (btnReset) {
-      btnReset.addEventListener('click', async () => {
-        if (window.DEFAULT_DASHBOARD_DATA) {
-          if (window.DashboardStorage) {
-            await window.DashboardStorage.clearLatestData();
-          }
-          appState.data = JSON.parse(JSON.stringify(window.DEFAULT_DASHBOARD_DATA));
-          appState.data.isCustomUpload = false;
-          setHistoryView(null);
-          renderAll();
-          showToast('รีเซ็ตเป็นข้อมูลเริ่มต้น และล้างสถานะไฟล์ที่บันทึกไว้เรียบร้อยแล้ว', 'success');
-        }
-      });
-    }
-
     // Print button
     const btnPrint = document.getElementById('btnPrintReport');
     if (btnPrint) {
       btnPrint.addEventListener('click', () => window.print());
-    }
-
-    // Network Share modal
-    const btnShare = document.getElementById('btnShareNetwork');
-    const shareModal = document.getElementById('networkShareModal');
-    const btnCloseShare = document.getElementById('btnCloseShareModal');
-    if (btnShare && shareModal) {
-      btnShare.addEventListener('click', () => {
-        shareModal.classList.add('active');
-        renderShareModalUrls();
-      });
-    }
-    if (btnCloseShare && shareModal) {
-      btnCloseShare.addEventListener('click', () => {
-        shareModal.classList.remove('active');
-      });
     }
 
     // Download latest uploaded Excel button (static file -> works on LAN server and on Vercel)
@@ -287,10 +254,6 @@
       const uploadModal = document.getElementById('uploadHistoryModal');
       if (uploadModal && e.target === uploadModal) {
         uploadModal.classList.remove('active');
-      }
-      const shareModal = document.getElementById('networkShareModal');
-      if (shareModal && e.target === shareModal) {
-        shareModal.classList.remove('active');
       }
       const stationModal = document.getElementById('stationListModal');
       if (stationModal && e.target === stationModal) {
@@ -2079,78 +2042,6 @@
     });
   }
 
-  // Render Network Sharing URLs Modal
-  async function renderShareModalUrls() {
-    const networkUrlsList = document.getElementById('networkUrlsList');
-    if (!networkUrlsList) return;
-
-    networkUrlsList.innerHTML = '<div style="color: var(--text-muted); font-size: 0.85rem; padding: 0.5rem 0;">กำลังตรวจสอบที่อยู่ IP เครือข่าย...</div>';
-
-    let serverInfo = null;
-    if (window.DashboardStorage && window.DashboardStorage.getServerInfo) {
-      serverInfo = await window.DashboardStorage.getServerInfo();
-    }
-
-    const currentOrigin = window.location.origin;
-    const currentPath = window.location.pathname || '/index.html';
-    const currentFullUrl = currentOrigin + (currentPath.endsWith('/') ? currentPath + 'index.html' : currentPath);
-
-    let itemsHtml = '';
-
-    // 1. Current Browser URL
-    itemsHtml += `
-      <div class="network-url-item">
-        <div class="network-url-info">
-          <span class="network-url-label">สำหรับเครื่องนี้ (Local Machine):</span>
-          <span class="network-url-text">${currentFullUrl}</span>
-        </div>
-        <button type="button" class="btn-copy-url" data-url="${currentFullUrl}">
-          <i data-lucide="copy" style="width: 14px; height: 14px;"></i> คัดลอก
-        </button>
-      </div>
-    `;
-
-    // 2. Server LAN IPs (for colleagues on other computers)
-    if (serverInfo && serverInfo.networkUrls && serverInfo.networkUrls.length > 0) {
-      serverInfo.networkUrls.forEach((netUrl, idx) => {
-        if (netUrl !== currentFullUrl) {
-          itemsHtml += `
-            <div class="network-url-item">
-              <div class="network-url-info">
-                <span class="network-url-label">สำหรับเครื่องอื่นในวง LAN / Wi-Fi สำนักงาน (เครื่องเพื่อนร่วมงาน ${idx + 1}):</span>
-                <span class="network-url-text">${netUrl}</span>
-              </div>
-              <button type="button" class="btn-copy-url" data-url="${netUrl}">
-                <i data-lucide="copy" style="width: 14px; height: 14px;"></i> คัดลอก
-              </button>
-            </div>
-          `;
-        }
-      });
-    }
-
-    networkUrlsList.innerHTML = itemsHtml;
-    lucide.createIcons({ root: networkUrlsList });
-
-    // Attach copy button handlers
-    networkUrlsList.querySelectorAll('.btn-copy-url').forEach(btn => {
-      btn.addEventListener('click', async () => {
-        const urlToCopy = btn.getAttribute('data-url');
-        try {
-          await navigator.clipboard.writeText(urlToCopy);
-          btn.innerHTML = `<i data-lucide="check" style="width: 14px; height: 14px; color: var(--color-success);"></i> คัดลอกแล้ว!`;
-          lucide.createIcons({ root: btn });
-          showToast('คัดลอกลิงก์ไปยังคลิปบอร์ดแล้ว ส่งให้เพื่อนร่วมงานได้ทันที', 'success');
-          setTimeout(() => {
-            btn.innerHTML = `<i data-lucide="copy" style="width: 14px; height: 14px;"></i> คัดลอก`;
-            lucide.createIcons({ root: btn });
-          }, 3000);
-        } catch (e) {
-          prompt('คัดลอกลิงก์นี้เพื่อส่งให้เพื่อนร่วมงาน:', urlToCopy);
-        }
-      });
-    });
-  }
 
   // ------------------------------------------------------------------
   // Upload & History
