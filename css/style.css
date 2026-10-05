@@ -222,6 +222,12 @@ body {
   transition: all var(--transition-fast);
 }
 
+.badge-source-server {
+  background: rgba(14, 165, 233, 0.12);
+  color: #0284c7;
+  border: 1px solid rgba(14, 165, 233, 0.35);
+}
+
 .badge-source-saved {
   background: rgba(16, 185, 129, 0.12);
   color: #059669;
@@ -234,6 +240,12 @@ body {
   border: 1px solid rgba(142, 36, 170, 0.25);
 }
 
+[data-theme="dark"] .badge-source-server {
+  background: rgba(14, 165, 233, 0.2);
+  color: #38bdf8;
+  border-color: rgba(14, 165, 233, 0.45);
+}
+
 [data-theme="dark"] .badge-source-saved {
   background: rgba(16, 185, 129, 0.2);
   color: #34d399;
@@ -244,6 +256,155 @@ body {
   background: rgba(186, 104, 200, 0.18);
   color: #ce93d8;
   border-color: rgba(186, 104, 200, 0.35);
+}
+
+/* Network Sync Alert Banner */
+.network-sync-banner {
+  background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+  color: #ffffff;
+  padding: 0.85rem 1.4rem;
+  border-radius: var(--radius-md);
+  margin-bottom: 1.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  box-shadow: 0 4px 14px rgba(79, 70, 229, 0.35);
+  animation: slideDownBanner 0.3s ease;
+}
+
+@keyframes slideDownBanner {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.network-sync-banner-content {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 0.92rem;
+  font-weight: 500;
+}
+
+.network-sync-banner-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.btn-banner-action {
+  background: #ffffff;
+  color: #4f46e5;
+  border: none;
+  font-weight: 600;
+  font-size: 0.82rem;
+  padding: 0.45rem 0.95rem;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  transition: all var(--transition-fast);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+}
+
+.btn-banner-action:hover {
+  background: #f8fafc;
+  transform: translateY(-1px);
+}
+
+.btn-banner-dismiss {
+  background: transparent;
+  color: rgba(255, 255, 255, 0.8);
+  border: none;
+  cursor: pointer;
+  padding: 0.3rem;
+  display: flex;
+  align-items: center;
+  border-radius: var(--radius-sm);
+  transition: all var(--transition-fast);
+}
+
+.btn-banner-dismiss:hover {
+  background: rgba(255, 255, 255, 0.15);
+  color: #ffffff;
+}
+
+/* Network Share Modal Styles */
+.network-urls-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin: 1.25rem 0;
+}
+
+.network-url-item {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 0.85rem 1.15rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.network-url-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  overflow: hidden;
+}
+
+.network-url-label {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.network-url-text {
+  font-family: Consolas, monospace, sans-serif;
+  font-size: 0.92rem;
+  color: var(--pea-purple);
+  font-weight: 600;
+  word-break: break-all;
+}
+
+[data-theme="dark"] .network-url-text {
+  color: var(--pea-purple-light);
+}
+
+.btn-copy-url {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  color: var(--text-primary);
+  padding: 0.45rem 0.85rem;
+  border-radius: var(--radius-sm);
+  font-size: 0.82rem;
+  font-weight: 500;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  white-space: nowrap;
+  transition: all var(--transition-fast);
+}
+
+.btn-copy-url:hover {
+  border-color: var(--pea-purple);
+  color: var(--pea-purple);
+  background: var(--bg-surface-elevated);
+}
+
+.share-modal-hint {
+  font-size: 0.84rem;
+  color: var(--text-secondary);
+  line-height: 1.55;
+  background: var(--pea-gradient-subtle);
+  border: 1px solid var(--pea-purple-glow);
+  padding: 0.85rem 1.15rem;
+  border-radius: var(--radius-md);
+  margin-top: 1rem;
 }
 
 .theme-toggle-btn, .btn-secondary, .btn-primary {

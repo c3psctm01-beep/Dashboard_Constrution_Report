@@ -180,6 +180,34 @@
       btnPrint.addEventListener('click', () => window.print());
     }
 
+    // Network Share modal
+    const btnShare = document.getElementById('btnShareNetwork');
+    const shareModal = document.getElementById('networkShareModal');
+    const btnCloseShare = document.getElementById('btnCloseShareModal');
+    if (btnShare && shareModal) {
+      btnShare.addEventListener('click', () => {
+        shareModal.classList.add('active');
+        renderShareModalUrls();
+      });
+    }
+    if (btnCloseShare && shareModal) {
+      btnCloseShare.addEventListener('click', () => {
+        shareModal.classList.remove('active');
+      });
+    }
+
+    // Download latest uploaded Excel button
+    const btnDownloadExcel = document.getElementById('btnDownloadExcel');
+    if (btnDownloadExcel) {
+      btnDownloadExcel.addEventListener('click', () => {
+        if (window.location.protocol.startsWith('http')) {
+          window.location.href = '/api/download-excel';
+        } else {
+          showToast('กรุณาเปิดระบบผ่านเซิร์ฟเวอร์ (py server.py) เพื่อดาวน์โหลดไฟล์', 'info');
+        }
+      });
+    }
+
     // Validation modal close
     const btnCloseModal = document.getElementById('btnCloseValidationModal');
     if (btnCloseModal) {
@@ -223,6 +251,10 @@
 
     // Click outside modal to close
     window.addEventListener('click', (e) => {
+      const shareModal = document.getElementById('networkShareModal');
+      if (shareModal && e.target === shareModal) {
+        shareModal.classList.remove('active');
+      }
       const stationModal = document.getElementById('stationListModal');
       if (stationModal && e.target === stationModal) {
         stationModal.classList.remove('active');
@@ -269,13 +301,21 @@
         parsedData.isCustomUpload = true;
         appState.data = parsedData;
 
-        // 3. Persist to Storage
+        // 3. Persist to Storage (Server + Local)
+        let saveResult = null;
         if (window.DashboardStorage) {
-          await window.DashboardStorage.saveLatestData(parsedData);
+          saveResult = await window.DashboardStorage.saveLatestData(parsedData, file);
+          if (saveResult && saveResult.serverSaved) {
+            parsedData._storageSource = 'server';
+          }
         }
 
         renderAll();
-        showToast(`อัปโหลดไฟล์ "${file.name}" สำเร็จ และบันทึกสถานะล่าสุดไว้ในระบบแล้ว`, 'success');
+        if (saveResult && saveResult.serverSaved) {
+          showToast(`อัปโหลดไฟล์ "${file.name}" สำเร็จ และบันทึกลงเซิร์ฟเวอร์ส่วนกลางแล้ว ทุกเครื่องในเครือข่ายจะเห็นข้อมูลนี้ทันที`, 'success');
+        } else {
+          showToast(`อัปโหลดไฟล์ "${file.name}" สำเร็จ และบันทึกสถานะล่าสุดไว้ในระบบแล้ว`, 'success');
+        }
       } catch (err) {
         console.error('Error processing Excel file:', err);
         showValidationErrors(['เกิดข้อผิดพลาดในการอ่านไฟล์: ' + err.message]);
@@ -326,13 +366,30 @@
     const sourceBadge = document.getElementById('fileDataSourceBadge');
     if (sourceBadge) {
       if (d.isCustomUpload) {
-        sourceBadge.className = 'badge-source badge-source-saved';
-        sourceBadge.title = 'ระบบกำลังแสดงผลและจดจำสถานะตามไฟล์ล่าสุดที่อัปโหลดไว้';
-        sourceBadge.innerHTML = `<i data-lucide="hard-drive" style="width: 12px; height: 12px;"></i> ไฟล์ล่าสุดที่บันทึกไว้`;
+        if (d._storageSource === 'server') {
+          sourceBadge.className = 'badge-source badge-source-server';
+          sourceBadge.title = 'ข้อมูลชุดนี้ถูกบันทึกไว้บนเซิร์ฟเวอร์ส่วนกลาง ทุกเครื่องที่เปิดใช้งานจะเห็นข้อมูลตรงกัน';
+          sourceBadge.innerHTML = `<i data-lucide="server" style="width: 12px; height: 12px;"></i> เซิร์ฟเวอร์ส่วนกลาง (แชร์ทุกเครื่อง)`;
+        } else {
+          sourceBadge.className = 'badge-source badge-source-saved';
+          sourceBadge.title = 'ระบบกำลังแสดงผลและจดจำสถานะตามไฟล์ล่าสุดที่บันทึกไว้ในเครื่อง';
+          sourceBadge.innerHTML = `<i data-lucide="hard-drive" style="width: 12px; height: 12px;"></i> บันทึกไว้ในเครื่อง`;
+        }
       } else {
         sourceBadge.className = 'badge-source badge-source-default';
         sourceBadge.title = 'ข้อมูลตัวอย่างเริ่มต้นของระบบ';
         sourceBadge.innerHTML = `<i data-lucide="bookmark" style="width: 12px; height: 12px;"></i> ข้อมูลเริ่มต้น`;
+      }
+    }
+
+    // Toggle Download Excel button in header
+    const btnDownload = document.getElementById('btnDownloadExcel');
+    if (btnDownload) {
+      if (d.isCustomUpload) {
+        btnDownload.style.display = 'inline-flex';
+        btnDownload.title = `ดาวน์โหลดไฟล์ Excel ต้นฉบับล่าสุด (${d.fileName})`;
+      } else {
+        btnDownload.style.display = 'none';
       }
     }
 
@@ -1968,16 +2025,154 @@
     });
   }
 
+  // Render Network Sharing URLs Modal
+  async function renderShareModalUrls() {
+    const networkUrlsList = document.getElementById('networkUrlsList');
+    if (!networkUrlsList) return;
+
+    networkUrlsList.innerHTML = '<div style="color: var(--text-muted); font-size: 0.85rem; padding: 0.5rem 0;">กำลังตรวจสอบที่อยู่ IP เครือข่าย...</div>';
+
+    let serverInfo = null;
+    if (window.DashboardStorage && window.DashboardStorage.getServerInfo) {
+      serverInfo = await window.DashboardStorage.getServerInfo();
+    }
+
+    const currentOrigin = window.location.origin;
+    const currentPath = window.location.pathname || '/index.html';
+    const currentFullUrl = currentOrigin + (currentPath.endsWith('/') ? currentPath + 'index.html' : currentPath);
+
+    let itemsHtml = '';
+
+    // 1. Current Browser URL
+    itemsHtml += `
+      <div class="network-url-item">
+        <div class="network-url-info">
+          <span class="network-url-label">สำหรับเครื่องนี้ (Local Machine):</span>
+          <span class="network-url-text">${currentFullUrl}</span>
+        </div>
+        <button type="button" class="btn-copy-url" data-url="${currentFullUrl}">
+          <i data-lucide="copy" style="width: 14px; height: 14px;"></i> คัดลอก
+        </button>
+      </div>
+    `;
+
+    // 2. Server LAN IPs (for colleagues on other computers)
+    if (serverInfo && serverInfo.networkUrls && serverInfo.networkUrls.length > 0) {
+      serverInfo.networkUrls.forEach((netUrl, idx) => {
+        if (netUrl !== currentFullUrl) {
+          itemsHtml += `
+            <div class="network-url-item">
+              <div class="network-url-info">
+                <span class="network-url-label">สำหรับเครื่องอื่นในวง LAN / Wi-Fi สำนักงาน (เครื่องเพื่อนร่วมงาน ${idx + 1}):</span>
+                <span class="network-url-text">${netUrl}</span>
+              </div>
+              <button type="button" class="btn-copy-url" data-url="${netUrl}">
+                <i data-lucide="copy" style="width: 14px; height: 14px;"></i> คัดลอก
+              </button>
+            </div>
+          `;
+        }
+      });
+    }
+
+    networkUrlsList.innerHTML = itemsHtml;
+    lucide.createIcons({ root: networkUrlsList });
+
+    // Attach copy button handlers
+    networkUrlsList.querySelectorAll('.btn-copy-url').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const urlToCopy = btn.getAttribute('data-url');
+        try {
+          await navigator.clipboard.writeText(urlToCopy);
+          btn.innerHTML = `<i data-lucide="check" style="width: 14px; height: 14px; color: var(--color-success);"></i> คัดลอกแล้ว!`;
+          lucide.createIcons({ root: btn });
+          showToast('คัดลอกลิงก์ไปยังคลิปบอร์ดแล้ว ส่งให้เพื่อนร่วมงานได้ทันที', 'success');
+          setTimeout(() => {
+            btn.innerHTML = `<i data-lucide="copy" style="width: 14px; height: 14px;"></i> คัดลอก`;
+            lucide.createIcons({ root: btn });
+          }, 3000);
+        } catch (e) {
+          prompt('คัดลอกลิงก์นี้เพื่อส่งให้เพื่อนร่วมงาน:', urlToCopy);
+        }
+      });
+    });
+  }
+
+  // Network Sync Watcher (Background polling across multiple machines)
+  function initNetworkSyncWatcher() {
+    if (!window.location.protocol.startsWith('http')) return;
+
+    async function checkUpdate() {
+      if (!window.DashboardStorage || !window.DashboardStorage.checkServerStatus) return;
+      const currentSavedAt = appState.data ? appState.data.savedAt : null;
+      const update = await window.DashboardStorage.checkServerStatus(currentSavedAt);
+
+      if (update && update.hasCustomData) {
+        const banner = document.getElementById('networkUpdateBanner');
+        const text = document.getElementById('networkUpdateText');
+        if (banner && text) {
+          text.textContent = `มีการอัปเดตข้อมูลใหม่จากเครื่องอื่นในเครือข่าย: "${update.fileName || 'ไฟล์ล่าสุด'}" (${update.lastUpdated || ''})`;
+          banner.style.display = 'flex';
+          lucide.createIcons({ root: banner });
+        }
+      }
+    }
+
+    // Check periodically every 20 seconds
+    setInterval(checkUpdate, 20000);
+
+    // Also check when tab gains focus
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'visible') {
+        checkUpdate();
+      }
+    });
+
+    // Handle banner reload button
+    const btnReload = document.getElementById('btnReloadFromNetwork');
+    if (btnReload) {
+      btnReload.addEventListener('click', async () => {
+        btnReload.disabled = true;
+        btnReload.innerHTML = `<i data-lucide="refresh-cw" style="width: 14px; height: 14px;"></i> กำลังอัปเดต...`;
+        try {
+          const freshData = await window.DashboardStorage.loadLatestData();
+          if (freshData) {
+            ensureGanttBaseline(freshData);
+            appState.data = freshData;
+            renderAll();
+            document.getElementById('networkUpdateBanner').style.display = 'none';
+            showToast(`อัปเดตข้อมูลล่าสุด "${freshData.fileName}" จากเซิร์ฟเวอร์ส่วนกลางเรียบร้อยแล้ว`, 'success');
+          }
+        } catch (err) {
+          showToast('เกิดข้อผิดพลาดในการโหลดข้อมูลใหม่จากเซิร์ฟเวอร์', 'error');
+        } finally {
+          btnReload.disabled = false;
+          btnReload.innerHTML = `<i data-lucide="refresh-cw" style="width: 14px; height: 14px;"></i> อัปเดตหน้าจอทันที`;
+          lucide.createIcons({ root: btnReload });
+        }
+      });
+    }
+
+    // Handle banner dismiss button
+    const btnDismiss = document.getElementById('btnDismissNetworkBanner');
+    if (btnDismiss) {
+      btnDismiss.addEventListener('click', () => {
+        document.getElementById('networkUpdateBanner').style.display = 'none';
+      });
+    }
+  }
+
   // App Initialization
   document.addEventListener('DOMContentLoaded', async () => {
     initTheme();
     initTabs();
     initDropzone();
+    initNetworkSyncWatcher();
 
     let initialData = null;
     let isFromStorage = false;
 
-    // 1. Check if there is saved uploaded data in persistent storage
+    // 1. Check if there is saved uploaded data in persistent storage (Server or Local)
     if (window.DashboardStorage) {
       try {
         const savedData = await window.DashboardStorage.loadLatestData();
@@ -1997,14 +2192,18 @@
     }
 
     if (initialData) {
-      // Ensure Gantt timeline arrays are populated (even if previously cached from an upload with stripped styles)
+      // Ensure Gantt timeline arrays are populated
       ensureGanttBaseline(initialData);
 
       appState.data = initialData;
       renderAll();
 
       if (isFromStorage) {
-        showToast(`โหลดสถานะตามไฟล์ล่าสุด: "${initialData.fileName}" เรียบร้อยแล้ว`, 'info');
+        if (initialData._storageSource === 'server') {
+          showToast(`เชื่อมต่อเซิร์ฟเวอร์ส่วนกลาง: โหลดข้อมูลล่าสุด "${initialData.fileName}" เรียบร้อยแล้ว`, 'info');
+        } else {
+          showToast(`โหลดสถานะตามไฟล์ล่าสุด: "${initialData.fileName}" เรียบร้อยแล้ว`, 'info');
+        }
       }
     }
   });

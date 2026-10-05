@@ -40,9 +40,19 @@
         </div>
 
         <input type="file" id="excelFileInput" class="file-input-hidden" accept=".xlsx, .xls">
-        <button type="button" class="btn-primary" id="btnUploadExcel" title="อัปโหลดไฟล์ Excel">
+        <button type="button" class="btn-primary" id="btnUploadExcel" title="อัปโหลดไฟล์ Excel เพื่ออัปเดตข้อมูล">
           <i data-lucide="upload-cloud" style="width: 15px; height: 15px;"></i>
           อัปโหลด Excel
+        </button>
+
+        <button type="button" class="btn-secondary" id="btnShareNetwork" title="ดูที่อยู่ IP และลิงก์สำหรับเปิดใช้งานบนเครื่องอื่นในเครือข่าย">
+          <i data-lucide="share-2" style="width: 15px; height: 15px;"></i>
+          แชร์ในเครือข่าย
+        </button>
+
+        <button type="button" class="btn-secondary" id="btnDownloadExcel" style="display: none;" title="ดาวน์โหลดไฟล์ Excel ต้นฉบับล่าสุด">
+          <i data-lucide="download" style="width: 15px; height: 15px;"></i>
+          ดาวน์โหลด Excel
         </button>
 
         <button type="button" class="btn-secondary" id="btnResetDefault" title="รีเซ็ตกลับเป็นข้อมูลตัวอย่างต้นฉบับ">
@@ -60,6 +70,23 @@
         </button>
       </div>
     </header>
+
+    <!-- Real-time Network Update Alert Banner -->
+    <div id="networkUpdateBanner" class="network-sync-banner" style="display: none;">
+      <div class="network-sync-banner-content">
+        <i data-lucide="bell-ring" style="width: 20px; height: 20px;"></i>
+        <span id="networkUpdateText">มีการอัปเดตข้อมูลใหม่จากเครื่องอื่นในเครือข่าย!</span>
+      </div>
+      <div class="network-sync-banner-actions">
+        <button type="button" class="btn-banner-action" id="btnReloadFromNetwork">
+          <i data-lucide="refresh-cw" style="width: 14px; height: 14px;"></i>
+          อัปเดตหน้าจอทันที
+        </button>
+        <button type="button" class="btn-banner-dismiss" id="btnDismissNetworkBanner" title="ปิดการแจ้งเตือน">
+          <i data-lucide="x" style="width: 16px; height: 16px;"></i>
+        </button>
+      </div>
+    </div>
 
     <!-- KPI Summary Grid -->
     <section class="kpi-grid">
@@ -703,6 +730,41 @@
         <!-- Station Cards Container -->
         <div class="station-cards-grid" id="stationCardsContainer">
           <!-- Populated dynamically -->
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Network Share Modal -->
+  <div class="modal-overlay" id="networkShareModal">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <div class="modal-title-wrap">
+          <h3 id="networkShareModalTitle">
+            <i data-lucide="network" style="width: 20px; height: 20px; color: var(--pea-purple);"></i>
+            เปิดใช้งานร่วมกันหลายเครื่อง (Network Sharing)
+          </h3>
+          <span class="modal-subtitle">ข้อมูลถูกบันทึกที่เซิร์ฟเวอร์ส่วนกลาง เมื่อมีผู้อัปโหลด ทุกเครื่องในเครือข่ายจะเห็นผลทันที</span>
+        </div>
+        <button type="button" class="modal-close-btn" id="btnCloseShareModal" title="ปิดหน้าต่าง">
+          <i data-lucide="x" style="width: 18px; height: 18px;"></i>
+        </button>
+      </div>
+      <div class="modal-body">
+        <p style="font-size: 0.88rem; color: var(--text-secondary); margin-bottom: 0.75rem;">
+          เพื่อนร่วมงานในวงแลน / Wi-Fi สำนักงาน (PEA Intranet) สามารถเปิดใช้งานแดชบอร์ดนี้ได้ผ่านลิงก์ด้านล่าง:
+        </p>
+
+        <div class="network-urls-list" id="networkUrlsList">
+          <!-- Populated dynamically with current IP and port -->
+        </div>
+
+        <div class="share-modal-hint">
+          <strong style="color: var(--text-primary); display: flex; align-items: center; gap: 0.4rem; margin-bottom: 0.35rem;">
+            <i data-lucide="check-circle" style="width: 16px; height: 16px; color: var(--color-success);"></i>
+            ระบบจำไฟล์และอัปเดตอัตโนมัติ:
+          </strong>
+          เมื่อมีการอัปโหลดไฟล์ Excel จากเครื่องใดก็ตาม ข้อมูลจะถูกบันทึกลงเซิร์ฟเวอร์ส่วนกลางทันที เครื่องอื่นที่เปิดอยู่จะมีแจ้งเตือนและสามารถอัปเดตข้อมูลได้ตรงกันโดยไม่ต้องส่งไฟล์ต่อกันทางไลน์หรืออีเมล
         </div>
       </div>
     </div>
