@@ -1068,9 +1068,18 @@
 
       tableBody.innerHTML = filtered.map(item => {
         const isComplete = item.totalProgress >= 100;
-        const monthlyCols = Object.entries(item.monthly2569)
-          .filter(([m, v]) => v > 0)
-          .map(([m, v]) => `<span style="display:inline-block; margin-right:4px; font-size:0.75rem; background:var(--bg-secondary); padding:1px 4px; border-radius:4px;">${m}: <b>${v}%</b></span>`)
+        const thaiMonthsOrder = ['ม.ค.', 'ก.พ.', 'มี.ค.', 'เม.ย.', 'พ.ค.', 'มิ.ย.', 'ก.ค.', 'ส.ค.', 'ก.ย.', 'ต.ค.', 'พ.ย.', 'ธ.ค.'];
+        const monthlyCols = Object.entries(item.monthly2569 || {})
+          .filter(([m, v]) => Number(v) > 0)
+          .sort(([a], [b]) => {
+            const idxA = thaiMonthsOrder.indexOf(a);
+            const idxB = thaiMonthsOrder.indexOf(b);
+            if (idxA !== -1 && idxB !== -1) return idxA - idxB;
+            if (idxA !== -1) return -1;
+            if (idxB !== -1) return 1;
+            return a.localeCompare(b, 'th');
+          })
+          .map(([m, v]) => `<span style="display:inline-block; margin:2px 4px 2px 0; font-size:0.75rem; background:var(--bg-secondary); padding:1px 4px; border-radius:4px;">${m}: <b>${v}%</b></span>`)
           .join('');
 
         return `
