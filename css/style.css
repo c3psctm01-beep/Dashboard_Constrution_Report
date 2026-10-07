@@ -1179,6 +1179,79 @@ body.print-all-topics .tab-content-panel {
   width: 100%;
 }
 
+.chart-header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
+}
+
+.chart-header-row .chart-title {
+  margin-bottom: 0;
+}
+
+.chart-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+}
+
+.chart-toggle-btn {
+  padding: 0.3rem 0.65rem;
+  font-size: 0.78rem;
+  font-weight: 500;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-subtle);
+  background: var(--bg-secondary);
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-family: var(--font-family);
+}
+
+.chart-toggle-btn:hover {
+  background: var(--border-subtle);
+  color: var(--text-primary);
+}
+
+.chart-toggle-btn.active {
+  background: var(--pea-purple);
+  color: #ffffff;
+  border-color: var(--pea-purple);
+  box-shadow: 0 2px 4px rgba(107, 33, 168, 0.25);
+}
+
+.chart-badge-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.25rem 0.6rem;
+  border-radius: var(--radius-full);
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+.chart-badge-pill.success {
+  background: var(--color-success-bg);
+  color: var(--color-success);
+  border: 1px solid var(--color-success-border);
+}
+.chart-badge-pill.purple {
+  background: var(--pea-purple-glow);
+  color: var(--pea-purple);
+  border: 1px solid rgba(147, 51, 234, 0.25);
+}
+.chart-badge-pill.warning {
+  background: var(--color-warning-bg);
+  color: var(--color-warning);
+  border: 1px solid var(--color-warning-border);
+}
+
 /* Detail Modal */
 .modal-overlay {
   position: fixed;
@@ -2301,6 +2374,14 @@ body.print-all-topics .tab-content-panel {
   }
 
   /* Charts in Print */
+  .charts-grid-2 {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    gap: 8px !important;
+    margin-bottom: 8px !important;
+    page-break-inside: avoid !important;
+  }
+
   .chart-canvas-wrapper {
     min-height: auto !important;
     height: 180px !important;

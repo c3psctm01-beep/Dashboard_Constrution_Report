@@ -7,7 +7,7 @@
   <meta name="description" content="ระบบแดชบอร์ดติดตามสถานะงานก่อสร้างสายส่ง 115 kV สถานีไฟฟ้า รายละเอียดการเบิกจ่าย WBS และสถานะการขออนุญาต สำหรับ กฟภ. (PEA)">
   
   <!-- Stylesheets -->
-  <link rel="stylesheet" href="css/style.css?v=4">
+  <link rel="stylesheet" href="css/style.css?v=5">
   
   <!-- Vendor Scripts -->
   <script src="js/vendor/xlsx.full.min.js"></script>
@@ -185,14 +185,37 @@
       <div class="print-only print-section-banner">
         <h2>ส่วนที่ 1: ภาพรวมความก้าวหน้าโครงการ (Executive Summary & Overview)</h2>
       </div>
-      <!-- Chart 1: Progress comparison -->
-      <div class="chart-card" style="margin-bottom: 1.5rem;">
-        <div class="chart-title">
-          <i data-lucide="bar-chart-3" style="width: 18px; height: 18px; color: var(--pea-purple);"></i>
-          เปรียบเทียบผลงานความก้าวหน้าโครงการ (%)
+      <!-- Overview Visual Charts: Progress Bar + Status Doughnut -->
+      <div class="charts-grid-2" style="margin-bottom: 1.5rem;">
+        <!-- Chart 1A: Progress comparison with category filter -->
+        <div class="chart-card">
+          <div class="chart-header-row">
+            <div class="chart-title">
+              <i data-lucide="bar-chart-3" style="width: 18px; height: 18px; color: var(--pea-purple);"></i>
+              เปรียบเทียบผลงานความก้าวหน้าโครงการ (%)
+            </div>
+            <div class="chart-actions">
+              <button type="button" class="chart-toggle-btn active" id="btnFilterOverviewAll">ทั้งหมด</button>
+              <button type="button" class="chart-toggle-btn" id="btnFilterOverviewTrans">สายส่ง 115 kV</button>
+              <button type="button" class="chart-toggle-btn" id="btnFilterOverviewSub">สถานีไฟฟ้า</button>
+            </div>
+          </div>
+          <div class="chart-canvas-wrapper" style="min-height: 380px;">
+            <canvas id="overviewProgressChart"></canvas>
+          </div>
         </div>
-        <div class="chart-canvas-wrapper" style="min-height: 520px;">
-          <canvas id="overviewProgressChart"></canvas>
+
+        <!-- Chart 1B: Status Distribution Doughnut -->
+        <div class="chart-card">
+          <div class="chart-header-row">
+            <div class="chart-title">
+              <i data-lucide="pie-chart" style="width: 18px; height: 18px; color: var(--color-success);"></i>
+              สัดส่วนสถานะโครงการภาพรวม
+            </div>
+          </div>
+          <div class="chart-canvas-wrapper" style="min-height: 380px;">
+            <canvas id="overviewStatusDonutChart"></canvas>
+          </div>
         </div>
       </div>
 
@@ -267,14 +290,36 @@
         </div>
       </div>
 
-      <!-- Transmission Monthly Progress Trend Chart -->
-      <div class="chart-card">
-        <div class="chart-title">
-          <i data-lucide="line-chart" style="width: 18px; height: 18px; color: var(--pea-purple);"></i>
-          แนวโน้มผลงานสายส่งรายเดือน ประจำปี 2569 (ม.ค. - ธ.ค.)
+      <!-- Transmission Charts Grid -->
+      <div class="charts-grid-2" style="margin-top: 1.5rem;">
+        <!-- Chart 2A: Circuit-Km vs Cumulative Progress -->
+        <div class="chart-card">
+          <div class="chart-header-row">
+            <div class="chart-title">
+              <i data-lucide="git-commit" style="width: 18px; height: 18px; color: var(--pea-purple);"></i>
+              เปรียบเทียบระยะทาง (วงจร-กม.) และผลงานสะสม (%)
+            </div>
+          </div>
+          <div class="chart-canvas-wrapper" style="min-height: 290px;">
+            <canvas id="transKmProgressChart"></canvas>
+          </div>
         </div>
-        <div class="chart-canvas-wrapper" style="min-height: 280px;">
-          <canvas id="transMonthlyChart"></canvas>
+
+        <!-- Chart 2B: Transmission Monthly Progress Trend Chart -->
+        <div class="chart-card">
+          <div class="chart-header-row">
+            <div class="chart-title">
+              <i data-lucide="line-chart" style="width: 18px; height: 18px; color: var(--color-info);"></i>
+              แนวโน้มผลงานสายส่งรายเดือน ประจำปี 2569
+            </div>
+            <div class="chart-actions">
+              <button type="button" class="chart-toggle-btn active" id="btnTransModeCumulative">ผลงานสะสม (%)</button>
+              <button type="button" class="chart-toggle-btn" id="btnTransModeMonthly">ผลงานรายเดือน (%)</button>
+            </div>
+          </div>
+          <div class="chart-canvas-wrapper" style="min-height: 290px;">
+            <canvas id="transMonthlyChart"></canvas>
+          </div>
         </div>
       </div>
     </section>
@@ -284,8 +329,38 @@
       <div class="print-only print-section-banner">
         <h2>ส่วนที่ 3: รายละเอียดสถานะงานก่อสร้างสถานีไฟฟ้า (Substations)</h2>
       </div>
-      <!-- Macro Substation Overview Summary -->
-      <div class="dashboard-card">
+
+      <!-- Substation Visual Summary Charts: 30 Stations Donut & Programs Stacked Bar -->
+      <div class="charts-grid-2" style="margin-bottom: 1.5rem;">
+        <!-- Chart 3A: 30 Stations Donut Chart -->
+        <div class="chart-card">
+          <div class="chart-header-row">
+            <div class="chart-title">
+              <i data-lucide="pie-chart" style="width: 18px; height: 18px; color: var(--pea-purple);"></i>
+              สัดส่วนสถานะสถานีไฟฟ้าทั้งหมด (รวม 30 สถานี)
+            </div>
+          </div>
+          <div class="chart-canvas-wrapper" style="min-height: 290px;">
+            <canvas id="subSummaryDonutChart"></canvas>
+          </div>
+        </div>
+
+        <!-- Chart 3B: Programs Stacked Bar -->
+        <div class="chart-card">
+          <div class="chart-header-row">
+            <div class="chart-title">
+              <i data-lucide="bar-chart-2" style="width: 18px; height: 18px; color: var(--color-info);"></i>
+              สถานะงานแยกตามแผนงานโครงการ
+            </div>
+          </div>
+          <div class="chart-canvas-wrapper" style="min-height: 290px;">
+            <canvas id="subProgramsBarChart"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <!-- Macro Substation Overview Summary Table -->
+      <div class="dashboard-card" style="margin-bottom: 1.5rem;">
         <div class="card-header-row">
           <div class="card-title-group">
             <i data-lucide="layout-grid" style="width: 20px; height: 20px; color: var(--pea-purple);"></i>
@@ -317,6 +392,19 @@
               <!-- Dynamically populated totals -->
             </tfoot>
           </table>
+        </div>
+      </div>
+
+      <!-- Chart 3C: Active Substations Progress Comparison -->
+      <div class="chart-card" style="margin-bottom: 1.5rem;">
+        <div class="chart-header-row">
+          <div class="chart-title">
+            <i data-lucide="activity" style="width: 18px; height: 18px; color: var(--pea-purple);"></i>
+            ผลงานความก้าวหน้าสถานีไฟฟ้าที่อยู่ระหว่างดำเนินการ (%)
+          </div>
+        </div>
+        <div class="chart-canvas-wrapper" style="min-height: 240px;">
+          <canvas id="subActiveProgressChart"></canvas>
         </div>
       </div>
 
@@ -411,6 +499,35 @@
         </div>
       </div>
 
+      <!-- Disbursement Visual Summary Charts -->
+      <div class="charts-grid-2" style="margin-top: 1.5rem; margin-bottom: 1.5rem;">
+        <!-- Chart 4A: Stacked Stations Budget -->
+        <div class="chart-card">
+          <div class="chart-header-row">
+            <div class="chart-title">
+              <i data-lucide="bar-chart-3" style="width: 18px; height: 18px; color: var(--pea-purple);"></i>
+              สัดส่วนงบประมาณและเบิกจ่ายแยกตามสถานีไฟฟ้า
+            </div>
+          </div>
+          <div class="chart-canvas-wrapper" style="min-height: 280px;">
+            <canvas id="disbStationsStackedChart"></canvas>
+          </div>
+        </div>
+
+        <!-- Chart 4B: Overall Disbursement Ratio Donut -->
+        <div class="chart-card">
+          <div class="chart-header-row">
+            <div class="chart-title">
+              <i data-lucide="pie-chart" style="width: 18px; height: 18px; color: var(--color-success);"></i>
+              สัดส่วนภาพรวมการเบิกจ่ายงบประมาณ
+            </div>
+          </div>
+          <div class="chart-canvas-wrapper" style="min-height: 280px;">
+            <canvas id="disbOverviewDonutChart"></canvas>
+          </div>
+        </div>
+      </div>
+
       <!-- Substation Disbursement Summary Table -->
       <div class="dashboard-card">
         <div class="card-header-row">
@@ -443,9 +560,15 @@
 
       <!-- Budget Comparison Chart -->
       <div class="chart-card">
-        <div class="chart-title">
-          <i data-lucide="bar-chart-2" style="width: 18px; height: 18px; color: var(--color-success);"></i>
-          เปรียบเทียบงบประมาณ, เบิกจ่ายจริง และภาระผูกพัน รายหมวดหมู่ WBS
+        <div class="chart-header-row">
+          <div class="chart-title">
+            <i data-lucide="bar-chart-2" style="width: 18px; height: 18px; color: var(--color-success);"></i>
+            เปรียบเทียบงบประมาณ, เบิกจ่ายจริง และภาระผูกพัน รายหมวดหมู่ WBS
+          </div>
+          <div class="chart-actions">
+            <button type="button" class="chart-toggle-btn active" id="btnDisbUnitMB">หน่วย: ล้านบาท (MB)</button>
+            <button type="button" class="chart-toggle-btn" id="btnDisbUnitTHB">หน่วย: บาท (THB)</button>
+          </div>
         </div>
         <div class="chart-canvas-wrapper" style="min-height: 280px;">
           <canvas id="disbDetailChart"></canvas>
@@ -494,6 +617,36 @@
       <div class="print-only print-section-banner">
         <h2>ส่วนที่ 5: สถานะการขออนุญาตเข้าทำประโยชน์ในพื้นที่ (Permits Tracking)</h2>
       </div>
+
+      <!-- Permits Visual Summary Charts -->
+      <div class="charts-grid-2" style="margin-bottom: 1.5rem;">
+        <!-- Chart 5A: Permit Status Donut -->
+        <div class="chart-card">
+          <div class="chart-header-row">
+            <div class="chart-title">
+              <i data-lucide="pie-chart" style="width: 18px; height: 18px; color: var(--color-warning);"></i>
+              สัดส่วนสถานะการขออนุญาต (14 งาน)
+            </div>
+          </div>
+          <div class="chart-canvas-wrapper" style="min-height: 290px;">
+            <canvas id="permitsStatusDonutChart"></canvas>
+          </div>
+        </div>
+
+        <!-- Chart 5B: Permits by Authority Stacked Bar -->
+        <div class="chart-card">
+          <div class="chart-header-row">
+            <div class="chart-title">
+              <i data-lucide="building" style="width: 18px; height: 18px; color: var(--pea-purple);"></i>
+              การขออนุญาตแยกตามหน่วยงานเจ้าของพื้นที่
+            </div>
+          </div>
+          <div class="chart-canvas-wrapper" style="min-height: 290px;">
+            <canvas id="permitsAuthorityBarChart"></canvas>
+          </div>
+        </div>
+      </div>
+
       <div class="dashboard-card">
         <div class="card-header-row">
           <div class="card-title-group">
@@ -920,10 +1073,10 @@
   <!-- Application Scripts -->
   <script src="js/vendor/supabase.min.js"></script>
   <script src="js/supabaseConfig.js"></script>
-  <script src="js/storage.js?v=3"></script>
-  <script src="js/validator.js?v=3"></script>
-  <script src="js/parser.js?v=3"></script>
-  <script src="js/defaultData.js?v=3"></script>
-  <script src="js/app.js?v=3"></script>
+  <script src="js/storage.js?v=5"></script>
+  <script src="js/validator.js?v=5"></script>
+  <script src="js/parser.js?v=5"></script>
+  <script src="js/defaultData.js?v=5"></script>
+  <script src="js/app.js?v=5"></script>
 </body>
 </html>

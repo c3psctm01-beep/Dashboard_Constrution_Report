@@ -17,14 +17,64 @@
     ganttSelectedSheet: (savedPrefs && savedPrefs.ganttSelectedSheet) ? savedPrefs.ganttSelectedSheet : '',
     ganttViewMode: 'consolidated',
     permitFilter: (savedPrefs && savedPrefs.permitFilter) ? savedPrefs.permitFilter : 'all',
+    overviewChartFilter: 'all',
+    transChartMode: 'cumulative',
+    disbUnit: 'mb',
     charts: {
       overviewProgress: null,
+      overviewStatusDonut: null,
       overviewBudget: null,
       transMonthly: null,
-      disbDetail: null
+      transKmProgress: null,
+      subSummaryDonut: null,
+      subProgramsBar: null,
+      subActiveProgress: null,
+      disbStationsStacked: null,
+      disbOverviewDonut: null,
+      disbDetail: null,
+      permitsStatusDonut: null,
+      permitsAuthorityBar: null
     }
   };
   window.appState = appState;
+
+  // Chart.js Donut Center Text Plugin
+  const donutCenterPlugin = {
+    id: 'donutCenterText',
+    beforeDraw(chart) {
+      if (chart.config.type !== 'doughnut') return;
+      const centerConfig = chart.config.options?.plugins?.donutCenter;
+      if (!centerConfig || !centerConfig.text) return;
+      const { ctx, chartArea } = chart;
+      if (!chartArea) return;
+      const { top, height, left, width } = chartArea;
+      ctx.save();
+      const isDark = appState.currentTheme === 'dark';
+      const mainColor = isDark ? '#f8fafc' : '#0f172a';
+      const subColor = isDark ? '#94a3b8' : '#64748b';
+
+      const centerX = left + width / 2;
+      const centerY = top + height / 2;
+
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+
+      ctx.font = 'bold 1.25rem Prompt, sans-serif';
+      ctx.fillStyle = mainColor;
+      const textY = centerConfig.subText ? centerY - 9 : centerY;
+      ctx.fillText(centerConfig.text, centerX, textY);
+
+      if (centerConfig.subText) {
+        ctx.font = '500 0.74rem Prompt, sans-serif';
+        ctx.fillStyle = subColor;
+        ctx.fillText(centerConfig.subText, centerX, centerY + 13);
+      }
+      ctx.restore();
+    }
+  };
+  if (window.Chart) {
+    Chart.register(donutCenterPlugin);
+  }
 
   // Formatters
   function formatNumber(num) {
@@ -796,36 +846,65 @@
     const textColor = isDark ? '#cbd5e1' : '#475569';
     const gridColor = isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)';
 
-    // Chart 1: Progress Comparison
+    // Category Filter event listeners
+    const btnAll = document.getElementById('btnFilterOverviewAll');
+    const btnTrans = document.getElementById('btnFilterOverviewTrans');
+    const btnSub = document.getElementById('btnFilterOverviewSub');
+    if (btnAll && !btnAll.hasAttribute('data-bound')) {
+      [btnAll, btnTrans, btnSub].forEach(btn => {
+        if (!btn) return;
+        btn.setAttribute('data-bound', 'true');
+        btn.addEventListener('click', () => {
+          [btnAll, btnTrans, btnSub].forEach(b => b && b.classList.remove('active'));
+          btn.classList.add('active');
+          if (btn === btnAll) appState.overviewChartFilter = 'all';
+          else if (btn === btnTrans) appState.overviewChartFilter = 'trans';
+          else if (btn === btnSub) appState.overviewChartFilter = 'sub';
+          renderOverviewCharts();
+        });
+      });
+    }
+
+    // Chart 1A: Progress Comparison Bar Chart
     const ctxProg = document.getElementById('overviewProgressChart');
     if (ctxProg) {
       if (appState.charts.overviewProgress) appState.charts.overviewProgress.destroy();
 
-      const labels = [];
-      const values = [];
+      const filter = appState.overviewChartFilter || 'all';
+      const items = [];
 
-      function formatBarLabel(str) {
-        if (!str || str.length <= 38) return str;
-        const mid = Math.floor(str.length / 2);
-        let splitIdx = str.indexOf(' - ', mid - 16);
-        if (splitIdx !== -1 && splitIdx < mid + 16) {
-          return [str.substring(0, splitIdx), str.substring(splitIdx + 3)];
-        }
-        splitIdx = str.indexOf(')-', mid - 16);
-        if (splitIdx !== -1 && splitIdx < mid + 16) {
-          return [str.substring(0, splitIdx + 1), str.substring(splitIdx + 2)];
-        }
-        return str;
+      function shortLabel(str) {
+        if (!str) return '';
+        return str.replace('สถานีไฟฟ้า', 'สฟ.')
+                  .replace('สถานีไฟฟ้าแรงสูง', 'สฟ.แรงสูง')
+                  .replace(' (ชั่วคราว)', '(ช)')
+                  .replace(' (Renovate)', ' (Renovate)');
       }
 
-      d.transmissionLines.forEach(item => {
-        labels.push(formatBarLabel(item.name));
-        values.push(item.totalProgress);
-      });
-      d.substationsDetail.forEach(item => {
-        labels.push(formatBarLabel(item.name));
-        values.push(item.progress);
-      });
+      if (filter === 'all' || filter === 'trans') {
+        d.transmissionLines.forEach(item => {
+          items.push({
+            name: shortLabel(item.name),
+            progress: item.totalProgress,
+            category: 'สายส่ง 115 kV',
+            color: item.totalProgress >= 100 ? '#10b981' : '#8b5cf6'
+          });
+        });
+      }
+      if (filter === 'all' || filter === 'sub') {
+        d.substationsDetail.forEach(item => {
+          items.push({
+            name: shortLabel(item.name),
+            progress: item.progress,
+            category: 'สถานีไฟฟ้า',
+            color: item.progress >= 100 ? '#10b981' : '#0ea5e9'
+          });
+        });
+      }
+
+      const labels = items.map(i => i.name);
+      const values = items.map(i => i.progress);
+      const colors = items.map(i => i.color);
 
       appState.charts.overviewProgress = new Chart(ctxProg, {
         type: 'bar',
@@ -834,8 +913,9 @@
           datasets: [{
             label: 'ผลงานความก้าวหน้า (%)',
             data: values,
-            backgroundColor: values.map(v => v >= 100 ? '#10b981' : v > 50 ? '#8b5cf6' : '#f59e0b'),
-            borderRadius: 6
+            backgroundColor: colors,
+            borderRadius: 6,
+            barThickness: items.length > 6 ? 16 : 24
           }]
         },
         options: {
@@ -843,45 +923,105 @@
           maintainAspectRatio: false,
           indexAxis: 'y',
           layout: {
-            padding: {
-              left: 10,
-              right: 15,
-              top: 8,
-              bottom: 8
-            }
+            padding: { left: 5, right: 15, top: 4, bottom: 4 }
           },
           plugins: {
             legend: { display: false },
             tooltip: {
               callbacks: {
-                title: function(items) {
-                  if (!items || !items[0]) return '';
-                  const rawLabel = items[0].label;
-                  return Array.isArray(rawLabel) ? rawLabel.join(' - ') : rawLabel;
-                },
-                label: function(context) {
-                  return ` ผลงานความก้าวหน้า: ${context.parsed.x}%`;
+                label: function(c) {
+                  const it = items[c.dataIndex];
+                  return ` [${it.category}] ความก้าวหน้า: ${c.raw}%`;
                 }
               }
             }
           },
           scales: {
             x: {
+              min: 0,
               max: 100,
               ticks: {
                 color: textColor,
-                callback: function(val) { return val + '%'; }
+                callback: function(v) { return v + '%'; }
               },
               grid: { color: gridColor }
             },
             y: {
               ticks: {
                 color: textColor,
-                font: { family: 'Prompt', size: 12 },
-                autoSkip: false,
-                padding: 10
+                font: { family: 'Prompt', size: 11 },
+                autoSkip: false
               },
-              grid: { color: gridColor }
+              grid: { display: false }
+            }
+          }
+        }
+      });
+    }
+
+    // Chart 1B: Status Distribution Doughnut Chart
+    const ctxDonut = document.getElementById('overviewStatusDonutChart');
+    if (ctxDonut) {
+      if (appState.charts.overviewStatusDonut) appState.charts.overviewStatusDonut.destroy();
+
+      const allItems = [
+        ...d.transmissionLines.map(t => ({ p: t.totalProgress })),
+        ...d.substationsDetail.map(s => ({ p: s.progress }))
+      ];
+
+      const completedCount = allItems.filter(i => i.p >= 100).length;
+      const inProgressCount = allItems.filter(i => i.p >= 50 && i.p < 100).length;
+      const earlyCount = allItems.filter(i => i.p < 50).length;
+      const totalCount = allItems.length;
+
+      const avgProgress = totalCount > 0
+        ? (allItems.reduce((sum, cur) => sum + cur.p, 0) / totalCount).toFixed(1)
+        : 0;
+
+      appState.charts.overviewStatusDonut = new Chart(ctxDonut, {
+        type: 'doughnut',
+        data: {
+          labels: [
+            `ก่อสร้างแล้วเสร็จ (100%): ${completedCount} งาน`,
+            `ความก้าวหน้า 50 - 99%: ${inProgressCount} งาน`,
+            `ความก้าวหน้า < 50%: ${earlyCount} งาน`
+          ],
+          datasets: [{
+            data: [completedCount, inProgressCount, earlyCount],
+            backgroundColor: ['#10b981', '#8b5cf6', '#f59e0b'],
+            borderWidth: 2,
+            borderColor: isDark ? '#141e33' : '#ffffff',
+            hoverOffset: 6
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          cutout: '70%',
+          plugins: {
+            legend: {
+              position: 'bottom',
+              labels: {
+                color: textColor,
+                font: { family: 'Prompt', size: 11 },
+                padding: 12,
+                boxWidth: 12,
+                boxHeight: 12,
+                usePointStyle: true
+              }
+            },
+            tooltip: {
+              callbacks: {
+                label: function(c) {
+                  const val = c.raw;
+                  const pct = totalCount > 0 ? ((val / totalCount) * 100).toFixed(1) : 0;
+                  return ` จำนวน ${val} งาน (${pct}%)`;
+                }
+              }
+            },
+            donutCenter: {
+              text: `${avgProgress}%`,
+              subText: `เฉลี่ยรวม (${totalCount} งาน)`
             }
           }
         }
@@ -928,7 +1068,6 @@
 
       tableBody.innerHTML = filtered.map(item => {
         const isComplete = item.totalProgress >= 100;
-        // monthly preview
         const monthlyCols = Object.entries(item.monthly2569)
           .filter(([m, v]) => v > 0)
           .map(([m, v]) => `<span style="display:inline-block; margin-right:4px; font-size:0.75rem; background:var(--bg-secondary); padding:1px 4px; border-radius:4px;">${m}: <b>${v}%</b></span>`)
@@ -958,57 +1097,210 @@
     }
 
     filterTransTable();
-    renderTransmissionMonthlyChart();
+    renderTransmissionCharts();
   }
 
-  function renderTransmissionMonthlyChart() {
+  function renderTransmissionCharts() {
     const d = appState.data;
-    const ctx = document.getElementById('transMonthlyChart');
-    if (!ctx || !d || !d.transmissionLines || d.transmissionLines.length === 0) return;
-    if (appState.charts.transMonthly) appState.charts.transMonthly.destroy();
+    if (!d || !d.transmissionLines || d.transmissionLines.length === 0) return;
 
     const isDark = appState.currentTheme === 'dark';
     const textColor = isDark ? '#cbd5e1' : '#475569';
     const gridColor = isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)';
 
-    const months = ['ม.ค.', 'ก.พ.', 'มี.ค.', 'เม.ย.', 'พ.ค.', 'มิ.ย.', 'ก.ค.', 'ส.ค.', 'ก.ย.', 'ต.ค.', 'พ.ย.', 'ธ.ค.'];
-    const palette = ['#8b5cf6', '#0ea5e9', '#10b981', '#f59e0b', '#ec4899'];
+    function getShortTransName(name) {
+      if (!name) return '';
+      return name
+        .replace('สถานีไฟฟ้าแรงสูง', 'สฟ.แรงสูง')
+        .replace('สถานีไฟฟ้า', 'สฟ.')
+        .replace(' (ชั่วคราว)', '(ช)')
+        .replace('ถึงสามแยกตลาดกำแพงแสน', 'ถึงสามแยกกำแพงแสน');
+    }
 
-    const datasets = d.transmissionLines.map((item, idx) => ({
-      label: item.name.length > 20 ? item.name.substring(0, 18) + '...' : item.name,
-      data: months.map(m => item.monthly2569[m] || 0),
-      borderColor: palette[idx % palette.length],
-      backgroundColor: palette[idx % palette.length],
-      tension: 0.3,
-      fill: false,
-      borderWidth: 2
-    }));
+    // Chart 2A: Circuit-Km vs Cumulative Progress (Dual-Axis Bar Chart)
+    const ctxKm = document.getElementById('transKmProgressChart');
+    if (ctxKm) {
+      if (appState.charts.transKmProgress) appState.charts.transKmProgress.destroy();
 
-    appState.charts.transMonthly = new Chart(ctx, {
-      type: 'line',
-      data: {
-        labels: months,
-        datasets: datasets
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-          legend: {
-            position: 'bottom',
-            labels: { color: textColor, font: { family: 'Prompt' } }
-          }
+      const labels = d.transmissionLines.map(t => {
+        const sn = getShortTransName(t.name);
+        return sn.length > 24 ? sn.substring(0, 22) + '...' : sn;
+      });
+      const kmData = d.transmissionLines.map(t => Number(t.circuitKm) || 0);
+      const progData = d.transmissionLines.map(t => Number(t.totalProgress) || 0);
+
+      appState.charts.transKmProgress = new Chart(ctxKm, {
+        type: 'bar',
+        data: {
+          labels: labels,
+          datasets: [
+            {
+              label: 'ระยะทาง (วงจร-กม.)',
+              data: kmData,
+              backgroundColor: '#0ea5e9',
+              borderRadius: 5,
+              yAxisID: 'yKm',
+              order: 2
+            },
+            {
+              label: 'ผลงานสะสม (%)',
+              data: progData,
+              backgroundColor: progData.map(p => p >= 100 ? '#10b981' : '#8b5cf6'),
+              borderRadius: 5,
+              yAxisID: 'yProg',
+              order: 1
+            }
+          ]
         },
-        scales: {
-          x: { ticks: { color: textColor }, grid: { color: gridColor } },
-          y: {
-            ticks: { color: textColor },
-            grid: { color: gridColor },
-            title: { display: true, text: 'ผลงานรายเดือน (%)', color: textColor }
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              position: 'top',
+              labels: { color: textColor, font: { family: 'Prompt', size: 11 }, usePointStyle: true }
+            },
+            tooltip: {
+              callbacks: {
+                label: function(c) {
+                  if (c.dataset.yAxisID === 'yKm') return ` ระยะทาง: ${c.raw.toFixed(2)} วงจร-กม.`;
+                  return ` ผลงานสะสม: ${c.raw}%`;
+                }
+              }
+            }
+          },
+          scales: {
+            x: {
+              ticks: { color: textColor, font: { family: 'Prompt', size: 10.5 }, autoSkip: false },
+              grid: { display: false }
+            },
+            yKm: {
+              type: 'linear',
+              position: 'left',
+              title: { display: true, text: 'วงจร-กม.', color: textColor, font: { family: 'Prompt', size: 10.5 } },
+              ticks: { color: textColor },
+              grid: { color: gridColor }
+            },
+            yProg: {
+              type: 'linear',
+              position: 'right',
+              min: 0,
+              max: 100,
+              title: { display: true, text: 'ผลงานสะสม (%)', color: textColor, font: { family: 'Prompt', size: 10.5 } },
+              ticks: {
+                color: textColor,
+                callback: function(v) { return v + '%'; }
+              },
+              grid: { display: false }
+            }
           }
         }
+      });
+    }
+
+    // Chart 2B: Transmission Monthly / Cumulative Chart
+    const ctxMonthly = document.getElementById('transMonthlyChart');
+    if (ctxMonthly) {
+      if (appState.charts.transMonthly) appState.charts.transMonthly.destroy();
+
+      // Mode toggles
+      const btnCumul = document.getElementById('btnTransModeCumulative');
+      const btnMonth = document.getElementById('btnTransModeMonthly');
+      if (btnCumul && !btnCumul.hasAttribute('data-bound')) {
+        [btnCumul, btnMonth].forEach(btn => {
+          if (!btn) return;
+          btn.setAttribute('data-bound', 'true');
+          btn.addEventListener('click', () => {
+            [btnCumul, btnMonth].forEach(b => b && b.classList.remove('active'));
+            btn.classList.add('active');
+            appState.transChartMode = (btn === btnCumul) ? 'cumulative' : 'monthly';
+            renderTransmissionCharts();
+          });
+        });
       }
-    });
+
+      const isCumulative = (appState.transChartMode || 'cumulative') === 'cumulative';
+      const months = ['ม.ค.', 'ก.พ.', 'มี.ค.', 'เม.ย.', 'พ.ค.', 'มิ.ย.', 'ก.ค.', 'ส.ค.', 'ก.ย.', 'ต.ค.', 'พ.ย.', 'ธ.ค.'];
+      const palette = ['#8b5cf6', '#0ea5e9', '#10b981', '#f59e0b', '#ec4899'];
+
+      const datasets = d.transmissionLines.map((item, idx) => {
+        let dataValues = [];
+        if (isCumulative) {
+          let running = Number(item.progress2568) || 0;
+          dataValues = months.map(m => {
+            running += Number(item.monthly2569[m] || 0);
+            return Math.min(100, running);
+          });
+        } else {
+          dataValues = months.map(m => Number(item.monthly2569[m] || 0));
+        }
+
+        const cleanName = getShortTransName(item.name);
+        return {
+          label: cleanName.length > 22 ? cleanName.substring(0, 20) + '...' : cleanName,
+          data: dataValues,
+          borderColor: palette[idx % palette.length],
+          backgroundColor: palette[idx % palette.length] + '18',
+          fill: isCumulative,
+          tension: 0.35,
+          borderWidth: 2.2,
+          pointRadius: 3.5,
+          pointHoverRadius: 6
+        };
+      });
+
+      appState.charts.transMonthly = new Chart(ctxMonthly, {
+        type: 'line',
+        data: {
+          labels: months,
+          datasets: datasets
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              position: 'top',
+              labels: {
+                color: textColor,
+                font: { family: 'Prompt', size: 10.5 },
+                boxWidth: 12,
+                boxHeight: 12,
+                usePointStyle: true
+              }
+            },
+            tooltip: {
+              callbacks: {
+                label: function(c) {
+                  return ` ${c.dataset.label}: ${c.raw}%`;
+                }
+              }
+            }
+          },
+          scales: {
+            x: {
+              ticks: { color: textColor, font: { family: 'Prompt', size: 11 } },
+              grid: { color: gridColor }
+            },
+            y: {
+              min: 0,
+              max: isCumulative ? 100 : undefined,
+              ticks: {
+                color: textColor,
+                callback: function(v) { return v + '%'; }
+              },
+              grid: { color: gridColor },
+              title: {
+                display: true,
+                text: isCumulative ? 'ผลงานสะสมรวม (%)' : 'ผลงานประจำเดือน (%)',
+                color: textColor,
+                font: { family: 'Prompt', size: 10.5 }
+              }
+            }
+          }
+        }
+      });
+    }
   }
 
   let stationModalFilter = {
@@ -1160,6 +1452,204 @@
 
       if (searchInput) searchInput.addEventListener('input', filterSubTable);
       filterSubTable();
+    }
+
+    renderSubstationsCharts();
+  }
+
+  function renderSubstationsCharts() {
+    const d = appState.data;
+    if (!d || !d.substationsSummary) return;
+
+    const isDark = appState.currentTheme === 'dark';
+    const textColor = isDark ? '#cbd5e1' : '#475569';
+    const gridColor = isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)';
+
+    // Chart 3A: 30 Substations Donut Chart
+    const ctxDonut = document.getElementById('subSummaryDonutChart');
+    if (ctxDonut) {
+      if (appState.charts.subSummaryDonut) appState.charts.subSummaryDonut.destroy();
+
+      const completed = d.substationsSummary.completed || 24;
+      const inProgress = d.substationsSummary.inProgress || 2;
+      const procuring = d.substationsSummary.procuring || 4;
+      const total = d.substationsSummary.totalSubstations || 30;
+      const compPct = ((completed / total) * 100).toFixed(1);
+
+      appState.charts.subSummaryDonut = new Chart(ctxDonut, {
+        type: 'doughnut',
+        data: {
+          labels: [
+            `ก่อสร้างแล้วเสร็จ: ${completed} แห่ง`,
+            `อยู่ระหว่างดำเนินการ: ${inProgress} แห่ง`,
+            `รอจัดจ้าง / ดำเนินการ: ${procuring} แห่ง`
+          ],
+          datasets: [{
+            data: [completed, inProgress, procuring],
+            backgroundColor: ['#10b981', '#0ea5e9', '#f59e0b'],
+            borderWidth: 2,
+            borderColor: isDark ? '#141e33' : '#ffffff',
+            hoverOffset: 6
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          cutout: '70%',
+          plugins: {
+            legend: {
+              position: 'bottom',
+              labels: {
+                color: textColor,
+                font: { family: 'Prompt', size: 11 },
+                padding: 12,
+                boxWidth: 12,
+                boxHeight: 12,
+                usePointStyle: true
+              }
+            },
+            tooltip: {
+              callbacks: {
+                label: function(c) {
+                  const val = c.raw;
+                  const pct = ((val / total) * 100).toFixed(1);
+                  return ` จำนวน ${val} แห่ง (${pct}%)`;
+                }
+              }
+            },
+            donutCenter: {
+              text: `${total} สถานี`,
+              subText: `แล้วเสร็จ ${compPct}%`
+            }
+          }
+        }
+      });
+    }
+
+    // Chart 3B: Programs Stacked Bar Chart
+    const ctxProgBar = document.getElementById('subProgramsBarChart');
+    if (ctxProgBar && d.substationsSummary.programs) {
+      if (appState.charts.subProgramsBar) appState.charts.subProgramsBar.destroy();
+
+      const programs = d.substationsSummary.programs;
+      const labels = programs.map(p => {
+        return p.name.replace('ประจำปี ', '').replace(' (ชั่วคราว)', '(ช)');
+      });
+      const compData = programs.map(p => p.completed || 0);
+      const inProgData = programs.map(p => p.inProgress || 0);
+      const procData = programs.map(p => p.procuring || 0);
+
+      appState.charts.subProgramsBar = new Chart(ctxProgBar, {
+        type: 'bar',
+        data: {
+          labels: labels,
+          datasets: [
+            {
+              label: 'ก่อสร้างแล้วเสร็จ',
+              data: compData,
+              backgroundColor: '#10b981',
+              borderRadius: 4
+            },
+            {
+              label: 'อยู่ระหว่างดำเนินการ',
+              data: inProgData,
+              backgroundColor: '#0ea5e9',
+              borderRadius: 4
+            },
+            {
+              label: 'รอจัดจ้าง / ดำเนินการ',
+              data: procData,
+              backgroundColor: '#f59e0b',
+              borderRadius: 4
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          indexAxis: 'y',
+          plugins: {
+            legend: {
+              position: 'top',
+              labels: { color: textColor, font: { family: 'Prompt', size: 10.5 }, usePointStyle: true }
+            },
+            tooltip: {
+              callbacks: {
+                label: function(c) {
+                  return ` ${c.dataset.label}: ${c.raw} แห่ง`;
+                }
+              }
+            }
+          },
+          scales: {
+            x: {
+              stacked: true,
+              ticks: { color: textColor, stepSize: 2, font: { family: 'Prompt', size: 10.5 } },
+              grid: { color: gridColor },
+              title: { display: true, text: 'จำนวนสถานี (แห่ง)', color: textColor, font: { family: 'Prompt', size: 10.5 } }
+            },
+            y: {
+              stacked: true,
+              ticks: { color: textColor, font: { family: 'Prompt', size: 11 } },
+              grid: { display: false }
+            }
+          }
+        }
+      });
+    }
+
+    // Chart 3C: Active Substations Progress Bar Chart
+    const ctxActive = document.getElementById('subActiveProgressChart');
+    if (ctxActive && d.substationsDetail) {
+      if (appState.charts.subActiveProgress) appState.charts.subActiveProgress.destroy();
+
+      const labels = d.substationsDetail.map(s => {
+        return s.name.replace('สถานีไฟฟ้า', 'สฟ.').replace(' (ชั่วคราว)', '(ช)');
+      });
+      const data = d.substationsDetail.map(s => Number(s.progress) || 0);
+      const colors = data.map(p => p >= 100 ? '#10b981' : p > 20 ? '#8b5cf6' : '#f59e0b');
+
+      appState.charts.subActiveProgress = new Chart(ctxActive, {
+        type: 'bar',
+        data: {
+          labels: labels,
+          datasets: [{
+            label: 'ผลงานความก้าวหน้า (%)',
+            data: data,
+            backgroundColor: colors,
+            borderRadius: 6,
+            barThickness: 18
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          indexAxis: 'y',
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              callbacks: {
+                label: function(c) {
+                  const s = d.substationsDetail[c.dataIndex];
+                  return ` ความก้าวหน้า: ${c.raw}% | ผู้รับจ้าง: ${s.contractor || '-'}`;
+                }
+              }
+            }
+          },
+          scales: {
+            x: {
+              min: 0,
+              max: 100,
+              ticks: { color: textColor, callback: v => v + '%' },
+              grid: { color: gridColor }
+            },
+            y: {
+              ticks: { color: textColor, font: { family: 'Prompt', size: 11 }, autoSkip: false },
+              grid: { display: false }
+            }
+          }
+        }
+      });
     }
   }
 
@@ -1622,6 +2112,7 @@
       document.getElementById('disbCommitPct').textContent = `รวมผูกพัน ${formatPercent(commitPct)}`;
       document.getElementById('disbRemaining').textContent = `${formatNumber(remTot)} บาท`;
 
+      renderDisbSummaryCharts();
       renderDisbChart(isAll);
       updateWbsTable();
     }
@@ -1687,12 +2178,183 @@
       }).join('');
     }
 
+    function renderDisbSummaryCharts() {
+      appState.renderDisbSummaryCharts = renderDisbSummaryCharts;
+      const isDark = appState.currentTheme === 'dark';
+      const textColor = isDark ? '#cbd5e1' : '#475569';
+      const gridColor = isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)';
+
+      // Chart 4A: Stacked Stations Budget (MB)
+      const ctxStacked = document.getElementById('disbStationsStackedChart');
+      if (ctxStacked && d.disbursements) {
+        if (appState.charts.disbStationsStacked) appState.charts.disbStationsStacked.destroy();
+
+        const labels = d.disbursements.map(p => {
+          return p.projectName.replace('สถานีไฟฟ้า', 'สฟ.').replace(' (ชั่วคราว)', '(ช)');
+        });
+        const actMB = d.disbursements.map(p => Number((p.totalActual / 1e6).toFixed(2)));
+        const poMB = d.disbursements.map(p => Number((p.totalPrPo / 1e6).toFixed(2)));
+        const remMB = d.disbursements.map(p => Number((p.totalRemaining / 1e6).toFixed(2)));
+
+        appState.charts.disbStationsStacked = new Chart(ctxStacked, {
+          type: 'bar',
+          data: {
+            labels: labels,
+            datasets: [
+              {
+                label: 'เบิกจ่ายจริง (Act.)',
+                data: actMB,
+                backgroundColor: '#10b981',
+                borderRadius: 4
+              },
+              {
+                label: 'ภาระผูกพัน (PR/PO)',
+                data: poMB,
+                backgroundColor: '#0ea5e9',
+                borderRadius: 4
+              },
+              {
+                label: 'งบประมาณคงเหลือ',
+                data: remMB,
+                backgroundColor: isDark ? '#334155' : '#cbd5e1',
+                borderRadius: 4
+              }
+            ]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            indexAxis: 'y',
+            plugins: {
+              legend: {
+                position: 'top',
+                labels: { color: textColor, font: { family: 'Prompt', size: 10.5 }, usePointStyle: true }
+              },
+              tooltip: {
+                callbacks: {
+                  label: function(c) {
+                    const st = d.disbursements[c.dataIndex];
+                    const tot = st.totalBudget || 1;
+                    const pct = ((c.raw * 1e6 / tot) * 100).toFixed(1);
+                    return ` ${c.dataset.label}: ${c.raw.toFixed(2)} ล้านบาท (${pct}%)`;
+                  }
+                }
+              }
+            },
+            scales: {
+              x: {
+                stacked: true,
+                ticks: {
+                  color: textColor,
+                  font: { family: 'Prompt', size: 10.5 },
+                  callback: v => v + ' ลบ.'
+                },
+                grid: { color: gridColor },
+                title: { display: true, text: 'งบประมาณ (ล้านบาท)', color: textColor, font: { family: 'Prompt', size: 10.5 } }
+              },
+              y: {
+                stacked: true,
+                ticks: { color: textColor, font: { family: 'Prompt', size: 11 } },
+                grid: { display: false }
+              }
+            }
+          }
+        });
+      }
+
+      // Chart 4B: Overall Disbursement Ratio Donut
+      const ctxDonut = document.getElementById('disbOverviewDonutChart');
+      if (ctxDonut && d.disbursements) {
+        if (appState.charts.disbOverviewDonut) appState.charts.disbOverviewDonut.destroy();
+
+        let totBud = 0, totAct = 0, totPo = 0, totRem = 0;
+        d.disbursements.forEach(p => {
+          totBud += p.totalBudget || 0;
+          totAct += p.totalActual || 0;
+          totPo += p.totalPrPo || 0;
+          totRem += p.totalRemaining || 0;
+        });
+
+        const actMB = Number((totAct / 1e6).toFixed(2));
+        const poMB = Number((totPo / 1e6).toFixed(2));
+        const remMB = Number((totRem / 1e6).toFixed(2));
+        const totMB = Number((totBud / 1e6).toFixed(2));
+        const actPct = totBud > 0 ? ((totAct / totBud) * 100).toFixed(1) : 0;
+        const poPct = totBud > 0 ? ((totPo / totBud) * 100).toFixed(1) : 0;
+        const remPct = totBud > 0 ? ((totRem / totBud) * 100).toFixed(1) : 0;
+
+        appState.charts.disbOverviewDonut = new Chart(ctxDonut, {
+          type: 'doughnut',
+          data: {
+            labels: [
+              `เบิกจ่ายจริง: ${actMB} ลบ. (${actPct}%)`,
+              `ภาระผูกพัน: ${poMB} ลบ. (${poPct}%)`,
+              `คงเหลือ: ${remMB} ลบ. (${remPct}%)`
+            ],
+            datasets: [{
+              data: [actMB, poMB, remMB],
+              backgroundColor: ['#10b981', '#0ea5e9', isDark ? '#334155' : '#cbd5e1'],
+              borderWidth: 2,
+              borderColor: isDark ? '#141e33' : '#ffffff',
+              hoverOffset: 6
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            cutout: '70%',
+            plugins: {
+              legend: {
+                position: 'bottom',
+                labels: {
+                  color: textColor,
+                  font: { family: 'Prompt', size: 10.5 },
+                  padding: 10,
+                  boxWidth: 12,
+                  boxHeight: 12,
+                  usePointStyle: true
+                }
+              },
+              tooltip: {
+                callbacks: {
+                  label: function(c) {
+                    return ` ${c.label}`;
+                  }
+                }
+              },
+              donutCenter: {
+                text: `${actPct}%`,
+                subText: `เบิกจ่ายแล้ว (${totMB} ลบ.)`
+              }
+            }
+          }
+        });
+      }
+    }
+
     function renderDisbChart(isAll) {
       appState.renderDisbChart = renderDisbChart;
       const ctx = document.getElementById('disbDetailChart');
       if (!ctx) return;
       if (appState.charts.disbDetail) appState.charts.disbDetail.destroy();
 
+      // Setup Unit Toggle buttons
+      const btnMB = document.getElementById('btnDisbUnitMB');
+      const btnTHB = document.getElementById('btnDisbUnitTHB');
+      if (btnMB && !btnMB.hasAttribute('data-bound')) {
+        [btnMB, btnTHB].forEach(btn => {
+          if (!btn) return;
+          btn.setAttribute('data-bound', 'true');
+          btn.addEventListener('click', () => {
+            [btnMB, btnTHB].forEach(b => b && b.classList.remove('active'));
+            btn.classList.add('active');
+            appState.disbUnit = (btn === btnMB) ? 'mb' : 'thb';
+            renderDisbChart(appState.disbSelectedProjectIndex === 'all');
+          });
+        });
+      }
+
+      const isMB = (appState.disbUnit || 'mb') === 'mb';
       const isDark = appState.currentTheme === 'dark';
       const textColor = isDark ? '#cbd5e1' : '#475569';
       const gridColor = isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)';
@@ -1703,20 +2365,18 @@
       let poData = [];
 
       if (isAll) {
-        // Compare the 3 stations side-by-side
-        labels = d.disbursements.map(p => p.projectName.replace('สถานีไฟฟ้า', 'สฟฟ.').replace(' (ชั่วคราว)', '(ช)'));
-        budData = d.disbursements.map(p => p.totalBudget);
-        actData = d.disbursements.map(p => p.totalActual);
-        poData = d.disbursements.map(p => p.totalPrPo);
+        labels = d.disbursements.map(p => p.projectName.replace('สถานีไฟฟ้า', 'สฟ.').replace(' (ชั่วคราว)', '(ช)'));
+        budData = d.disbursements.map(p => isMB ? Number((p.totalBudget / 1e6).toFixed(2)) : p.totalBudget);
+        actData = d.disbursements.map(p => isMB ? Number((p.totalActual / 1e6).toFixed(2)) : p.totalActual);
+        poData = d.disbursements.map(p => isMB ? Number((p.totalPrPo / 1e6).toFixed(2)) : p.totalPrPo);
       } else {
-        // Compare top 10 items of chosen station
         const proj = d.disbursements[appState.disbSelectedProjectIndex] || d.disbursements[0];
         if (proj) {
           const topItems = proj.wbsItems.slice(0, 10);
-          labels = topItems.map(i => i.desc.length > 20 ? i.desc.substring(0, 18) + '...' : i.desc);
-          budData = topItems.map(i => i.currBudget);
-          actData = topItems.map(i => i.actTotal);
-          poData = topItems.map(i => i.prPo);
+          labels = topItems.map(i => i.desc.length > 22 ? i.desc.substring(0, 20) + '...' : i.desc);
+          budData = topItems.map(i => isMB ? Number((i.currBudget / 1e6).toFixed(2)) : i.currBudget);
+          actData = topItems.map(i => isMB ? Number((i.actTotal / 1e6).toFixed(2)) : i.actTotal);
+          poData = topItems.map(i => isMB ? Number((i.prPo / 1e6).toFixed(2)) : i.prPo);
         }
       }
 
@@ -1751,26 +2411,37 @@
           plugins: {
             legend: {
               position: 'top',
-              labels: { color: textColor, font: { family: 'Prompt' } }
+              labels: { color: textColor, font: { family: 'Prompt', size: 10.5 }, usePointStyle: true }
             },
             tooltip: {
               callbacks: {
                 label: function (c) {
+                  if (isMB) return ` ${c.dataset.label}: ${c.raw.toFixed(2)} ล้านบาท`;
                   return ` ${c.dataset.label}: ${formatNumber(c.raw)} บาท`;
                 }
               }
             }
           },
           scales: {
-            x: { ticks: { color: textColor, font: { family: 'Prompt' } }, grid: { display: false } },
+            x: {
+              ticks: { color: textColor, font: { family: 'Prompt', size: 10.5 } },
+              grid: { display: false }
+            },
             y: {
               ticks: {
                 color: textColor,
+                font: { family: 'Prompt', size: 10.5 },
                 callback: function (val) {
-                  return (val / 1000000).toFixed(1) + 'M';
+                  return isMB ? val + ' ลบ.' : (val / 1e6).toFixed(1) + 'M';
                 }
               },
-              grid: { color: gridColor }
+              grid: { color: gridColor },
+              title: {
+                display: true,
+                text: isMB ? 'จำนวนเงิน (ล้านบาท)' : 'จำนวนเงิน (บาท)',
+                color: textColor,
+                font: { family: 'Prompt', size: 10.5 }
+              }
             }
           }
         }
@@ -1858,6 +2529,160 @@
     }
 
     filterPermits();
+    renderPermitsCharts();
+  }
+
+  function renderPermitsCharts() {
+    const d = appState.data;
+    if (!d || !d.permits || d.permits.length === 0) return;
+
+    const isDark = appState.currentTheme === 'dark';
+    const textColor = isDark ? '#cbd5e1' : '#475569';
+    const gridColor = isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)';
+
+    // Chart 5A: Permit Status Donut
+    const ctxDonut = document.getElementById('permitsStatusDonutChart');
+    if (ctxDonut) {
+      if (appState.charts.permitsStatusDonut) appState.charts.permitsStatusDonut.destroy();
+
+      const totalAll = d.permits.length;
+      const approvedCount = d.permits.filter(p => p.statusGroup === 'approved').length;
+      const pendingCount = d.permits.filter(p => p.statusGroup === 'pending').length;
+      const revisingCount = d.permits.filter(p => p.statusGroup === 'revising').length;
+      const appPct = totalAll > 0 ? ((approvedCount / totalAll) * 100).toFixed(1) : 0;
+
+      appState.charts.permitsStatusDonut = new Chart(ctxDonut, {
+        type: 'doughnut',
+        data: {
+          labels: [
+            `ได้รับอนุญาตแล้ว: ${approvedCount} งาน`,
+            `อยู่ระหว่างพิจารณา: ${pendingCount} งาน`,
+            `แก้ไขปรับแบบ: ${revisingCount} งาน`
+          ],
+          datasets: [{
+            data: [approvedCount, pendingCount, revisingCount],
+            backgroundColor: ['#10b981', '#f59e0b', '#ec4899'],
+            borderWidth: 2,
+            borderColor: isDark ? '#141e33' : '#ffffff',
+            hoverOffset: 6
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          cutout: '70%',
+          plugins: {
+            legend: {
+              position: 'bottom',
+              labels: {
+                color: textColor,
+                font: { family: 'Prompt', size: 11 },
+                padding: 12,
+                boxWidth: 12,
+                boxHeight: 12,
+                usePointStyle: true
+              }
+            },
+            tooltip: {
+              callbacks: {
+                label: function(c) {
+                  const val = c.raw;
+                  const pct = totalAll > 0 ? ((val / totalAll) * 100).toFixed(1) : 0;
+                  return ` จำนวน ${val} งาน (${pct}%)`;
+                }
+              }
+            },
+            donutCenter: {
+              text: `${totalAll} งาน`,
+              subText: `อนุมัติแล้ว ${appPct}%`
+            }
+          }
+        }
+      });
+    }
+
+    // Chart 5B: Permits by Authority Stacked Bar Chart
+    const ctxAuth = document.getElementById('permitsAuthorityBarChart');
+    if (ctxAuth) {
+      if (appState.charts.permitsAuthorityBar) appState.charts.permitsAuthorityBar.destroy();
+
+      const authMap = {};
+      d.permits.forEach(p => {
+        const auth = p.authority || 'ไม่ระบุ';
+        if (!authMap[auth]) {
+          authMap[auth] = { approved: 0, pending: 0, revising: 0, total: 0 };
+        }
+        authMap[auth].total += 1;
+        if (p.statusGroup === 'approved') authMap[auth].approved += 1;
+        else if (p.statusGroup === 'pending') authMap[auth].pending += 1;
+        else if (p.statusGroup === 'revising') authMap[auth].revising += 1;
+      });
+
+      const sortedAuths = Object.keys(authMap).sort((a, b) => authMap[b].total - authMap[a].total);
+
+      const labels = sortedAuths.map(a => a.length > 22 ? a.substring(0, 20) + '...' : a);
+      const appData = sortedAuths.map(a => authMap[a].approved);
+      const pendData = sortedAuths.map(a => authMap[a].pending);
+      const revData = sortedAuths.map(a => authMap[a].revising);
+
+      appState.charts.permitsAuthorityBar = new Chart(ctxAuth, {
+        type: 'bar',
+        data: {
+          labels: labels,
+          datasets: [
+            {
+              label: 'ได้รับอนุญาตแล้ว',
+              data: appData,
+              backgroundColor: '#10b981',
+              borderRadius: 4
+            },
+            {
+              label: 'อยู่ระหว่างพิจารณา',
+              data: pendData,
+              backgroundColor: '#f59e0b',
+              borderRadius: 4
+            },
+            {
+              label: 'แก้ไขปรับแบบ',
+              data: revData,
+              backgroundColor: '#ec4899',
+              borderRadius: 4
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          indexAxis: 'y',
+          plugins: {
+            legend: {
+              position: 'top',
+              labels: { color: textColor, font: { family: 'Prompt', size: 10.5 }, usePointStyle: true }
+            },
+            tooltip: {
+              callbacks: {
+                label: function(c) {
+                  return ` ${c.dataset.label}: ${c.raw} งาน`;
+                }
+              }
+            }
+          },
+          scales: {
+            x: {
+              stacked: true,
+              ticks: { color: textColor, stepSize: 1, precision: 0, font: { family: 'Prompt', size: 10.5 } },
+              grid: { color: gridColor },
+              title: { display: true, text: 'จำนวนงานขออนุญาต', color: textColor, font: { family: 'Prompt', size: 10.5 } }
+            },
+            y: {
+              stacked: true,
+              ticks: { color: textColor, font: { family: 'Prompt', size: 10.5 } },
+              grid: { display: false }
+            }
+          }
+        }
+      });
+    }
   }
 
   // Tab 6: Gantt Schedule
@@ -2515,10 +3340,16 @@
   function updateAllCharts() {
     if (window.Chart) window.Chart.defaults.animation = false;
     renderOverviewCharts();
-    renderTransmissionMonthlyChart();
-    if (appState.renderDisbChart) {
-      appState.renderDisbChart(true);
+    renderTransmissionCharts();
+    renderSubstationsCharts();
+    if (typeof appState.renderDisbSummaryCharts === 'function') {
+      appState.renderDisbSummaryCharts();
     }
+    if (typeof appState.renderDisbChart === 'function') {
+      appState.renderDisbChart(appState.disbSelectedProjectIndex === 'all');
+    }
+    renderPermitsCharts();
+
     if (appState.charts) {
       Object.values(appState.charts).forEach(ch => {
         if (ch && typeof ch.resize === 'function') {
